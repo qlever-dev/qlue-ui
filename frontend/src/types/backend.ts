@@ -14,7 +14,10 @@ export interface Queries {
 }
 
 export interface ServiceConfig {
-  service: Service;
+  name: string;
+  url: string;
+  engine: string;
+  healthCheckUrl?: string;
   prefixMap: PrefixMap;
   queries: Queries;
   default: boolean;

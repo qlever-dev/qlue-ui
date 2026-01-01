@@ -42,7 +42,7 @@ class SparqlEndpointConfigurationListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SparqlEndpointConfiguration
-        fields = ["name", "slug", "api_url"]
+        fields = ["name", "slug", "api_url", "is_default"]
 
 
 class QueryExampleSerializer(serializers.ModelSerializer):

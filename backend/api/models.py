@@ -142,3 +142,11 @@ class SavedQuery(models.Model):
             self.id = new_id
 
         super().save(*args, **kwargs)
+
+
+class CompareGroup(models.Model):
+    name = models.CharField()
+    endpoints = models.ManyToManyField(SparqlEndpointConfiguration)
+
+    def endpoints_list(self) -> str:
+        return ", ".join(endpoint.name for endpoint in self.endpoints.all())

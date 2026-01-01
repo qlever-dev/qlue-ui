@@ -59,26 +59,22 @@ export async function configureBackends(editor: Editor) {
     const option = new Option(serviceDescription.name, serviceDescription.slug, false, is_default);
     backendSelector.add(option);
 
-    const service = {
+    const config: ServiceConfig = {
       name: sparqlEndpointconfig.slug,
       url: sparqlEndpointconfig.url,
       engine: sparqlEndpointconfig.engine,
-    };
-    const prefixMap = sparqlEndpointconfig.prefix_map;
-    const queries = {
-      subjectCompletion: sparqlEndpointconfig['subject_completion'],
-      predicateCompletionContextSensitive:
-        sparqlEndpointconfig['predicate_completion_context_sensitive'],
-      predicateCompletionContextInsensitive:
-        sparqlEndpointconfig['predicate_completion_context_insensitive'],
-      objectCompletionContextSensitive: sparqlEndpointconfig['object_completion_context_sensitive'],
-      objectCompletionContextInsensitive:
-        sparqlEndpointconfig['object_completion_context_insensitive'],
-    };
-    const config = {
-      service: service,
-      prefixMap: prefixMap,
-      queries: queries,
+      prefixMap: sparqlEndpointconfig.prefix_map,
+      queries: {
+        subjectCompletion: sparqlEndpointconfig['subject_completion'],
+        predicateCompletionContextSensitive:
+          sparqlEndpointconfig['predicate_completion_context_sensitive'],
+        predicateCompletionContextInsensitive:
+          sparqlEndpointconfig['predicate_completion_context_insensitive'],
+        objectCompletionContextSensitive:
+          sparqlEndpointconfig['object_completion_context_sensitive'],
+        objectCompletionContextInsensitive:
+          sparqlEndpointconfig['object_completion_context_insensitive'],
+      },
       default: is_default,
     };
 
