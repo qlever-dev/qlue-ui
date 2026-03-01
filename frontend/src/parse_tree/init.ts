@@ -2,7 +2,7 @@
 
 import type { IDisposable } from 'monaco-editor';
 import type { Editor } from '../editor/init';
-import type { ParseTreeResult } from '../types/parse_tree';
+import type { ParseTreeElement, ParseTreeResult } from '../types/parse_tree';
 import { applyPanelWidth, toggleWideMode } from '../buttons/wide_mode';
 import { clearHighlights, highlightRowsAtCursor, initDecorations } from './highlight';
 import { renderElement } from './render';
@@ -12,6 +12,7 @@ const DEBOUNCE_MS = 50;
 let changeListener: IDisposable | null = null;
 let cursorListener: IDisposable | null = null;
 let debounceTimer: number | undefined;
+let latestTree: ParseTreeElement | null = null;
 
 /** Registers the close button and show trivia toggle for the parse tree panel. */
 export function setupParseTree(editor: Editor) {
@@ -33,6 +34,17 @@ export function setupParseTree(editor: Editor) {
     document.querySelectorAll('.parse-tree-sytax-range').forEach((el) => {
       el.classList.toggle('hidden', !parseTreeShowSpanToggle.checked);
     });
+  });
+
+  // NOTE: Copy parse tree as indented text to clipboard.
+  document.getElementById('parseTreeCopy')!.addEventListener('click', () => {
+    if (!latestTree) return;
+    navigator.clipboard.writeText(treeToText(latestTree));
+    document.dispatchEvent(
+      new CustomEvent('toast', {
+        detail: { type: 'success', message: 'Copied to clipboard', duration: 2000 },
+      })
+    );
   });
 }
 
@@ -100,6 +112,8 @@ async function refreshParseTree(editor: Editor) {
       skipTrivia: !showTriviaCheckbox.checked,
     })) as ParseTreeResult;
 
+    latestTree = result.tree;
+
     // NOTE: Build the new tree off-DOM in a fragment, then swap in one operation.
     const fragment = document.createDocumentFragment();
     initDecorations(editor.editorApp.getEditor()!);
@@ -142,4 +156,13 @@ function closeParseTree() {
   const url = new URL(window.location.href);
   url.searchParams.delete('parseTree');
   window.history.replaceState({}, '', url);
+}
+
+function treeToText(element: ParseTreeElement, depth: number = 0): string {
+  const indent = '  '.repeat(depth);
+  if (element.type === 'token') {
+    return `${indent}${element.kind} ${JSON.stringify(element.text)}`;
+  }
+  const children = element.children.map((c) => treeToText(c, depth + 1)).join('\n');
+  return children ? `${indent}${element.kind}\n${children}` : `${indent}${element.kind}`;
 }
