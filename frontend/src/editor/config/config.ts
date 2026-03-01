@@ -181,6 +181,7 @@ export async function buildWrapperConfig(initial: string) {
       guides: {
         bracketPairsHorizontal: 'active',
       },
+      fixedOverflowWidgets: true,
     },
   };
   return {
