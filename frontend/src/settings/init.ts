@@ -4,7 +4,7 @@ import { getInputByPath, handleClickEvents, setByPath, walk } from './utils';
 
 export let settings: UiSettings = {
   general: {
-    accessToken: 'UdKTWNFUoLm9POa8m7a5jvhjVrq7tYqU',
+    accessToken: '',
     uiMode: 'results',
   },
   editor: {
