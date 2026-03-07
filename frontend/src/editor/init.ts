@@ -86,6 +86,19 @@ export async function setupEditor(container_id: string): Promise<Editor> {
       }).observe(editorArea);
     }
 
+    // NOTE: Dismiss fixed overflow widgets on page scroll.
+    // fixedOverflowWidgets uses position:fixed to prevent clipping by
+    // overflow:hidden containers, but fixed elements don't move with the page.
+    const monacoEditor = editorApp.getEditor()!;
+    document.addEventListener(
+      'scroll',
+      () => {
+        monacoEditor.trigger('scroll', 'hideSuggestWidget', {});
+        monacoEditor.trigger('scroll', 'editor.action.hideHover', {});
+      },
+      { passive: true, capture: true }
+    );
+
     return editor;
   } else {
     throw new Error(`No element with id: "${container_id}" found`);
