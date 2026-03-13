@@ -2,6 +2,7 @@ import type { Editor } from './editor/init';
 import { openParseTree } from './parse_tree/init';
 import { getShareLinkId, getSavedQuery } from './share';
 import { openOrCreateTab } from './tabs';
+import type { QlueLsServiceConfig } from './types/backend';
 import { getPathParameters } from './utils';
 
 /**
@@ -53,7 +54,15 @@ export function setupUrlSync(editor: Editor) {
     const query = editor.getContent();
     if (!query.trim()) return;
     const shareId = await getShareLinkId(query);
-    const [slug] = getPathParameters();
+    let [slug] = getPathParameters();
+    if (slug == undefined) {
+      // NOTE: get backend slug if path parameter is empty.
+      const backend = (await editor.languageClient.sendRequest(
+        'qlueLs/getBackend',
+        {}
+      )) as QlueLsServiceConfig;
+      slug = backend.name;
+    }
     history.replaceState(null, '', `/${slug}/${shareId}`);
   });
 }

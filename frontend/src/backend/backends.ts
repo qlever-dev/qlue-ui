@@ -75,6 +75,19 @@ export async function configureBackends(editor: Editor) {
     }
   }
   if (default_service_slug == null) {
+    // NOTE: path slug was provided but did not match any known backend
+    if (path_slug != undefined) {
+      const BASE_PATH = import.meta.env.BASE_URL ?? '/';
+      history.replaceState(null, '', BASE_PATH);
+      document.dispatchEvent(
+        new CustomEvent('toast', {
+          detail: {
+            type: 'warning',
+            message: `No SPARQL endpoint with the slug '${path_slug}' was found.<br>Resetting URL.`,
+          },
+        })
+      );
+    }
     const service = services.find((service) => service.is_default);
     if (service) {
       default_service_slug = service.slug;
