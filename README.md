@@ -279,4 +279,4 @@ With `--update`, the dry-run shows what will happen to each record:
 
 ## License
 
-[MIT License](https://mit-license.org/)
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
