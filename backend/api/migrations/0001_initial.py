@@ -4,28 +4,120 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='SparqlEndpointConfiguration',
+            name="SparqlEndpointConfiguration",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Choose a name for the backend that helps you to distinguish between multiple backends', max_length=100, unique=True, verbose_name='Name')),
-                ('slug', models.CharField(help_text='Name used in the URL of this backend; MUST only use valid URL characters (in particular, no space)', max_length=100, verbose_name='Slug')),
-                ('is_default', models.BooleanField(default=False, help_text='Whether or not this SPARQL endpoint is used by default.', verbose_name='Default SPARQL endpoint')),
-                ('url', models.CharField(help_text='The URL where to find / call the QLever backend (including http://)', max_length=1000, verbose_name='Base URL')),
-                ('api_token', models.CharField(blank=True, default='', help_text='This token needs to be provided as ?token query parameter when executing Warmup tasks through API', max_length=32, verbose_name='API token')),
-                ('prefixes', models.TextField(blank=True, default='', help_text='A list of prefixes that should be suggested. Prefixes can have either of @prefix schema: &lt;https://www.schema.org/&gt; .', verbose_name='Suggested Prefixes')),
-                ('subject_completion_query', models.TextField(blank=True, default='', help_text='The query for subject autocompletion.', verbose_name='Subject autocompletion query')),
-                ('predicate_completion_query_context_sensitive', models.TextField(blank=True, default='', help_text='The query for <em>context-sensitive</em> predicate autocompletion', verbose_name='Predicate autocompletion query')),
-                ('predicate_completion_query_context_insensitive', models.TextField(blank=True, default='', help_text='The query for <em>context-insensitive</em> predicate autocompletion', verbose_name='Predicate autocompletion query')),
-                ('object_completion_query_context_sensitive', models.TextField(blank=True, default='', help_text='The query for <em>context-sensitive</em> object autocompletion', verbose_name='Object autocompletion query')),
-                ('object_completion_query_context_insensitive', models.TextField(blank=True, default='', help_text='The query for <em>context-insensitive</em> object autocompletion', verbose_name='Object autocompletion query')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Choose a name for the backend that helps you to distinguish between multiple backends",
+                        max_length=100,
+                        unique=True,
+                        verbose_name="Name",
+                    ),
+                ),
+                (
+                    "slug",
+                    models.CharField(
+                        help_text="Name used in the URL of this backend; MUST only use valid URL characters (in particular, no space)",
+                        max_length=100,
+                        verbose_name="Slug",
+                    ),
+                ),
+                (
+                    "is_default",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Whether or not this SPARQL endpoint is used by default.",
+                        verbose_name="Default SPARQL endpoint",
+                    ),
+                ),
+                (
+                    "url",
+                    models.CharField(
+                        help_text="The URL where to find / call the QLever backend (including http://)",
+                        max_length=1000,
+                        verbose_name="Base URL",
+                    ),
+                ),
+                (
+                    "api_token",
+                    models.CharField(
+                        blank=True,
+                        default="",
+                        help_text="This token needs to be provided as ?token query parameter when executing Warmup tasks through API",
+                        max_length=32,
+                        verbose_name="API token",
+                    ),
+                ),
+                (
+                    "prefixes",
+                    models.TextField(
+                        blank=True,
+                        default="",
+                        help_text="A list of prefixes that should be suggested. Prefixes can have either of @prefix schema: &lt;https://www.schema.org/&gt; .",
+                        verbose_name="Suggested Prefixes",
+                    ),
+                ),
+                (
+                    "subject_completion_query",
+                    models.TextField(
+                        blank=True,
+                        default="",
+                        help_text="The query for subject autocompletion.",
+                        verbose_name="Subject autocompletion query",
+                    ),
+                ),
+                (
+                    "predicate_completion_query_context_sensitive",
+                    models.TextField(
+                        blank=True,
+                        default="",
+                        help_text="The query for <em>context-sensitive</em> predicate autocompletion",
+                        verbose_name="Predicate autocompletion query",
+                    ),
+                ),
+                (
+                    "predicate_completion_query_context_insensitive",
+                    models.TextField(
+                        blank=True,
+                        default="",
+                        help_text="The query for <em>context-insensitive</em> predicate autocompletion",
+                        verbose_name="Predicate autocompletion query",
+                    ),
+                ),
+                (
+                    "object_completion_query_context_sensitive",
+                    models.TextField(
+                        blank=True,
+                        default="",
+                        help_text="The query for <em>context-sensitive</em> object autocompletion",
+                        verbose_name="Object autocompletion query",
+                    ),
+                ),
+                (
+                    "object_completion_query_context_insensitive",
+                    models.TextField(
+                        blank=True,
+                        default="",
+                        help_text="The query for <em>context-insensitive</em> object autocompletion",
+                        verbose_name="Object autocompletion query",
+                    ),
+                ),
             ],
         ),
     ]

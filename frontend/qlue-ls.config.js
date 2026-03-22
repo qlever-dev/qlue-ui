@@ -8,11 +8,15 @@ export default {
     insertSpaces: true,
     tabSize: 2,
     whereNewLine: false,
+    keepEmptyLines: false,
   },
 
   completion: {
     resultSizeLimit: 100,
     timeoutMs: 5000,
+    subjectCompletionTriggerLength: 3,
+    objectCompletionSuffix: true,
+    sameSubjectSemicolon: true,
   },
   prefixes: {
     addMissing: true,

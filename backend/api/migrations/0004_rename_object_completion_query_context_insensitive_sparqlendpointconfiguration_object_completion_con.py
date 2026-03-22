@@ -4,35 +4,34 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0003_queryexample'),
+        ("api", "0003_queryexample"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='sparqlendpointconfiguration',
-            old_name='object_completion_query_context_insensitive',
-            new_name='object_completion_context_insensitive',
+            model_name="sparqlendpointconfiguration",
+            old_name="object_completion_query_context_insensitive",
+            new_name="object_completion_context_insensitive",
         ),
         migrations.RenameField(
-            model_name='sparqlendpointconfiguration',
-            old_name='object_completion_query_context_sensitive',
-            new_name='object_completion_context_sensitive',
+            model_name="sparqlendpointconfiguration",
+            old_name="object_completion_query_context_sensitive",
+            new_name="object_completion_context_sensitive",
         ),
         migrations.RenameField(
-            model_name='sparqlendpointconfiguration',
-            old_name='predicate_completion_query_context_insensitive',
-            new_name='predicate_completion_context_insensitive',
+            model_name="sparqlendpointconfiguration",
+            old_name="predicate_completion_query_context_insensitive",
+            new_name="predicate_completion_context_insensitive",
         ),
         migrations.RenameField(
-            model_name='sparqlendpointconfiguration',
-            old_name='predicate_completion_query_context_sensitive',
-            new_name='predicate_completion_context_sensitive',
+            model_name="sparqlendpointconfiguration",
+            old_name="predicate_completion_query_context_sensitive",
+            new_name="predicate_completion_context_sensitive",
         ),
         migrations.RenameField(
-            model_name='sparqlendpointconfiguration',
-            old_name='subject_completion_query',
-            new_name='subject_completion',
+            model_name="sparqlendpointconfiguration",
+            old_name="subject_completion_query",
+            new_name="subject_completion",
         ),
     ]

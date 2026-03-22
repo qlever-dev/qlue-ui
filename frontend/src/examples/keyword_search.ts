@@ -5,6 +5,7 @@
 // └──────────────────────────────────────┘ \\
 
 import { debounce } from '../utils';
+import { parseKeywords, matchesAllKeywords, highlightMatches } from '../utils/fuzzy_filter';
 
 export function setupKeywordSearch() {
   const examplesModal = document.getElementById('examplesModal')!;
@@ -13,8 +14,8 @@ export function setupKeywordSearch() {
     'examplesKeywordSearchInput'
   )! as HTMLInputElement;
 
-  const hoverClasses: string[] = ['bg-neutral-500', 'dark:bg-neutral-700'];
-  const highlightClasses: string[] = ['text-green-400', 'dark:text-green-500', 'underline'];
+  const hoverClasses: string[] = ['bg-neutral-500', 'dark:bg-neutral-700', 'text-white'];
+  const highlightClasses: string[] = ['text-green-600', 'dark:text-green-500', 'underline'];
 
   // This variable contains the actual example spans that match the query.
   let examples: HTMLLIElement[] = [];
@@ -64,31 +65,14 @@ export function setupKeywordSearch() {
 
   function filterExamples(query: string) {
     cleanup();
-    const keywords = query
-      .trim()
-      .split(' ')
-      .filter((keyword) => {
-        if (keyword === '') {
-          return false;
-        }
-        try {
-          new RegExp(keyword);
-        } catch (error) {
-          if (error instanceof SyntaxError) {
-            return false;
-          }
-          throw error;
-        }
-        return true;
-      })
-      .map((word) => new RegExp(word, 'gi'));
+    const keywords = parseKeywords(query);
 
     let hits = 0;
     examplesFiltered = examples.filter((example) => {
       const exampleName = example.innerText.trim();
-      if (keywords.every((keyword) => exampleName.match(keyword) != null)) {
+      if (matchesAllKeywords(exampleName, keywords)) {
         example.classList.add('keyword-search-match');
-        example.innerHTML = highlightWords(exampleName, keywords);
+        example.innerHTML = highlightMatches(exampleName, keywords, highlightClasses);
         hits++;
         return true;
       } else {
@@ -98,9 +82,11 @@ export function setupKeywordSearch() {
     });
     if (hits === 0) {
       console.log('no matches :(');
-      // TODO: show no hits explanation
+      document.getElementById('noExampleMatchWarning')!.classList.remove('hidden');
+      document.getElementById('noExampleMatchWarning')!.classList.add('inline-flex');
     } else {
-      // TODO: hide no hits explanation
+      document.getElementById('noExampleMatchWarning')!.classList.remove('inline-flex');
+      document.getElementById('noExampleMatchWarning')!.classList.add('hidden');
     }
   }
 
@@ -117,51 +103,6 @@ export function setupKeywordSearch() {
       // NOTE: This removes inner styling.
       element.innerText = element.innerText;
     });
-  }
-
-  // This highlights specified words or patterns within an input string
-  // by wrapping them with a <span> element
-  // with the class `keyword-search-highlight`.
-  //
-  // Algorithm:
-  // 1. Remove any existing highlighting.
-  // 2. Iterate over each `regex` in the list of `regexes`
-  //    to find matching sections in the input string.
-  // 3. Consolidate overlapping sections if any.
-  // 4. Replace the matching sections with HTML <span> tags for highlighting.
-  // 5. Return the modified string with highlighted words.
-  function highlightWords(input_str: string, regexps: RegExp[]) {
-    let return_str = input_str;
-    // find matching sections
-    let matching_sections: number[][] = [];
-    for (const regexp of regexps) {
-      const matches = input_str.matchAll(regexp);
-      for (const match of matches) {
-        matching_sections.push([match.index, match.index + match[0].length]);
-      }
-    }
-    if (matching_sections.length === 0) {
-      return return_str;
-    }
-    // consolidate overlapping sections
-    matching_sections.sort((a, b) => a[0] - b[0]);
-    matching_sections = matching_sections.reduce(
-      (accu, elem) => {
-        const [last, ...rest] = accu;
-        if (elem[0] <= last[1]) {
-          return [[last[0], Math.max(elem[1], last[1])], ...rest];
-        }
-        return [elem].concat(accu);
-      },
-      [matching_sections[0]]
-    );
-    // replace matching sections with highlighting span
-    matching_sections.forEach(([from, to]) => {
-      return_str = `${return_str.substring(0, from)}\
-<span class="${highlightClasses.join(' ')}">${return_str.substring(from, to)}\
-</span>${return_str.substring(to)}`;
-    });
-    return return_str;
   }
 
   keywordSearchInput.addEventListener('input', () => {

@@ -49,41 +49,349 @@ class SparqlEndpointConfiguration(models.Model):
         default="",
         blank=True,
     )
+    map_view_url = models.CharField(
+        max_length=256,
+        help_text="This URL points to the petrimaps service. This service vizualizes geo data.",
+        verbose_name="Map-view URL",
+        default="https://qlever.dev/petrimaps/",
+    )
     prefixes = models.TextField(
-        default="",
+        default=(
+            "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n"
+            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
+            "PREFIX schema: <http://schema.org/>\n"
+            "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n"
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n"
+            "PREFIX foaf: <http://xmlns.com/foaf/0.1/>"
+        ),
         blank=True,
-        help_text="A list of prefixes that should be suggested. Prefixes can have either of @prefix schema: &lt;https://www.schema.org/&gt; .",
+        help_text="A list of prefixes that should be suggested. Use this notation: PREFIX schema: &lt;https://www.schema.org/&gt;",
         verbose_name="Suggested Prefixes",
     )
     subject_completion = models.TextField(
-        default="",
+        default="""\
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
+      {
+        SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
+          ?qlue_ls_entity ?p ?o .
+          {% if search_term %}
+          ?qlue_ls_entity rdfs:label ?searchLabel .
+          FILTER(LANG(?searchLabel) = "en" || LANG(?searchLabel) = "")
+          FILTER(REGEX(STR(?searchLabel), "^{{ search_term }}", "i"))
+          {% endif %}
+        }
+        GROUP BY ?qlue_ls_entity
+        ORDER BY DESC(?qlue_ls_count)
+        LIMIT {{ limit }}
+        OFFSET {{ offset }}
+      }
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:label ?qlue_ls_label .
+        FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
+      }
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
+        FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
+      }
+    }""",
         blank=True,
         help_text="The query for subject autocompletion.",
         verbose_name="Subject completion",
     )
     predicate_completion_context_sensitive = models.TextField(
-        default="",
+        default="""\
+    # Inherit PREFIX declarations from the editor document and configuration
+    {% include "prefix_declarations" %}
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    
+    SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
+      {
+        # Inner query: use surrounding context + local triple pattern to find
+        # predicates actually used in this subject's neighbourhood
+        SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
+          {{ context }}
+          {{ local_context }}
+          {% if search_term_uncompressed %}
+          # User typed a prefixed IRI (e.g. rdf:type) — match against the expanded IRI string
+          FILTER(STRSTARTS(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
+          {% elif search_term %}
+          # User typed a plain text term — match against the predicate's label;
+          # accept English labels and untagged literals so language-free graphs still work
+          ?qlue_ls_entity rdfs:label ?searchLabel .
+          FILTER(LANG(?searchLabel) = "en" || LANG(?searchLabel) = "")
+          FILTER(REGEX(STR(?searchLabel), "^{ search_term }}", "i"))
+          {% endif %}
+        }
+        GROUP BY ?qlue_ls_entity
+        ORDER BY DESC(?qlue_ls_count)
+        LIMIT {{ limit }}
+        OFFSET {{ offset }}
+      }
+      # Fetch human-readable label for display; prefer English, allow untagged fallback
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:label ?qlue_ls_label .
+        FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
+      }
+      # Fetch description for the completion item detail line
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
+        FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
+      }
+    }""",
         blank=True,
         help_text="The query for <em>context-sensitive</em> predicate autocompletion",
         verbose_name="Predicate completion (context sensitive)",
     )
     predicate_completion_context_insensitive = models.TextField(
-        default="",
+        default="""\
+    # Inherit PREFIX declarations from the editor document and configuration
+    {% include "prefix_declarations" %}
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    
+    SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
+      {
+        # Inner query: scan all triples and rank predicates by usage frequency
+        SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
+          ?s ?qlue_ls_entity ?o .
+          {% if search_term_uncompressed %}
+          # User typed a prefixed IRI (e.g. rdf:type) — match against the expanded IRI string
+          FILTER(STRSTARTS(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
+          {% elif search_term %}
+          # User typed a plain text term — match against the predicate's label;
+          # accept English labels and untagged literals so language-free graphs still work
+          ?qlue_ls_entity rdfs:label ?searchLabel .
+          FILTER(LANG(?searchLabel) = "en" || LANG(?searchLabel) = "")
+          FILTER(REGEX(STR(?searchLabel), "^{{ search_term }}", "i"))
+          {% endif %}
+        }
+        GROUP BY ?qlue_ls_entity
+        ORDER BY DESC(?qlue_ls_count)
+        LIMIT {{ limit }}
+        OFFSET {{ offset }}
+      }
+      # Fetch human-readable label for display; prefer English, allow untagged fallback
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:label ?qlue_ls_label .
+        FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
+      }
+      # Fetch description for the completion item detail line
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
+        FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
+      }
+    }""",
         blank=True,
         help_text="The query for <em>context-insensitive</em> predicate autocompletion",
         verbose_name="Predicate completion (context insensitive)",
     )
     object_completion_context_sensitive = models.TextField(
-        default="",
+        default="""\
+    # Inherit PREFIX declarations from the editor document and configuration
+    {% include "prefix_declarations" %}
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    
+    SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
+      {
+        # Inner query: use surrounding context + local triple pattern to narrow
+        # candidate objects to those consistent with the known predicate/subject
+        SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
+          {{ context }}
+          {{ local_context }}
+        }
+        GROUP BY ?qlue_ls_entity
+        ORDER BY DESC(?qlue_ls_count)
+        LIMIT {{ limit }}
+        OFFSET {{ offset }}
+      }
+      # Fetch human-readable label for display; prefer English, allow untagged fallback
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:label ?qlue_ls_label .
+        FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
+      }
+      # Fetch description for the completion item detail line
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
+        FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
+      }
+      {% if search_term_uncompressed %}
+      # User typed a prefixed IRI — match against the expanded IRI string
+      FILTER(STRSTARTS(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
+      {% elif search_term %}
+      # User typed plain text — match against label or description;
+      # applied in the outer query so it can reference the fetched label/alias variables
+      FILTER(
+        REGEX(STR(?qlue_ls_label), "^{{ search_term }}", "i")
+        || REGEX(STR(?qlue_ls_alias), "^{{ search_term }}", "i")
+      )
+      {% endif %}
+    }""",
         blank=True,
         help_text="The query for <em>context-sensitive</em> object autocompletion",
         verbose_name="Object completion (context sensitive)",
     )
     object_completion_context_insensitive = models.TextField(
-        default="",
+        default="""\
+    # Inherit PREFIX declarations from the editor document and configuration
+    {% include "prefix_declarations" %}
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    
+    SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
+      {
+        # Inner query: scan all object positions, restrict to IRIs to avoid surfacing
+        # raw string/numeric literals as completion candidates
+        SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
+          ?s ?p ?qlue_ls_entity .
+          FILTER(isIRI(?qlue_ls_entity))
+        }
+        GROUP BY ?qlue_ls_entity
+        ORDER BY DESC(?qlue_ls_count)
+        LIMIT {{ limit }}
+        OFFSET {{ offset }}
+      }
+      # Fetch human-readable label for display; prefer English, allow untagged fallback
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:label ?qlue_ls_label .
+        FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
+      }
+      # Fetch description for the completion item detail line
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
+        FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
+      }
+      {% if search_term_uncompressed %}
+      # User typed a prefixed IRI — match against the expanded IRI string
+      FILTER(STRSTARTS(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
+      {% elif search_term %}
+      # User typed plain text — match against label or description;
+      # applied in the outer query so it can reference the fetched label/alias variables
+      FILTER(
+        REGEX(STR(?qlue_ls_label), "^{{ search_term }}", "i")
+        || REGEX(STR(?qlue_ls_alias), "^{{ search_term }}", "i")
+      )
+      {% endif %}
+    }""",
         blank=True,
         help_text="The query for <em>context-insensitive</em> object autocompletion",
         verbose_name="Object completion (context insensitive)",
+    )
+    values_completion_context_sensitive = models.TextField(
+        default="""\
+    # Inherit PREFIX declarations from the editor document and configuration
+    {% include "prefix_declarations" %}
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
+      {
+        # Inner query: local_context is a BIND(?var AS ?qlue_ls_entity) expression;
+        # context contains the connected triple patterns that constrain valid values
+        SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
+          {{ context }}
+          {{ local_context }}
+        }
+        GROUP BY ?qlue_ls_entity
+        ORDER BY DESC(?qlue_ls_count)
+        LIMIT {{ limit }}
+        OFFSET {{ offset }}
+      }
+      # Fetch human-readable label for display; prefer English, allow untagged fallback
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:label ?qlue_ls_label .
+        FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
+      }
+      # Fetch description for the completion item detail line
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
+        FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
+      }
+      {% if search_term_uncompressed %}
+      # User typed a prefixed IRI — match against the expanded IRI string
+      FILTER(STRSTARTS(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
+      {% elif search_term %}
+      # User typed plain text — match against label or description;
+      # applied in the outer query so it can reference the fetched label/alias variables
+      FILTER(
+        REGEX(STR(?qlue_ls_label), "^{{ search_term }}", "i")
+        || REGEX(STR(?qlue_ls_alias), "^{{ search_term }}", "i")
+      )
+      {% endif %}
+    }""",
+        blank=True,
+        help_text="The query for <em>context-sensitive</em> values autocompletion",
+        verbose_name="Values completion (context sensitive)",
+    )
+    values_completion_context_insensitive = models.TextField(
+        default="""\
+    # Inherit PREFIX declarations from the editor document and configuration
+    {% include "prefix_declarations" %}
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
+      {
+        # Inner query: local_context is a BIND(?var AS ?qlue_ls_entity) expression;
+        # no surrounding context available, so rank by general occurrence count
+        SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
+          {{ local_context }}
+          ?qlue_ls_entity ?p ?o .
+        }
+        GROUP BY ?qlue_ls_entity
+        ORDER BY DESC(?qlue_ls_count)
+        LIMIT {{ limit }}
+        OFFSET {{ offset }}
+      }
+      # Fetch human-readable label for display; prefer English, allow untagged fallback
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:label ?qlue_ls_label .
+        FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
+      }
+      # Fetch description for the completion item detail line
+      OPTIONAL {
+        ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
+        FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
+      }
+      {% if search_term_uncompressed %}
+      # User typed a prefixed IRI — match against the expanded IRI string
+      FILTER(STRSTARTS(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
+      {% elif search_term %}
+      # User typed plain text — match against label or description;
+      # applied in the outer query so it can reference the fetched label/alias variables
+      FILTER(
+        REGEX(STR(?qlue_ls_label), "^{{ search_term }}", "i")
+        || REGEX(STR(?qlue_ls_alias), "^{{ search_term }}", "i")
+      )
+      {% endif %}
+    }""",
+        blank=True,
+        help_text="The query for <em>context-insensitive</em> values autocompletion",
+        verbose_name="Values completion (context insensitive)",
+    )
+    hover = models.TextField(
+        default="""\
+    # Inherit PREFIX declarations from the editor document and configuration
+    {% include "prefix_declarations" %}
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    # {{ entity }} is the IRI currently under the cursor
+    # Both fields are OPTIONAL so the tooltip still renders if only one is present
+    SELECT ?qlue_ls_label ?qlue_ls_alias WHERE {
+      # Fetch human-readable label; prefer English, allow untagged fallback
+      OPTIONAL {
+        {{ entity }} rdfs:label ?qlue_ls_label .
+        FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
+      }
+      # Fetch description shown as secondary detail in the tooltip
+      OPTIONAL {
+        {{ entity }} rdfs:comment ?qlue_ls_alias .
+        FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
+      }
+    }
+    LIMIT 1
+    """,
+        blank=True,
+        help_text="The query for fetching hover information for IRIs",
+        verbose_name="Hover",
     )
 
     @property

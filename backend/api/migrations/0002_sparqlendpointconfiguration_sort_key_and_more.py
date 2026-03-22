@@ -4,40 +4,69 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0001_initial'),
+        ("api", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='sparqlendpointconfiguration',
-            name='sort_key',
-            field=models.CharField(default='0', help_text='Sort key, according to which backends are ordered lexicographically; DO NOT SHOW if this value is zero', max_length=10, verbose_name='Sort Key'),
+            model_name="sparqlendpointconfiguration",
+            name="sort_key",
+            field=models.CharField(
+                default="0",
+                help_text="Sort key, according to which backends are ordered lexicographically; DO NOT SHOW if this value is zero",
+                max_length=10,
+                verbose_name="Sort Key",
+            ),
         ),
         migrations.AlterField(
-            model_name='sparqlendpointconfiguration',
-            name='object_completion_query_context_insensitive',
-            field=models.TextField(blank=True, default='', help_text='The query for <em>context-insensitive</em> object autocompletion', verbose_name='Object completion (context insensitive)'),
+            model_name="sparqlendpointconfiguration",
+            name="object_completion_query_context_insensitive",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="The query for <em>context-insensitive</em> object autocompletion",
+                verbose_name="Object completion (context insensitive)",
+            ),
         ),
         migrations.AlterField(
-            model_name='sparqlendpointconfiguration',
-            name='object_completion_query_context_sensitive',
-            field=models.TextField(blank=True, default='', help_text='The query for <em>context-sensitive</em> object autocompletion', verbose_name='Object completion (context sensitive)'),
+            model_name="sparqlendpointconfiguration",
+            name="object_completion_query_context_sensitive",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="The query for <em>context-sensitive</em> object autocompletion",
+                verbose_name="Object completion (context sensitive)",
+            ),
         ),
         migrations.AlterField(
-            model_name='sparqlendpointconfiguration',
-            name='predicate_completion_query_context_insensitive',
-            field=models.TextField(blank=True, default='', help_text='The query for <em>context-insensitive</em> predicate autocompletion', verbose_name='Predicate completion (context insensitive)'),
+            model_name="sparqlendpointconfiguration",
+            name="predicate_completion_query_context_insensitive",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="The query for <em>context-insensitive</em> predicate autocompletion",
+                verbose_name="Predicate completion (context insensitive)",
+            ),
         ),
         migrations.AlterField(
-            model_name='sparqlendpointconfiguration',
-            name='predicate_completion_query_context_sensitive',
-            field=models.TextField(blank=True, default='', help_text='The query for <em>context-sensitive</em> predicate autocompletion', verbose_name='Predicate completion (context sensitive)'),
+            model_name="sparqlendpointconfiguration",
+            name="predicate_completion_query_context_sensitive",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="The query for <em>context-sensitive</em> predicate autocompletion",
+                verbose_name="Predicate completion (context sensitive)",
+            ),
         ),
         migrations.AlterField(
-            model_name='sparqlendpointconfiguration',
-            name='subject_completion_query',
-            field=models.TextField(blank=True, default='', help_text='The query for subject autocompletion.', verbose_name='Subject completion'),
+            model_name="sparqlendpointconfiguration",
+            name="subject_completion_query",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="The query for subject autocompletion.",
+                verbose_name="Subject completion",
+            ),
         ),
     ]

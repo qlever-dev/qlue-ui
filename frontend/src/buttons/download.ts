@@ -1,4 +1,5 @@
 import type { Editor } from '../editor/init';
+import { getShareLinkId } from '../share';
 import {
   SparqlEngine,
   type IdentifyOperationTypeResult,
@@ -39,37 +40,24 @@ export function setupDownload(editor: Editor) {
     }
 
     let sparqlService = await editor.languageClient
-      .sendRequest('qlueLs/getBackend')
+      .sendRequest('qlueLs/getBackend', {})
       .then((response) => {
-        if (response) {
-          const typedResponse = response as SparqlService;
-          return typedResponse;
+        const typedResponse = response as SparqlService | { error: string };
+        if ('error' in typedResponse) {
+          throw new Error(`Could not determine sparqlService`);
         }
-        throw new Error(`Could not determine sparqlService`);
+        return typedResponse;
       });
 
     // NOTE: Fetch and download data if the engine is QLever.
     if (sparqlService.engine === SparqlEngine.QLever) {
-      const data_url = `${sparqlService.url}?query=${encodeURIComponent(query)}&action=tsv_export`;
-      fetch(data_url).then(async (response) => {
-        if (!response.ok) {
-          document.dispatchEvent(
-            new CustomEvent('toast', {
-              detail: { type: 'warning', message: 'The download failed.', duration: 3000 },
-            })
-          );
-          throw new Error(`Download request failed: ${response.status}`);
-        }
-        const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = 'data.tsv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(downloadUrl);
-      });
+      const dataUrl = `${sparqlService.url}?query=${encodeURIComponent(query)}&action=tsv_export`;
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.setAttribute('download', `${sparqlService.name}-${await getShareLinkId(query)}.tsv`);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } else {
       document.dispatchEvent(
         new CustomEvent('toast', {

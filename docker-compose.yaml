@@ -1,21 +1,31 @@
 services:
-  api:
-    build: ./backend/
+  ui:
+    build:
+      context: .
+      args:
+        BASE_URL: ${BASE_URL:-}
+        GIT_COMMIT: ${GIT_COMMIT:-}
     env_file:
       - .env
     volumes:
-      - ./db.sqlite3:/app/db.sqlite3
-  frontend:
-    build:
-      context: ./frontend/
-      args:
-        BASE_URL: ${BASE_URL:-}
-  proxy:
-    image: caddy:latest
+      - ./db.sqlite3:/app/api/db.sqlite3
+
+      # If the APP should be available on your HOST add this:
     ports:
-      - "8080:80"
-    depends_on:
-      - api
-      - frontend
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - 7000:7000
+
+    # If your proxy is traefik add this:
+    # networks:
+    #   - proxy
+    # labels:
+    #   traefik.enable: true
+    #   traefik.docker.network: proxy
+    #   traefik.http.routers.qlue-ui.entrypoints: websecure
+    #   traefik.http.routers.qlue-ui.rule: Host(`qlue-ls.com`)
+    #   traefik.http.routers.qlue-ui.tls: true
+    #   traefik.http.routers.qlue-ui.tls.certresolver: http_resolver
+    #   traefik.http.routers.qlue-ui.service: qlue-ui
+    #   traefik.http.services.qlue-ui.loadbalancer.server.port: 7000
+# networks:
+#   proxy:
+#     external: true

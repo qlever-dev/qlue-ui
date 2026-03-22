@@ -1,7 +1,13 @@
 import type { Editor } from './editor/init';
-import type { Service } from './types/backend';
+import type { QlueLsServiceConfig } from './types/backend';
 import { getPathParameters } from './utils';
 
+/**
+ * Initializes the share modal. Clicking the share button generates multiple
+ * link formats (short URL, auto-execute URL, full query-string URL, direct
+ * SPARQL endpoint GET/POST, and cURL commands) and displays them for
+ * one-click copying.
+ */
 export async function setupShare(editor: Editor) {
   const shareButton = document.getElementById('shareButton')!;
   const shareModal = document.getElementById('shareModal')!;
@@ -29,11 +35,13 @@ export async function setupShare(editor: Editor) {
       );
       return;
     }
-
-    shareModal.classList.remove('hidden');
+    openShare();
 
     const [slug, _] = getPathParameters();
-    const backend = (await editor.languageClient.sendRequest('qlueLs/getBackend', {})) as Service;
+    const backend = (await editor.languageClient.sendRequest(
+      'qlueLs/getBackend',
+      {}
+    )) as QlueLsServiceConfig;
     const shareLinkId = await getShareLinkId(query);
 
     // NOTE: URL to this query in the QLever UI (short, with query hash)
@@ -67,7 +75,7 @@ export async function setupShare(editor: Editor) {
     shareLink7.textContent = normalized.replace(/\n|\r\n/, ' ');
   });
   shareModal.addEventListener('click', () => {
-    shareModal.classList.add('hidden');
+    closeShare();
   });
   share.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -89,7 +97,17 @@ export async function setupShare(editor: Editor) {
   });
 }
 
-/// Takes the query and gets a shareLink id for this query.
+export function openShare() {
+  const shareModal = document.getElementById('shareModal')!;
+  shareModal.classList.remove('hidden');
+}
+
+export function closeShare() {
+  const shareModal = document.getElementById('shareModal')!;
+  shareModal.classList.add('hidden');
+}
+
+/** Posts the query to the share API and returns the generated short ID. */
 export async function getShareLinkId(query: string): Promise<string> {
   return await fetch(`${import.meta.env.VITE_API_URL}/api/share/`, {
     method: 'POST',
@@ -102,14 +120,7 @@ export async function getShareLinkId(query: string): Promise<string> {
   });
 }
 
-export function setShareLink(editor: Editor, backend: Service) {
-  const query = editor.getContent();
-  getShareLinkId(query).then((id) => {
-    history.pushState({}, '', `/${backend.name}/${id}${window.location.search}`);
-  });
-}
-
-/// Takes a ShareLink id and responds the corisponding query
+/** Fetches the saved query text for the given short ID from the share API. */
 export async function getSavedQuery(id: string): Promise<string> {
   return await fetch(`${import.meta.env.VITE_API_URL}/api/share/${id}`).then(async (response) => {
     if (!response.ok) {

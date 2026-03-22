@@ -18,16 +18,7 @@ import sparqlThemeDark from './sparql.theme.dark.json?raw';
 import { Uri } from 'monaco-editor';
 
 export async function buildWrapperConfig(initial: string) {
-  const workerPromise: Promise<Worker> = new Promise((resolve) => {
-    const instance: Worker = new languageServerWorker({ name: 'Language Server' });
-    instance.onmessage = (event) => {
-      if (event.data.type === 'ready') {
-        resolve(instance);
-      }
-    };
-  });
-  const worker = await workerPromise;
-
+  const worker = await loadLanguageServerWorker();
   worker.addEventListener('message', (e) => {
     if (e.data.type === 'crash') {
       document.dispatchEvent(
@@ -60,14 +51,8 @@ export async function buildWrapperConfig(initial: string) {
     },
     userConfiguration: {
       json: JSON.stringify({
-        'workbench.colorTheme': 'QleverUiThemeLight',
-        'editor.guides.bracketPairsHorizontal': 'active',
-        'editor.lightbulb.enabled': 'On',
-        'editor.wordBasedSuggestions': 'off',
-        'editor.experimental.asyncTokenization': true,
+        'workbench.colorTheme': 'QleverUiThemeDark',
         'editor.tabSize': 2,
-        'editor.insertSpaces': true,
-        'editor.detectIndentation': false,
         'files.eol': '\n',
       }),
     },
@@ -159,9 +144,12 @@ export async function buildWrapperConfig(initial: string) {
     },
     editorOptions: {
       tabCompletion: 'on',
+      formatOnType: true,
       suggestOnTriggerCharacters: true,
       fontSize: 14,
       fontFamily: 'Source Code Pro',
+      detectIndentation: false,
+      insertSpaces: true,
       links: false,
       minimap: {
         enabled: false,
@@ -181,6 +169,19 @@ export async function buildWrapperConfig(initial: string) {
       contextmenu: false,
       folding: true,
       foldingImportsByDefault: true,
+      wordBasedSuggestions: 'off',
+      snippetSuggestions: 'bottom',
+      suggest: {
+        filterGraceful: false,
+        localityBonus: false,
+        shareSuggestSelections: false,
+        showWords: false,
+      },
+      autoIndent: 'none',
+      guides: {
+        bracketPairsHorizontal: 'active',
+      },
+      fixedOverflowWidgets: true,
     },
   };
   return {
@@ -188,4 +189,15 @@ export async function buildWrapperConfig(initial: string) {
     languageClientConfig: languageClientConfig,
     editorAppConfig: editorAppConfig,
   };
+}
+
+function loadLanguageServerWorker(): Promise<Worker> {
+  return new Promise((resolve) => {
+    const instance: Worker = new languageServerWorker({ name: 'Language Server' });
+    instance.onmessage = (event) => {
+      if (event.data.type === 'ready') {
+        resolve(instance);
+      }
+    };
+  });
 }

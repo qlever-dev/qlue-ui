@@ -3,6 +3,8 @@
 
 @theme {
   --animate-grow-shrink: grow-shrink 2s ease-in-out infinite;
+  --animate-tab-sweep: tab-sweep 2s ease-in-out infinite;
+  --animate-tab-status-pop: tab-status-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 
   @keyframes grow-shrink {
     0%,
@@ -13,6 +15,33 @@
 
     50% {
       height: 100%;
+    }
+  }
+
+  @keyframes tab-sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    50% {
+      transform: translateX(350%);
+    }
+
+    50.1%,
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes tab-status-pop {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    to {
+      transform: scale(1);
+      opacity: 1;
     }
   }
 }
@@ -30,4 +59,9 @@
     scrollbar-width: none;
     /* Firefox */
   }
+}
+
+/* Smooth transitions for dark mode toggle */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

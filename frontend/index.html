@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="src/assets/logo.svg" />
@@ -16,7 +16,7 @@
         class="fixed w-full top-0 z-10 backdrop-blur-sm shadow-md bg-white/30 dark:bg-neutral-700/10 text-gray-300 h-14 px-5 md:px-20 lg:px-32 xl:px-44 flex items-center"
       >
         <div
-          class="grid grid-cols-[10rem_auto_2rem] w-full items-center text-neutral-700 dark:text-neutral-200"
+          class="grid grid-cols-[10rem_auto_2rem_2rem] w-full items-center text-neutral-700 dark:text-neutral-200"
         >
           <span class="inline-flex items-center text-xl font-bold dark:text-white text-black">
             <svg
@@ -35,9 +35,7 @@
             </svg>
             QLever
           </span>
-          <div class="flex flex-row-reverse px-5">
-            <a href="/admin/" class="text-neutral-500 dark:text-neutral-400"> admin </a>
-          </div>
+          <div class="flex flex-row-reverse px-5"></div>
           <div class="inline-flex">
             <input id="theme-switch" class="opacity-0 absolute" type="checkbox" />
             <label
@@ -75,81 +73,116 @@
           </div>
         </div>
       </div>
-      <div class="w-full lg:w-9/10 xl:w-[72rem] px-5 mt-20 mx-auto relative">
+      <div id="mainContainer" class="w-full lg:w-9/10 xl:w-[72rem] mt-20 mx-auto relative">
         <div
           id="loadingScreen"
-          class="absolute top-0 left-0 w-full h-full bg-slate-300 dark:bg-neutral-900 z-50 flex justify-center items-center text-2xl"
+          class="absolute top-0 left-0 w-full bg-slate-300 dark:bg-neutral-900 z-50 flex"
         >
-          <div class="w-full h-full grid grid-cols-10 rounded-lg overflow-clip">
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.0s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.05s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.15s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.2s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.25s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.3s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.35s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.4s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.45s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.5s]"></div>
-
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.05s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.15s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.2s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.25s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.3s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.35s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.4s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.45s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.5s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.55s]"></div>
-
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.15s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.2s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.25s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.3s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.35s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.4s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.45s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.5s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.55s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.6s]"></div>
-
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.2s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.25s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.3s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.35s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.4s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.45s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.5s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.55s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.6s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.65s]"></div>
-
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.25s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.3s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.35s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.4s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.45s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.5s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.55s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.6s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.65s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.7s]"></div>
-
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.3s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.35s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.4s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.45s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.5s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.55s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.6s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.65s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.7s]"></div>
-            <div class="bg-gray-400 dark:bg-gray-700 animate-pulse [animation-delay:0.75s]"></div>
+          <div class="flex w-full h-full flex-col">
+            <!-- Top toolbar row (outside card) -->
+            <div class="flex flex-row justify-between h-[30px]">
+              <div
+                class="w-40 h-full rounded border border-gray-400/40 dark:border-gray-600/40 bg-gray-400/30 dark:bg-gray-600/30 animate-pulse"
+              ></div>
+              <div class="flex flex-row">
+                <div
+                  class="w-44 rounded-l border border-gray-400/40 dark:border-gray-600/40 bg-gray-400/30 dark:bg-gray-600/30 animate-pulse"
+                ></div>
+                <div
+                  class="w-40 border-y border-gray-400/40 dark:border-gray-600/40 bg-gray-400/30 dark:bg-gray-600/30 animate-pulse"
+                ></div>
+                <div
+                  class="w-24 rounded-r border border-gray-400/40 dark:border-gray-600/40 bg-gray-400/30 dark:bg-gray-600/30 animate-pulse"
+                ></div>
+              </div>
+            </div>
+            <!-- Editor container card -->
+            <div
+              class="mt-[22px] flex flex-1 flex-col rounded bg-neutral-100 dark:bg-[#1A1E24] px-5 pb-[20px] pt-2"
+            >
+              <!-- tab bar -->
+              <div class="flex items-center mb-[4px] gap-0.5">
+                <div
+                  class="h-[34px] w-40 rounded-t bg-gray-400/30 dark:bg-gray-600/30 border-b-2 border-b-green-600 animate-pulse"
+                ></div>
+                <div class="h-5 w-5 rounded bg-gray-400/20 dark:bg-gray-600/20 animate-pulse"></div>
+              </div>
+              <!-- editor area -->
+              <div class="ms-3 mb-5 flex h-[34em] min-h-0 overflow-hidden">
+                <div class="flex h-full flex-1 rounded bg-white dark:bg-[#1e1e1e]">
+                  <!-- line-number gutter -->
+                  <div
+                    class="mr-4 flex w-10 flex-col bg-neutral-100 dark:bg-[#1A1E24] gap-3 pt-3 pe-3"
+                  >
+                    <div class="h-3 rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"></div>
+                    <div class="h-3 rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"></div>
+                    <div class="h-3 rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"></div>
+                    <div class="h-3 rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"></div>
+                    <div class="h-3 rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"></div>
+                    <div class="h-3 rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"></div>
+                    <div class="h-3 rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"></div>
+                    <div class="h-3 rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"></div>
+                  </div>
+                  <!-- code lines -->
+                  <div class="flex flex-1 flex-col gap-3 pt-3">
+                    <div
+                      class="h-3 w-[35%] rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"
+                    ></div>
+                    <div
+                      class="h-3 w-[70%] rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"
+                    ></div>
+                    <div
+                      class="h-3 w-[45%] rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"
+                    ></div>
+                    <div
+                      class="h-3 w-[85%] rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"
+                    ></div>
+                    <div
+                      class="h-3 w-[55%] rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"
+                    ></div>
+                    <div
+                      class="h-3 w-[40%] rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"
+                    ></div>
+                    <div
+                      class="h-3 w-[75%] rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"
+                    ></div>
+                    <div
+                      class="h-3 w-[30%] rounded bg-gray-300/60 dark:bg-gray-600/30 animate-pulse"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Bottom controls -->
+              <div class="flex flex-col gap-2 lg:flex-row lg:justify-between">
+                <!-- Left: Execute / Download / Share -->
+                <div
+                  class="grid grid-cols-[6rem_105px_96px] h-[32px] overflow-clip rounded border border-gray-400/40 dark:border-gray-600/40"
+                >
+                  <div class="bg-green-600/40 dark:bg-green-700/30 animate-pulse"></div>
+                  <div
+                    class="border-x border-gray-400/40 dark:border-gray-600/40 bg-gray-400/20 dark:bg-gray-600/20 animate-pulse"
+                  ></div>
+                  <div class="bg-gray-400/20 dark:bg-gray-600/20 animate-pulse"></div>
+                </div>
+                <!-- Right: Format / Clear Cache / Analysis / Examples -->
+                <div
+                  class="grid grid-cols-4 w-[497px] overflow-clip rounded border border-gray-400/40 dark:border-gray-600/40"
+                >
+                  <div class="bg-gray-400/20 dark:bg-gray-600/20 animate-pulse"></div>
+                  <div
+                    class="border-x border-gray-400/40 dark:border-gray-600/40 bg-gray-400/20 dark:bg-gray-600/20 animate-pulse"
+                  ></div>
+                  <div class="bg-gray-400/20 dark:bg-gray-600/20 animate-pulse"></div>
+                  <div
+                    class="border-l border-gray-400/40 dark:border-gray-600/40 bg-gray-400/20 dark:bg-gray-600/20 animate-pulse"
+                  ></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="flex flex-row justify-between">
-          <div class="relative">
+          <div class="relative min-w-40 h-8">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="text-green-600"
@@ -170,7 +203,7 @@
               class="appearance-none focus:outline-none ps-5 py-1 cursor-pointer w-full rounded border border-gray-400 dark:border-gray-600 bg-slate-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-gray-800 px-3"
             ></select>
           </div>
-          <div class="flex flex-row">
+          <div class="flex flex-row h-8">
             <div
               id="datasetInformationButton"
               class="border border-gray-400 dark:border-gray-600 rounded-l bg-slate-100 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-gray-800 flex cursor-pointer justify-center w-fit px-3 py-0.5"
@@ -194,7 +227,8 @@
               </span>
             </div>
             <div
-              class="border-gray-400 dark:border-gray-600 border-y bg-slate-100 dark:bg-slate-700 hover:bg-gray-300 flex dark:hover:bg-gray-800 cursor-pointer justify-center w-fit px-3 py-0.5 hidden"
+              id="helpButton"
+              class="border-gray-400 dark:border-gray-600 border-y bg-slate-100 dark:bg-slate-700 hover:bg-gray-300 flex dark:hover:bg-gray-800 cursor-pointer justify-center w-fit px-3 py-0.5"
             >
               <span class="inline-flex items-center gap-1">
                 <svg
@@ -215,6 +249,7 @@
               </span>
             </div>
             <div
+              id="settingsButton"
               class="border-gray-400 dark:border-gray-600 border rounded-r bg-slate-100 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-gray-800 flex cursor-pointer justify-center w-fit px-3 py-0.5"
             >
               <span class="inline-flex items-center gap-1">
@@ -229,7 +264,12 @@
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                   />
                 </svg>
                 <span class="hidden md:block">Settings</span>
@@ -238,13 +278,122 @@
           </div>
         </div>
         <div
-          class="rounded shadow-[0_0_20px_4px_rgba(130,130,130,0.2)] dark:shadow-[0_0_20px_4px_rgba(0,0,0,0.2)] bg-neutral-100 dark:bg-[#1A1E24] h-[40em] mt-5 flex flex-col justify-end p-2 md:p-5"
+          id="editorContainer"
+          class="rounded shadow-[0_0_20px_4px_rgba(130,130,130,0.2)] dark:shadow-[0_0_20px_4px_rgba(0,0,0,0.2)] bg-neutral-100 dark:bg-[#1A1E24] mt-5 flex flex-col px-5 pb-5 pt-2"
         >
-          <div id="editor" class="h-full mb-5"></div>
+          <div class="flex flex-row justify-between items-center">
+            <div id="tabBar" class="flex items-center overflow-x-auto no-scrollbar mb-1"></div>
+            <button
+              id="wide-mode-switch"
+              class="border border-neutral-300 ms-1 active:border-green-400 hover:border-green-600 dark:border-neutral-700 text-neutral-500 hover:text-green-600 dark:text-neutral-400 flex items-center justify-center h-8 w-8 cursor-pointer rounded"
+            >
+              <!-- arrows-pointing-out (expand) -->
+              <svg
+                id="wide-mode-expand"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
+                />
+              </svg>
+              <!-- arrows-pointing-in (collapse) -->
+              <svg
+                id="wide-mode-collapse"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-5 hidden"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25"
+                />
+              </svg>
+            </button>
+          </div>
+          <div id="editorArea" class="h-[34em] min-h-0 mb-5 flex gap-2 resize-y overflow-hidden">
+            <div id="editor" class="h-full flex-1 min-h-0"></div>
+            <div
+              id="parseTreePanel"
+              class="h-full flex-1 hidden flex-col overflow-hidden rounded border border-gray-400 dark:border-gray-600 bg-white dark:bg-neutral-800"
+            >
+              <div
+                class="flex items-center justify-between px-3 py-1.5 border-b border-gray-400 dark:border-gray-600 bg-slate-100 dark:bg-slate-700 text-xs font-semibold"
+              >
+                <span>Parse Tree</span>
+                <div class="flex items-center gap-3">
+                  <label class="flex items-center gap-1 font-normal cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="parseTreeShowSpan"
+                      checked
+                      class="cursor-pointer accent-blue-600"
+                    />
+                    Show span
+                  </label>
+                  <label class="flex items-center gap-1 font-normal cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="parseTreeShowTrivia"
+                      checked
+                      class="cursor-pointer accent-blue-600"
+                    />
+                    Show Trivia
+                  </label>
+                  <button
+                    id="parseTreeCopy"
+                    class="hover:text-blue-500 cursor-pointer text-lg"
+                    title="Copy to clipboard"
+                  >
+                    ⧉
+                  </button>
+                  <button id="parseTreeClose" class="hover:text-red-500 cursor-pointer">✕</button>
+                </div>
+              </div>
+              <div id="parseTreeContent" class="flex-1 overflow-auto p-2 font-mono text-xs"></div>
+            </div>
+            <div
+              id="templatePanel"
+              class="h-full flex-1 hidden flex-col overflow-hidden rounded border border-gray-400 dark:border-gray-600 bg-white dark:bg-neutral-800"
+            >
+              <div
+                class="flex items-center justify-between px-3 py-1.5 border-b border-gray-400 dark:border-gray-600 bg-slate-100 dark:bg-slate-700 text-xs font-semibold"
+              >
+                <span>Completion Templates</span>
+                <div class="flex items-center gap-2">
+                  <button
+                    id="templatePanelSave"
+                    class="hover:text-green-600 cursor-pointer"
+                    title="Save to database"
+                  >
+                    Save
+                  </button>
+                  <button id="templatePanelClose" class="hover:text-red-500 cursor-pointer">
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <div
+                id="templateSelector"
+                class="flex flex-wrap gap-1 px-2 py-2 border-b border-gray-300 dark:border-gray-600 text-xs"
+              ></div>
+              <div id="templateEditorContainer" class="flex-1 min-h-0 overflow-hidden"></div>
+            </div>
+          </div>
           <div class="flex flex-col lg:flex-row gap-2 justify-between">
             <div id="controll">
               <div
-                class="grid grid-cols-3 lg:grid-cols-[6rem_auto_auto_6rem] border-gray-400 dark:border-gray-600 border rounded overflow-clip"
+                class="h-8 grid grid-cols-3 lg:grid-cols-[6rem_auto_6rem] border-gray-400 dark:border-gray-600 border rounded overflow-clip"
               >
                 <div
                   id="executeButton"
@@ -410,7 +559,7 @@
             </div>
             <div id="controll">
               <div
-                class="grid grid-cols-[6rem_auto_6rem] sm:grid-cols-4 border-gray-400 dark:border-gray-600 border-separate border rounded overflow-clip"
+                class="grid grid-cols-[6rem_auto_6rem] sm:grid-cols-4 border-gray-400 dark:border-gray-600 border-separate border rounded overflow-clip h-8"
               >
                 <div
                   id="formatButton"
@@ -506,50 +655,9 @@
         </div>
         <div
           id="benchmarkContainer"
-          class="bg-white dark:bg-[#1A1E24] p-5 rounded my-5 flex flex-col justify-center"
+          class="bg-white dark:bg-[#1A1E24] p-5 rounded my-5 flex justify-center hidden"
         >
           <div id="benchmarkViz" class="w-full"></div>
-          <div class="w-full flex flex-row-reverse mt-5">
-            <div
-              id="clampButton"
-              class="rounded border-gray-400 dark:border-gray-600 border bg-slate-100 dark:bg-slate-700 active:bg-slate-400 dark:active:bg-gray-950 hover:bg-gray-300 dark:hover:bg-gray-800 flex justify-center col-span-3 sm:col-span-1 py-1 px-2 cursor-pointer"
-            >
-              <span class="inline-flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="size-5 text-green-600"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                  />
-                </svg>
-                Clamped
-              </span>
-              <span class="items-center hidden">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="size-5 text-green-600 me-2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                  />
-                </svg>
-                Unclamped
-              </span>
-            </div>
-          </div>
         </div>
         <div
           id="resultsError"
@@ -637,8 +745,8 @@
             </div>
           </div>
           <div id="resultsTableContainer" class="hidden">
-            <div id="resultsHeader" class="flex flex-row justify-between w-full">
-              <div id="resultsStats" class="rounded border flex flex-row text-gray-500">
+            <div id="resultsHeader" class="flex flex-row flex-wrap gap-2 justify-between w-full">
+              <div id="resultsStats" class="rounded border flex flex-row flex-wrap text-gray-500">
                 <div class="border-r py-1 px-2">
                   <span class="flex items-center">
                     <svg
@@ -753,35 +861,60 @@
                   </span>
                 </div>
               </div>
-              <a
-                id="mapViewButton"
-                href="https://qlever.dev/petrimaps/?query=PREFIX+ogc%3A+%3Chttp%3A%2F%2Fwww.opengis.net%2Frdf%23%3E+PREFIX+osmrel%3A+%3Chttps%3A%2F%2Fwww.openstreetmap.org%2Frelation%2F%3E+PREFIX+geo%3A+%3Chttp%3A%2F%2Fwww.opengis.net%2Font%2Fgeosparql%23%3E+PREFIX+osm%3A+%3Chttps%3A%2F%2Fwww.openstreetmap.org%2F%3E+PREFIX+rdf%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E+PREFIX+osmkey%3A+%3Chttps%3A%2F%2Fwww.openstreetmap.org%2Fwiki%2FKey%3A%3E+SELECT+%3Fosm_id+%3Fshape+WHERE+{+osmrel%3A62768+ogc%3AsfContains+%3Fosm_id+.+%3Fosm_id+osmkey%3Abuilding+%3Fbuilding+.+%3Fosm_id+rdf%3Atype+osm%3Away+.+%3Fosm_id+geo%3AhasGeometry%2Fgeo%3AasWKT+%3Fshape+}&backend=https%3A%2F%2Fqlever.dev%2Fapi%2Fosm-planet"
-                target="_blank"
-                class="border border-gray-400 dark:border-gray-600 rounded flex items-center gap-1 px-2 cursor-pointer hover bg-slate-100 dark:bg-slate-700 active:bg-slate-400 dark:active:bg-gray-950 hover:bg-gray-300 dark:hover:bg-gray-800 hidden"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="size-5 text-green-600"
+              <div class="flex flex-row gap-2">
+                <button
+                  id="fullResultButton"
+                  type="button"
+                  class="border border-gray-400 dark:border-gray-600 rounded flex items-center gap-1 px-2 cursor-pointer hover bg-slate-100 dark:bg-slate-700 active:bg-slate-400 dark:active:bg-gray-950 hover:bg-gray-300 dark:hover:bg-gray-800 hidden"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-                  />
-                </svg>
-                Map view
-              </a>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-5 text-green-600"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0-3.75-3.75M17.25 21 21 17.25"
+                    />
+                  </svg>
+                  Show full result
+                </button>
+                <a
+                  id="mapViewButton"
+                  href="#"
+                  target="_blank"
+                  class="border border-gray-400 dark:border-gray-600 rounded flex items-center gap-1 px-2 cursor-pointer hover bg-slate-100 dark:bg-slate-700 active:bg-slate-400 dark:active:bg-gray-950 hover:bg-gray-300 dark:hover:bg-gray-800 hidden"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-5 text-green-600"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                    />
+                  </svg>
+                  Map view
+                </a>
+              </div>
             </div>
-            <table id="resultsTable" class="table-fixed w-full mt-10"></table>
+            <div class="overflow-x-auto mt-10">
+              <table id="resultsTable" class="table-auto w-max min-w-full"></table>
+            </div>
             <div
               id="resultReloadingAnimation"
               class="flex flex-col gap-1 justify-center h-20 items-center hidden"
@@ -803,96 +936,152 @@
         </div>
       </div>
     </div>
-    <footer class="text-center text-gray-400 flex flex-col mb-4">
-      <span>
-        © 2016 - 2025 The QLever Authors (in particular:
-        <a
-          href="https://ad.cs.uni-freiburg.de/"
-          class="text-sky-600 hover:underline hover:text-sky-800"
+    <footer class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-5 pb-4 px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          <!-- Documentation -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
+              Documentation
+            </h3>
+            <ul class="space-y-1 text-sm">
+              <li>
+                <a
+                  href="https://docs.qlever.dev/"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >QLever Docs</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ad-freiburg/qlever/wiki"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >QLever Wiki</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://docs.qlue-ls.com/"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >Qlue-ls</a
+                >
+              </li>
+            </ul>
+          </div>
+          <!-- Source Code -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
+              Source Code
+            </h3>
+            <ul class="space-y-1 text-sm">
+              <li>
+                <a
+                  href="https://github.com/ad-freiburg/qlever"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >QLever Engine</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ad-freiburg/qlue-ui"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >QLever UI</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/qlever-dev/qlever-control"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >QLever CLI</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ad-freiburg/osm2rdf"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >OSM to RDF</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/IoannisNezis/Qlue-ls"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >Qlue-ls</a
+                >
+              </li>
+            </ul>
+          </div>
+          <!-- Tools -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1.5">Tools</h3>
+            <ul class="space-y-1 text-sm">
+              <li>
+                <a
+                  href="https://github.com/ad-freiburg/qlever-petrimaps"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >QLever Petrimaps</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://qlever.dev/evaluation"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >QLever Evaluation</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://qlever.dev/dashboard"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >QLever Dashboard</a
+                >
+              </li>
+            </ul>
+          </div>
+          <!-- Publications -->
+          <div>
+            <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1.5">
+              Publications
+            </h3>
+            <ul class="space-y-1 text-sm">
+              <li>
+                <a
+                  href="https://ad-publications.cs.uni-freiburg.de/CIKM_qlever_BB_2017.pdf"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >SPARQL+Text</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://ad-publications.cs.uni-freiburg.de/CIKM_sparql_autocompletion_BKKKS_2022.pdf"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >SPARQL Autocompletion</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://ad-publications.cs.uni-freiburg.de/SIGSPATIAL_osm2rdf_BBKL_2021.pdf"
+                  class="text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400"
+                  >SPARQL OpenStreetMap</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- Bottom bar -->
+        <div
+          class="border-t border-gray-200 dark:border-gray-700 pt-4 flex flex-col items-center gap-1 text-sm text-gray-400 dark:text-gray-500"
         >
-          Chair for Algorithms and Data Structures, University of Freiburg</a
-        >)
-      </span>
-      <span>
-        <a href="https://docs.qlever.dev/" class="text-sky-600 hover:underline hover:text-sky-800">
-          QLever Docs</a
-        >,
-        <a
-          href="https://github.com/ad-freiburg/qlever"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          QLever code</a
-        >,
-        <a
-          href="https://github.com/qlever-dev/qlever-control"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          QLever CLI</a
-        >,
-        <a
-          href="https://github.com/qlever-dev/qlever-ui"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          QLever UI</a
-        >,
-        <a
-          href="https://github.com/ad-freiburg/qlever/wiki"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          QLever Wiki</a
-        >,
-        <a
-          href="https://github.com/ad-freiburg/osm2rdf"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          OSM to RDF</a
-        >,
-        <a
-          href="https://github.com/ad-freiburg/qlever-petrimaps"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          QLever Petrimaps</a
-        >,
-        <a
-          href="https://qlever.dev/evaluation"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          QLever evaluation</a
-        >,
-        <a
-          href="https://qlever.dev/dashboard"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          QLever dashboard</a
-        >
-      </span>
-      <span>
-        Publications:
-        <a
-          href="https://ad-publications.cs.uni-freiburg.de/CIKM_qlever_BB_2017.pdf"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          SPARQL+Text</a
-        >,
-        <a
-          href="https://ad-publications.cs.uni-freiburg.de/CIKM_sparql_autocompletion_BKKKS_2022.pdf"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          SPARQL Autocompletion</a
-        >,
-        <a
-          href="https://ad-publications.cs.uni-freiburg.de/SIGSPATIAL_osm2rdf_BBKL_2021.pdf"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          SPARQL OpenStreetMap</a
-        >,
-        <a
-          href="https://ad-publications.cs.uni-freiburg.de/student-projects/qlever-ui"
-          class="text-sky-600 hover:underline hover:text-sky-800"
-        >
-          QLever UI
-        </a>
-      </span>
+          <span>
+            © 2016–2026 The QLever Authors ·
+            <a
+              href="https://ad.cs.uni-freiburg.de/"
+              class="hover:text-sky-600 dark:hover:text-sky-400"
+              >Chair for Algorithms and Data Structures, University of Freiburg</a
+            >
+          </span>
+        </div>
+      </div>
     </footer>
     <!-- The Query tree Modal -->
     <div
@@ -900,7 +1089,7 @@
       class="fixed z-20 left-0 top-0 w-full h-full overflow-auto bg-white/20 dark:bg-black/10 backdrop-blur-md cursor-grab hidden"
     >
       <div
-        class="fixed top-0 w-full text-center p-3 bg-white/30 dark:bg-gray-900/10 backdrop-blur-sm text-xl font-bold flex justify-between items-center"
+        class="fixed top-0 w-full text-center p-3 bg-white/30 dark:bg-gray-900/10 backdrop-blur-sm text-xl dark:text-neutral-300 font-bold flex justify-between items-center"
       >
         <div></div>
         <h2>Query execution tree</h2>
@@ -980,7 +1169,7 @@
     >
       <div
         id="examplesSearch"
-        class="border rounded-lg z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-700/60 dark:bg-neutral-500/60 text-white w-4/5 md:w-1/2 xl:w-2/7 h-2/3 flex flex-col p-5"
+        class="border rounded-lg z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-200/60 dark:bg-neutral-500/60 text-black dark:text-neutral-300 w-4/5 md:w-1/2 xl:w-2/7 h-2/3 flex flex-col p-5"
       >
         <div
           class="w-full pb-5 border-b border-neutral-400 dark:border-neutral-700 flex flex-row items-center gap-2"
@@ -1008,12 +1197,45 @@
             class="w-full focus:outline-0"
           />
           <span
-            class="border border-neutral-400 dark:border-neutral-600 rounded px-1 py-0.5 text-neutral-200 dark:text-neutral-200 text-xs"
+            class="border border-neutral-400 dark:border-neutral-600 rounded px-1 py-0.5 text-neutral-700 dark:text-neutral-200 text-xs"
           >
             esc
           </span>
         </div>
-
+        <div
+          id="noExampleMatchWarning"
+          class="mt-5 text-red-700 text-lg items-center justify-center gap-2 hidden"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"
+            />
+          </svg>
+          <span>No Examples Matched</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"
+            />
+          </svg>
+        </div>
         <ul
           id="examplesList"
           class="flex flex-col w-full text-neutral-100 dark:text-neutral-300 mt-5 overflow-auto"
@@ -1028,7 +1250,7 @@
     >
       <div
         id="share"
-        class="border rounded-lg z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-700/60 dark:bg-neutral-500/60 w-4/5 sm:w-3/4 lg:w-4/5 xl:w-4/7 h-2/3 flex flex-col gap-3 p-5 overflow-auto"
+        class="border rounded-lg z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-200/60 text-neutral-600 dark:text-neutral-300 dark:bg-neutral-500/60 w-4/5 sm:w-3/4 lg:w-4/5 xl:w-4/7 h-2/3 flex flex-col gap-3 p-5 overflow-auto"
       >
         <div class="border-b border-neutral-400 dark:border-neutral-600 pb-3 mb-3">
           <h2 class="text-center text-lg font-bold">Share your query</h2>
@@ -1038,11 +1260,11 @@
             URL to this query in the QLever UI (short, with query hash)
           </h4>
           <div
-            class="bg-neutral-400 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
+            class="bg-neutral-300 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
           >
             <span
               id="shareLink1"
-              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-100 dark:text-neutral-300"
+              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-500 dark:text-neutral-300"
             >
             </span>
             <button
@@ -1072,11 +1294,11 @@
             URL to this query in the QLever UI (short, with query hash, execute automatically)
           </h4>
           <div
-            class="bg-neutral-400 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
+            class="bg-neutral-300 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
           >
             <span
               id="shareLink2"
-              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-100 dark:text-neutral-300"
+              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-500 dark:text-neutral-300"
             >
             </span>
             <button
@@ -1106,11 +1328,11 @@
             URL to this query in the QLever UI (long, with full query string)
           </h4>
           <div
-            class="bg-neutral-400 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
+            class="bg-neutral-300 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
           >
             <span
               id="shareLink3"
-              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-100 dark:text-neutral-300"
+              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-500 dark:text-neutral-300"
             >
             </span>
             <button
@@ -1138,11 +1360,11 @@
         <div>
           <h4 class="text-md font-bold">URL for GET request (for use in web apps, etc.)</h4>
           <div
-            class="bg-neutral-400 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
+            class="bg-neutral-300 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
           >
             <span
               id="shareLink4"
-              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-100 dark:text-neutral-300"
+              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-500 dark:text-neutral-300"
             >
             </span>
             <button
@@ -1172,11 +1394,11 @@
             cURL command line for POST request (application/sparql-results+json):
           </h4>
           <div
-            class="bg-neutral-400 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
+            class="bg-neutral-300 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
           >
             <span
               id="shareLink5"
-              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-100 dark:text-neutral-300"
+              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-500 dark:text-neutral-300"
             >
             </span>
             <button
@@ -1206,11 +1428,11 @@
             cURL command line for GET request (application/qlever-results+json):
           </h4>
           <div
-            class="bg-neutral-400 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
+            class="bg-neutral-300 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
           >
             <span
               id="shareLink6"
-              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-100 dark:text-neutral-300"
+              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-500 dark:text-neutral-300"
             >
             </span>
             <button
@@ -1238,11 +1460,11 @@
         <div>
           <h4 class="text-md font-bold">Unescaped query string (in one line):</h4>
           <div
-            class="bg-neutral-400 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
+            class="bg-neutral-300 dark:bg-neutral-800 rounded p-1 w-full flex justify-between items-center"
           >
             <span
               id="shareLink7"
-              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-100 dark:text-neutral-300"
+              class="overflow-auto whitespace-nowrap no-scrollbar text-neutral-500 dark:text-neutral-300"
             >
             </span>
             <button
@@ -1272,33 +1494,726 @@
     <!-- The Dataset Information Modal -->
     <div
       id="datasetInformationModal"
-      class="fixed z-20 left-0 top-0 w-full h-full overflow-auto bg-white/20 dark:bg-black/10 backdrop-blur-xs flex items-center justify-center hidden"
+      class="fixed z-20 left-0 top-0 w-full h-full overflow-auto bg-white/20 dark:bg-black/10 backdrop-blur-xs hidden flex flex-col justify-center"
+    >
+      <div class="h-4/5 w-full flex flex-col items-center justify-top">
+        <div
+          class="border rounded-lg z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-200/60 dark:bg-neutral-500/60 text-neutral-500 dark:text-neutral-300 w-4/5 md:w-3/4 xl:w-1/2 flex flex-col p-5"
+        >
+          <div
+            id="datasetInformation"
+            class="w-full pb-5 border-b border-neutral-400 dark:border-neutral-700 flex justify-center text-lg font-bold"
+          >
+            Dataset Information
+          </div>
+          <div class="grid grid-cols-[5rem_auto] gap-2 mt-5">
+            <span class="font-bold">URL</span>
+            <span id="datasetUrl"></span>
+            <span class="font-bold">Description</span>
+            <span id="datasetDescription"></span>
+            <span class="font-bold">Statistics</span>
+            <div>
+              <div class="grid grid-cols-[10rem_auto]">
+                <span>Number of triples:</span>
+                <span class="font-bold" id="datasetNumberOfTriples"></span>
+                <span>Number of subjects:</span>
+                <span class="font-bold" id="datasetNumberOfSubjects"></span>
+                <span>Number of predicates:</span>
+                <span class="font-bold" id="datasetNumberOfPredicates"></span>
+                <span>Number of objects:</span>
+                <span class="font-bold" id="datasetNumberOfObjects"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- The Help Modal -->
+    <div
+      id="helpModal"
+      class="fixed z-20 left-0 top-0 w-full h-full overflow-auto bg-white/20 dark:bg-black/10 backdrop-blur-xs flex justify-center hidden"
     >
       <div
-        class="border rounded-lg z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-700/60 dark:bg-neutral-500/60 text-white w-4/5 md:w-3/4 xl:w-1/2 flex flex-col p-5"
+        id="helpContainer"
+        class="border rounded-lg z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-200/60 dark:bg-neutral-500/60 text-neutral-500 dark:text-neutral-300 w-4/5 md:w-4/5 xl:w-1/2 h-min flex flex-col p-5 mt-20"
+      >
+        <!-- Header -->
+        <div
+          class="w-full pb-5 border-b border-slate-800 dark:border-neutral-700 flex justify-center text-lg font-bold"
+        >
+          Help
+        </div>
+        <div class="w-full py-3 mt-4 flex justify-center text-md font-bold">Shortcuts</div>
+        <div class="text-sm flex flex-col gap-1">
+          <span>
+            Press
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              ?
+            </kbd>
+            anytime to see this help dialog.
+          </span>
+          <span>
+            Press
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Escape
+            </kbd>
+            to close any Dialog.
+          </span>
+          <span>
+            Press
+            <kbd
+              class="modkey border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Ctrl
+            </kbd>
+            +
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Enter
+            </kbd>
+            to execute/cancel the query.
+          </span>
+          <span>
+            Press
+            <kbd
+              class="modkey border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Ctrl
+            </kbd>
+            +
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              F
+            </kbd>
+            to format the document.
+          </span>
+          <span>
+            Press
+            <kbd
+              class="modkey border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Ctrl
+            </kbd>
+            +
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              ,
+            </kbd>
+            to open the settings.
+          </span>
+          <span>
+            Press
+            <kbd
+              class="modkey border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Tab
+            </kbd>
+            to jump to the next location.
+          </span>
+          <span>
+            Press
+            <kbd
+              class="modkey border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Shift
+            </kbd>
+            +
+            <kbd
+              class="modkey border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Tab
+            </kbd>
+            to jump to the previous location.
+          </span>
+          <span>
+            Press
+            <kbd
+              class="modkey border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              Ctrl
+            </kbd>
+            +
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              P
+            </kbd>
+            to open the command prompt.
+          </span>
+        </div>
+        <!-- Commands -->
+        <div
+          class="w-full py-3 mt-4 border-t border-slate-800 dark:border-neutral-700 flex justify-center text-md font-bold"
+        >
+          Commands
+        </div>
+        <div class="text-sm flex flex-col gap-1">
+          <span>
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              parseTree
+            </kbd>
+            — open the parse tree panel.
+          </span>
+          <span>
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              templates
+            </kbd>
+            — open the completion templates editor (experimental).
+          </span>
+          <span>
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              updateExample
+            </kbd>
+            — update the currently loaded example with the editor content.
+          </span>
+          <span>
+            <kbd
+              class="border inline-block rounded px-1 whitespace-nowrap inset-shadow-2xs inset-shadow-white bg-neutral-200 dark:bg-neutral-500"
+            >
+              createExample "&lt;name&gt;"
+            </kbd>
+            — save the editor content as a new example for the active backend.
+          </span>
+        </div>
+      </div>
+    </div>
+    <!-- The Settings Modal -->
+    <div
+      id="settingsModal"
+      class="fixed z-20 left-0 top-0 w-full h-full overflow-auto bg-white/20 dark:bg-black/10 backdrop-blur-xs flex justify-center hidden"
+    >
+      <div
+        id="settingsContainer"
+        class="border rounded-lg z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-200/80 dark:bg-neutral-500/60 text-neutral-500 dark:text-neutral-300 w-[95%] md:w-4/5 xl:w-1/2 flex flex-col p-3 md:p-5 mt-4 md:mt-20 mb-4 h-fit max-h-[92vh] overflow-y-auto"
       >
         <div
-          class="w-full pb-5 border-b border-neutral-400 dark:border-neutral-700 flex justify-center text-lg font-bold"
+          class="w-full pb-5 border-b border-neutral-400 dark:border-neutral-200 flex justify-center text-lg font-bold"
         >
-          Dataset Information
+          Settings
         </div>
-        <div class="grid grid-cols-[5rem_auto] gap-2 mt-5">
-          <span class="font-bold">URL</span>
-          <span id="datasetUrl"></span>
-          <span class="font-bold">Description</span>
-          <span id="datasetDescription"></span>
-          <span class="font-bold">Statistics</span>
-          <div>
-            <div class="grid grid-cols-[10rem_auto]">
-              <span>Number of triples:</span>
-              <span class="font-bold" id="datasetNumberOfTriples"></span>
-              <span>Number of subjects:</span>
-              <span class="font-bold" id="datasetNumberOfSubjects"></span>
-              <span>Number of predicates:</span>
-              <span class="font-bold" id="datasetNumberOfPredicates"></span>
-              <span>Number of objects:</span>
-              <span class="font-bold" id="datasetNumberOfObjects"></span>
+        <div class="mt-5 mx-2 md:mx-5 flex flex-col justify-center text-md font-bold">
+          <span class="text-md text-center">General</span>
+          <div class="w-full my-3 border-b border-neutral-400 dark:border-neutral-200"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div class="flex items-center gap-2">
+              <label for="accessToken" class="font-bold whitespace-nowrap">Access Token</label>
+              <input
+                id="settings-general-accessToken"
+                class="border rounded text-md p-1 grow min-w-0"
+                type="text"
+                name="accessToken"
+                value=""
+              />
             </div>
+            <div class="flex gap-2 items-center">
+              <label for="uiMode" class="font-bold whitespace-nowrap">UI mode</label>
+              <select
+                name="uiMode"
+                id="settings-general-uiMode"
+                class="border rounded p-2 text-md grow min-w-0"
+              >
+                <option value="results">Show results</option>
+                <option value="compare">Compare Engines</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3">
+          <div class="lg:col-span-2 mt-5 mx-2 md:mx-5 flex flex-col text-md font-bold">
+            <span class="text-md text-center">Editor</span>
+            <div class="w-full my-3 border-b border-neutral-400 dark:border-neutral-200"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+              <div class="flex flex-col items-center text-md font-bold mx-1 md:mx-3">
+                <span class="text-md text-center">Formatting</span>
+                <div class="w-full my-3 border-b border-neutral-400 dark:border-neutral-200"></div>
+
+                <div class="flex flex-col gap-2 items-start w-min">
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-alignPrefixes"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Align prefixes</span
+                    >
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-alignPredicates"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Align prediates</span
+                    >
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-separatePrologue"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Separate Prologue
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-capitalizeKeywords"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Capitalize keywords</span
+                    >
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-whereNewLine"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Linebreak after WHERE</span
+                    >
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-filterSameLine"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Trailing Filter</span
+                    >
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-insertSpaces"
+                      data-type="boolean"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Insert spaces</span
+                    >
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-contractTriples"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Contract triples</span
+                    >
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      id="settings-editor-format-keepEmptyLines"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div
+                      class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                    ></div>
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >Keep empty lines</span
+                    >
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      type="text"
+                      data-type="number"
+                      inputmode="numeric"
+                      id="settings-editor-format-tabSize"
+                      aria-describedby="helper-text-explanation"
+                      class="block w-9 px-1 rounded bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                      placeholder="2"
+                      required
+                    />
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                    >
+                      Tab size
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      type="text"
+                      data-type="number"
+                      inputmode="numeric"
+                      id="settings-editor-format-compact"
+                      class="block w-9 px-1 rounded bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                      placeholder="-"
+                    />
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                    >
+                      Compact
+                    </span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      type="text"
+                      data-type="number"
+                      inputmode="numeric"
+                      id="settings-editor-format-lineLength"
+                      class="block w-12 px-1 rounded bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                      placeholder="120"
+                      required
+                    />
+                    <span
+                      class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                    >
+                      Line length
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <div class="flex flex-col items-center text-md font-bold mx-1 md:mx-3">
+                  <span class="text-md text-center">Completion</span>
+                  <div
+                    class="w-full my-3 border-b border-neutral-400 dark:border-neutral-200"
+                  ></div>
+                  <div class="flex flex-col gap-2 items-start w-min">
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        type="text"
+                        id="settings-editor-completion-timeoutMs"
+                        aria-describedby="helper-text-explanation"
+                        class="block w-14 px-1 rounded bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                        placeholder="5000"
+                        required
+                      />
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >
+                        Query timeout (ms)
+                      </span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        type="text"
+                        id="settings-editor-completion-resultSizeLimit"
+                        aria-describedby="helper-text-explanation"
+                        class="block w-14 px-1 rounded bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                        placeholder="100"
+                        required
+                      />
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >
+                        Result size
+                      </span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        type="text"
+                        id="settings-editor-completion-subjectCompletionTriggerLength"
+                        aria-describedby="helper-text-explanation"
+                        class="block w-14 px-1 rounded bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                        placeholder="3"
+                        required
+                      />
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >
+                        online char threshold
+                      </span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        id="settings-editor-completion-objectCompletionSuffix"
+                        type="checkbox"
+                        value=""
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                      ></div>
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >
+                        object completion suffix
+                      </span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        id="settings-editor-completion-sameSubjectSemicolon"
+                        type="checkbox"
+                        value=""
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                      ></div>
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >
+                        same subject semicolon
+                      </span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        type="text"
+                        id="settings-editor-completion-variableCompletionLimit"
+                        aria-describedby="helper-text-explanation"
+                        class="block w-14 px-1 rounded bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                        placeholder=""
+                      />
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                      >
+                        Max variables
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <div class="flex flex-col items-center text-md font-bold mt-3 mx-1 md:mx-3">
+                  <span class="text-md text-center">Miscellaneous</span>
+                  <div
+                    class="w-full my-3 border-b border-neutral-400 dark:border-neutral-200"
+                  ></div>
+
+                  <div class="flex flex-col gap-2 items-start w-min">
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        id="settings-editor-prefixes-addMissing"
+                        type="checkbox"
+                        value=""
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                      ></div>
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                        >Add prefixes</span
+                      >
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        id="settings-editor-prefixes-removeUnused"
+                        type="checkbox"
+                        value=""
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                      ></div>
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                        >Remove prefixes</span
+                      >
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input id="vimMode" type="checkbox" value="" class="sr-only peer" />
+                      <div
+                        class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                      ></div>
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                        >vim mode</span
+                      >
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        id="settings-editor-jumpWithTab"
+                        type="checkbox"
+                        value=""
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                      ></div>
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                        >Jump with tab</span
+                      >
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                      <input
+                        id="settings-editor-autoLineBreak"
+                        type="checkbox"
+                        value=""
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                      ></div>
+                      <span
+                        class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                        >Auto line break</span
+                      >
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 mx-2 md:mx-5 flex flex-col items-center text-md font-bold">
+            <span class="text-md text-center">Results</span>
+            <div class="w-full my-3 border-b border-neutral-400 dark:border-neutral-200"></div>
+
+            <div class="flex flex-col gap-2 w-min">
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  id="settings-results-typeAnnotations"
+                  type="checkbox"
+                  value=""
+                  class="sr-only peer"
+                />
+                <div
+                  class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                ></div>
+                <span class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                  >Type annotations</span
+                >
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  id="settings-results-langAnnotations"
+                  type="checkbox"
+                  value=""
+                  class="sr-only peer"
+                />
+                <div
+                  class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                ></div>
+                <span class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                  >Language annotations</span
+                >
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  id="settings-results-loadImages"
+                  type="checkbox"
+                  value=""
+                  class="sr-only peer"
+                />
+                <div
+                  class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                ></div>
+                <span class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                  >Load images</span
+                >
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  id="settings-results-shortenIris"
+                  type="checkbox"
+                  value=""
+                  class="sr-only peer"
+                />
+                <div
+                  class="relative w-9 h-5 bg-neutral-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"
+                ></div>
+                <span class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                  >Shorten IRIs</span
+                >
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  type="text"
+                  data-type="number"
+                  inputmode="numeric"
+                  id="settings-results-limit"
+                  aria-describedby="helper-text-explanation"
+                  class="block w-12 px-1 rounded bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                  placeholder="2"
+                  required
+                />
+                <span class="select-none ms-3 text-sm font-medium text-heading whitespace-nowrap"
+                  >Limit</span
+                >
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- The Command Prompt Modal -->
+    <div
+      id="commandPromptModal"
+      class="fixed z-20 left-0 top-0 w-full h-full overflow-auto bg-white/20 dark:bg-black/10 backdrop-blur-xs flex flex-col justify-center hidden"
+    >
+      <div class="h-4/5 w-full flex flex-col items-center justify-top">
+        <div
+          class="border rounded z-30 border-neutral-400 dark:border-neutral-600 shadow bg-neutral-200/60 dark:bg-neutral-500/60 text-neutral-500 dark:text-neutral-300 w-[520px] flex flex-col overflow-hidden"
+        >
+          <div class="relative">
+            <input
+              id="commandPrompt"
+              type="text"
+              class="w-full border-neutral-400 dark:border-neutral-700 flex justify-center font-mono p-3 ps-6 focus:outline-none"
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              class="absolute top-1/4 left-0 size-5 font-bold stroke-2"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+            </svg>
           </div>
         </div>
       </div>

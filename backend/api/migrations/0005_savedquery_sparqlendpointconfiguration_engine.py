@@ -4,22 +4,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0004_rename_object_completion_query_context_insensitive_sparqlendpointconfiguration_object_completion_con'),
+        (
+            "api",
+            "0004_rename_object_completion_query_context_insensitive_sparqlendpointconfiguration_object_completion_con",
+        ),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SavedQuery',
+            name="SavedQuery",
             fields=[
-                ('id', models.CharField(editable=False, max_length=6, primary_key=True, serialize=False)),
-                ('content', models.TextField()),
+                (
+                    "id",
+                    models.CharField(
+                        editable=False, max_length=6, primary_key=True, serialize=False
+                    ),
+                ),
+                ("content", models.TextField()),
             ],
         ),
         migrations.AddField(
-            model_name='sparqlendpointconfiguration',
-            name='engine',
-            field=models.IntegerField(blank=True, choices=[(1, 'QLever'), (2, 'GraphDB')], default=None, null=True),
+            model_name="sparqlendpointconfiguration",
+            name="engine",
+            field=models.IntegerField(
+                blank=True,
+                choices=[(1, "QLever"), (2, "GraphDB")],
+                default=None,
+                null=True,
+            ),
         ),
     ]

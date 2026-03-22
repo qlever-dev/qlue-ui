@@ -70,10 +70,17 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'cd ../frontend/ && npm run dev-test',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  /* Run your local dev servers before starting the tests */
+  webServer: [
+    {
+      command: 'cd ../frontend/ && npm run dev',
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'cd ../backend/ && uv run python manage.py runserver',
+      url: 'http://localhost:8000/api/backends/',
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 });

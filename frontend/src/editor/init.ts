@@ -14,6 +14,12 @@ import { EditorApp } from 'monaco-languageclient/editorApp';
 import { MonacoLanguageClient } from 'monaco-languageclient';
 import * as monaco from 'monaco-editor';
 
+/**
+ * Wrapper around the Monaco editor and its LSP language client.
+ *
+ * Provides a simplified interface for reading and writing editor content,
+ * managing focus, and communicating with the Qlue-ls language server.
+ */
 export interface Editor {
   editorApp: EditorApp;
   languageClient: MonacoLanguageClient;
@@ -23,6 +29,13 @@ export interface Editor {
   getDocumentUri(): string;
 }
 
+/**
+ * Initializes the Monaco editor with Qlue-ls language client support.
+ *
+ * Creates the VSCode API wrapper, starts the language client (WASM web worker),
+ * mounts the editor into the given container, and wires up keybindings,
+ * commands, and theme switching.
+ */
 export async function setupEditor(container_id: string): Promise<Editor> {
   const editorContainer = document.getElementById(container_id);
   if (editorContainer) {
@@ -65,15 +78,26 @@ export async function setupEditor(container_id: string): Promise<Editor> {
     // NOTE: Initially focus the editor.
     editorApp.getEditor()!.focus();
 
-    // FIXME: Adjusting the layout on resize is currently broken.
-    // let resizeTimer: number;
-    // window.addEventListener("resize", () => {
-    //   clearTimeout(resizeTimer);
-    //   resizeTimer = window.setTimeout(() => {
-    //     editorApp.getEditor()!.layout();
-    //
-    //   }, 100);
-    // });
+    // NOTE: Re-layout the editor when the editor area is resized.
+    const editorArea = document.getElementById('editorArea');
+    if (editorArea) {
+      new ResizeObserver(() => {
+        editorApp.getEditor()!.layout();
+      }).observe(editorArea);
+    }
+
+    // NOTE: Dismiss fixed overflow widgets on page scroll.
+    // fixedOverflowWidgets uses position:fixed to prevent clipping by
+    // overflow:hidden containers, but fixed elements don't move with the page.
+    const monacoEditor = editorApp.getEditor()!;
+    document.addEventListener(
+      'scroll',
+      () => {
+        monacoEditor.trigger('scroll', 'hideSuggestWidget', {});
+        monacoEditor.trigger('scroll', 'editor.action.hideHover', {});
+      },
+      { passive: true, capture: true }
+    );
 
     return editor;
   } else {

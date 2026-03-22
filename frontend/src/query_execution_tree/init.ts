@@ -8,17 +8,25 @@ import type { QueryExecutionTree } from '../types/query_execution_tree';
 import * as d3 from 'd3';
 import { setupWebSocket } from './utils';
 import type { ExecuteQueryEventDetails } from '../results/init';
-import type { Service } from '../types/backend';
 import { SparqlEngine } from '../types/lsp_messages';
 import { animateGradients } from './gradients';
 import { clearQueryExecutionTree, renderQueryExecutionTree, setupAutozoom } from './tree';
 import { clearCache } from '../buttons/clear_cache';
 import type { Editor } from '../editor/init';
+import type { QlueLsServiceConfig } from '../types/backend';
 
 const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 let visible = false;
 let queryRunning = false;
 
+/**
+ * Initializes the query execution tree (QET) analysis modal.
+ *
+ * Sets up the D3 SVG canvas with zoom/pan, connects to the QLever websocket
+ * during query execution to receive live runtime information, and renders
+ * the tree visualization with animated gradients. Only available for the
+ * QLever engine.
+ */
 export function setupQueryExecutionTree(editor: Editor) {
   const queryTreeModal = document.getElementById('queryExecutionTreeModal')!;
   const analysisButton = document.getElementById('analysisButton')!;
@@ -43,8 +51,6 @@ export function setupQueryExecutionTree(editor: Editor) {
   });
 
   rerunButton.addEventListener('click', () => {
-    console.log(queryRunning);
-
     if (!queryRunning) {
       clearCache(editor);
       window.dispatchEvent(new Event('execute-start-request'));
@@ -95,7 +101,10 @@ export function setupQueryExecutionTree(editor: Editor) {
   }
 
   analysisButton.addEventListener('click', async () => {
-    const service = (await editor.languageClient.sendRequest('qlueLs/getBackend', {})) as Service;
+    const service = (await editor.languageClient.sendRequest(
+      'qlueLs/getBackend',
+      {}
+    )) as QlueLsServiceConfig;
     // NOTE: Only connect to websocket if service-engine is QLever
     if (service.engine != SparqlEngine.QLever) {
       document.dispatchEvent(
@@ -128,7 +137,10 @@ export function setupQueryExecutionTree(editor: Editor) {
     // NOTE: cleanup previous runs.
     clearQueryExecutionTree();
 
-    const service = (await editor.languageClient.sendRequest('qlueLs/getBackend', {})) as Service;
+    const service = (await editor.languageClient.sendRequest(
+      'qlueLs/getBackend',
+      {}
+    )) as QlueLsServiceConfig;
     // NOTE: Only connect to websocket if service-engine is QLever
     if (service.engine != SparqlEngine.QLever) {
       return;
@@ -184,4 +196,13 @@ function closeModal() {
   queryTreeModal.classList.add('hidden');
   visible = false;
   document.body.classList.remove('overflow-y-hidden');
+}
+
+/**
+ * Opens the query execution tree modal.
+ * Only available for the QLever engine.
+ */
+export async function openQueryExecutionTree(_editor: Editor) {
+  const analysisButton = document.getElementById('analysisButton')!;
+  analysisButton.click();
 }

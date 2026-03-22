@@ -45,6 +45,21 @@ class SparqlEndpointConfigurationListSerializer(serializers.ModelSerializer):
         fields = ["name", "slug", "api_url", "is_default"]
 
 
+class SparqlEndpointTemplatesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SparqlEndpointConfiguration
+        fields = [
+            "subject_completion",
+            "predicate_completion_context_sensitive",
+            "predicate_completion_context_insensitive",
+            "object_completion_context_sensitive",
+            "object_completion_context_insensitive",
+            "values_completion_context_sensitive",
+            "values_completion_context_insensitive",
+            "hover",
+        ]
+
+
 class QueryExampleSerializer(serializers.ModelSerializer):
     class Meta:
         model = QueryExample

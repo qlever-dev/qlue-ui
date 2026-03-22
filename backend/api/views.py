@@ -3,7 +3,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.contrib.admin.views.autocomplete import JsonResponse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import generics, mixins, viewsets
+from rest_framework import generics, mixins, permissions, viewsets
 
 from api import serializer
 from api.models import QueryExample, SavedQuery, SparqlEndpointConfiguration
@@ -11,6 +11,7 @@ from api.serializer import (
     QueryExampleSerializer,
     SparqlEndpointConfigurationListSerializer,
     SparqlEndpointConfigurationSerializer,
+    SparqlEndpointTemplatesSerializer,
 )
 
 
@@ -35,13 +36,45 @@ class SparqlEndpointConfigurationListViewSet(generics.ListAPIView):
     serializer_class = SparqlEndpointConfigurationListSerializer
 
 
-class QueryExampleListViewSet(generics.ListAPIView):
+class QueryExampleListViewSet(generics.ListCreateAPIView):
     serializer_class = QueryExampleSerializer
     lookup_field = "slug"
 
     def get_queryset(self):
         backend_slug = self.kwargs["slug"]
         return QueryExample.objects.filter(backend__slug=backend_slug)
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAuthenticated()]
+        return []
+
+    def perform_create(self, serializer):
+        backend = get_object_or_404(
+            SparqlEndpointConfiguration, slug=self.kwargs["slug"]
+        )
+        name = serializer.validated_data.get("name")
+
+        if self.request.query_params.get("create") == "true":
+            if QueryExample.objects.filter(backend=backend, name=name).exists():
+                from rest_framework.exceptions import ValidationError
+
+                raise ValidationError(
+                    {"name": "An example with this name already exists."}
+                )
+            serializer.save(backend=backend)
+        else:
+            example = get_object_or_404(QueryExample, backend=backend, name=name)
+            example.query = serializer.validated_data["query"]
+            example.save()
+
+
+class SparqlEndpointTemplatesViewSet(mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = SparqlEndpointConfiguration.objects.all()
+    serializer_class = SparqlEndpointTemplatesSerializer
+    lookup_field = "slug"
+    permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ["patch"]
 
 
 # NOTE: This function is not guarded!

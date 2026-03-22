@@ -1,6 +1,5 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.utils import timezone
-
 from api.models import (
     CompareGroup,
     QueryExample,
@@ -26,23 +25,50 @@ def create_compare_group(modeladmin, request, queryset):
     )
 
 
+@admin.action(description="Copy selected configurations")
+def copy_configurations(modeladmin, request, queryset):
+    for original in queryset:
+        examples = list(QueryExample.objects.filter(backend=original))
+
+        original.pk = None
+        original.name = f"Copy of {original.name}"
+        original.slug = f"{original.slug}-copy"
+        original.is_default = False
+        original.save()
+
+        # NOTE: setting pk to None makes save() insert a new row,
+        # so the original examples remain untouched in the database
+        for example in examples:
+            example.pk = None
+            example.backend = original
+            example.save()
+
+    count = queryset.count()
+    modeladmin.message_user(
+        request,
+        f"Successfully copied {count} configuration(s).",
+        messages.SUCCESS,
+    )
+
+
 @admin.register(SparqlEndpointConfiguration)
 class SparqlEndpointConfigurationAdmin(admin.ModelAdmin):
     list_display = ["name", "url", "engine", "is_default", "is_hidden"]
     search_fields = ("name", "slug")
-    actions = [create_compare_group]
+    actions = [create_compare_group, copy_configurations]
     fieldsets = (
         (
             "General",
             {
                 "fields": (
+                    "url",
                     "name",
                     "slug",
                     "engine",
                     "is_default",
                     "sort_key",
-                    "url",
                     "api_token",
+                    "map_view_url",
                 )
             },
         ),
@@ -54,7 +80,7 @@ class SparqlEndpointConfigurationAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Completion Queries",
+            "Queries",
             {
                 "fields": (
                     "subject_completion",
@@ -62,6 +88,9 @@ class SparqlEndpointConfigurationAdmin(admin.ModelAdmin):
                     "predicate_completion_context_insensitive",
                     "object_completion_context_sensitive",
                     "object_completion_context_insensitive",
+                    "values_completion_context_sensitive",
+                    "values_completion_context_insensitive",
+                    "hover",
                 ),
                 "classes": ["collapse"],
             },

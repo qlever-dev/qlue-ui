@@ -5,20 +5,47 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0002_sparqlendpointconfiguration_sort_key_and_more'),
+        ("api", "0002_sparqlendpointconfiguration_sort_key_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='QueryExample',
+            name="QueryExample",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Name of this example to show in the user interface', max_length=100)),
-                ('query', models.TextField()),
-                ('sort_key', models.CharField(default='~', help_text="Sort key, according to which example queries are ordered lexicographically; default is '~', which is larger than most characters", max_length=100, verbose_name='Sort key')),
-                ('backend', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.sparqlendpointconfiguration')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Name of this example to show in the user interface",
+                        max_length=100,
+                    ),
+                ),
+                ("query", models.TextField()),
+                (
+                    "sort_key",
+                    models.CharField(
+                        default="~",
+                        help_text="Sort key, according to which example queries are ordered lexicographically; default is '~', which is larger than most characters",
+                        max_length=100,
+                        verbose_name="Sort key",
+                    ),
+                ),
+                (
+                    "backend",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.sparqlendpointconfiguration",
+                    ),
+                ),
             ],
         ),
     ]

@@ -1,3 +1,14 @@
+/**
+ * Global toast notification system.
+ *
+ * Dispatch a `toast` CustomEvent on `document` to show a notification:
+ * ```ts
+ * document.dispatchEvent(new CustomEvent('toast', {
+ *   detail: { type: 'success', message: 'Copied!', duration: 2000 },
+ * }));
+ * ```
+ * Toasts with a `duration` auto-dismiss; without one they show a close button.
+ */
 type ToastType = 'info' | 'warning' | 'error' | 'success';
 
 interface ToastDetail {

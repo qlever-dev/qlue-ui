@@ -1,9 +1,22 @@
 import { defineConfig } from 'vite';
+import { execSync } from 'child_process';
 import checker from 'vite-plugin-checker';
 import tailwindcss from '@tailwindcss/vite';
 import wasm from 'vite-plugin-wasm';
 
+let gitCommitHash = process.env.VITE_GIT_COMMIT || '';
+if (!gitCommitHash) {
+  try {
+    gitCommitHash = execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    // git not available
+  }
+}
+
 export default defineConfig({
+  define: {
+    __GIT_COMMIT__: JSON.stringify(gitCommitHash),
+  },
   build: {
     assetsInlineLimit: 0,
   },

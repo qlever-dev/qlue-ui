@@ -6,7 +6,6 @@
   "scripts": {
     "build": "NODE_OPTIONS='--max-old-space-size=8192' vite build",
     "dev": "vite dev --host 0.0.0.0",
-    "dev-test": "vite dev --host 0.0.0.0 & cd ../backend/ && python manage.py runserver",
     "lint": "prettier -c .",
     "format": "prettier -w ."
   },
@@ -27,7 +26,7 @@
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@21.3.4",
     "monaco-languageclient": "^10.1.0",
     "monaco-vim": "^0.4.2",
-    "qlue-ls": "^1.0.0",
+    "qlue-ls": "^2.5.4",
     "tailwindcss": "^4.1.14",
     "vscode": "npm:@codingame/monaco-vscode-extension-api@21.3.4"
   }

@@ -4,15 +4,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0005_savedquery_sparqlendpointconfiguration_engine'),
+        ("api", "0005_savedquery_sparqlendpointconfiguration_engine"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sparqlendpointconfiguration',
-            name='engine',
-            field=models.IntegerField(blank=True, choices=[(1, 'QLever'), (2, 'GraphDB'), (3, 'Virtuoso'), (4, 'MillenniumDB'), (5, 'Blazegraph'), (6, 'Jena')], default=1, null=True),
+            model_name="sparqlendpointconfiguration",
+            name="engine",
+            field=models.IntegerField(
+                blank=True,
+                choices=[
+                    (1, "QLever"),
+                    (2, "GraphDB"),
+                    (3, "Virtuoso"),
+                    (4, "MillenniumDB"),
+                    (5, "Blazegraph"),
+                    (6, "Jena"),
+                ],
+                default=1,
+                null=True,
+            ),
         ),
     ]

@@ -1,11 +1,26 @@
-:80 {
-    @api path_regexp api ^/(admin|static|api)/.*
-
-    reverse_proxy @api api:8000 {
-        header_up X-Forwarded-Host {header.X-Forwarded-Host}
-  	header_up X-Forwarded-Proto {header.X-Forwarded-Proto}
-    }
-
-    reverse_proxy frontend:80
+{
+	servers {
+		trusted_proxies static private_ranges
+	}
 }
 
+:7000
+
+root * /app/frontend_dist
+
+handle /api/* {
+	reverse_proxy 127.0.0.1:8000
+}
+
+handle /admin/* {
+	reverse_proxy 127.0.0.1:8000
+}
+
+handle /static/* {
+	reverse_proxy 127.0.0.1:8000
+}
+
+handle {
+	try_files {path} /index.html
+	file_server
+}

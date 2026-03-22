@@ -44,11 +44,11 @@ export enum SparqlEngine {
 
 export interface SparqlService {
   /// Internal name of the SPARQL endpoint.
-  name: String;
+  name: string;
   /// URL of the SPARQL endpoint.
-  url: String;
+  url: string;
   /// URL to check the health of the SPARQL endpoint.
-  health_check_url?: String;
+  health_check_url?: string;
   /// The engine the runs begind the SPARQL endpoint.
   engine?: SparqlEngine;
 }

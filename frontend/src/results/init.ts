@@ -7,19 +7,19 @@
 // - from the analysis modal: "clear cache & rerun query"
 // There MUST always be at most one query in exection!
 // To handle this there are 4 signals, send over the "window":
+// - "cancel-or-execute"      : request to cancel or execute the current query
+// - "execute-cancle-request" : request cancelation of the currently executed op
 // - "execute-start-request"  : requests the execution
 // - "execute-started"        : execution has started
-// - "execute-cancle-request" : request cancelation of the currently executed op
 // - "execute-ended"          : execution has ended
 // Who ever wants to execute a new query has to request the cancelation of the
 // current query and wait for it to end. Only then will a new query be executed.
 
 import type { Editor } from '../editor/init';
-import { setShareLink } from '../share';
-import type { Service } from '../types/backend';
+import { settings } from '../settings/init';
+import type { QlueLsServiceConfig } from '../types/backend';
 import type { ExecuteOperationResult, Head, PartialResult } from '../types/lsp_messages';
 import type { QueryExecutionTree } from '../types/query_execution_tree';
-import type { Binding } from '../types/rdf';
 import type { ExecuteUpdateResultEntry } from '../types/update';
 import { renderTableHeader, renderTableRows } from './table';
 import {
@@ -31,6 +31,10 @@ import {
   showResults,
   startQueryTimer,
   stopQueryTimer,
+  showMapViewButton,
+  escapeHtml,
+  showFullResultButton,
+  hideFullResultButton,
 } from './utils';
 
 export interface ExecuteQueryEventDetails {
@@ -45,24 +49,31 @@ export interface QueryResultSizeDetails {
   size: number;
 }
 
+export interface CancelOrExecuteDetails {
+  limited: boolean;
+}
+
 let queryStatus: QueryStatus = 'idle';
 
 export async function setupResults(editor: Editor) {
-  window.addEventListener('cancel-or-execute', () => {
+  window.addEventListener('cancel-or-execute', (event) => {
+    const limited = (event as CustomEvent<CancelOrExecuteDetails>).detail?.limited ?? true;
     if (queryStatus == 'running') {
       window.dispatchEvent(new Event('execute-cancle-request'));
     } else if (queryStatus == 'idle') {
-      window.dispatchEvent(new Event('execute-start-request'));
+      window.dispatchEvent(new CustomEvent('execute-start-request', { detail: { limited } }));
     }
   });
   handleSignals(editor);
 }
 
 function handleSignals(editor: Editor) {
-  window.addEventListener('execute-start-request', () => {
+  window.addEventListener('execute-start-request', (event) => {
+    const limited = (event as CustomEvent<{ limited: boolean }>).detail?.limited ?? true;
     if (queryStatus == 'idle') {
       queryStatus = 'running';
-      executeQueryAndShowResults(editor);
+      window.dispatchEvent(new CustomEvent('execute-started'));
+      executeQueryAndShowResults(editor, limited);
     } else {
       document.dispatchEvent(
         new CustomEvent('toast', {
@@ -83,16 +94,15 @@ function handleSignals(editor: Editor) {
   });
 }
 
-async function executeQueryAndShowResults(editor: Editor) {
+async function executeQueryAndShowResults(editor: Editor, limited = true) {
   // TODO: infinite scrolling
   // document.dispatchEvent(new Event('infinite-reset'));
 
   // NOTE: Check if SPARQL endpoint is configured.
-  const backend = (await editor.languageClient.sendRequest(
-    'qlueLs/getBackend',
-    {}
-  )) as Service | null;
-  if (!backend) {
+  const backend = (await editor.languageClient.sendRequest('qlueLs/getBackend', {})) as
+    | QlueLsServiceConfig
+    | { error: string };
+  if ('error' in backend) {
     document.dispatchEvent(
       new CustomEvent('toast', {
         detail: {
@@ -102,38 +112,40 @@ async function executeQueryAndShowResults(editor: Editor) {
         },
       })
     );
+    window.dispatchEvent(new CustomEvent('execute-ended', { detail: { result: 'error' } }));
     return;
   }
 
   showLoadingScreen();
-  // NOTE: Clear the UI from previous executions
   clearQueryStats();
-  // NOTE: Get ShareLink and update URL
-  setShareLink(editor, backend);
-  // NOTE: Start query timer.
+  hideFullResultButton();
   const timer = startQueryTimer();
-  executeQuery(editor, 100, 0)
+  // NOTE: here the limit is increased by one to check if the result is larger then the limit.
+  const limit = limited ? settings.results.limit + 1 : null;
+  executeQuery(editor, limit, 0)
     .then((timeMs) => {
       showResults();
       stopQueryTimer(timer);
       document.getElementById('queryTimeTotal')!.innerText = timeMs.toLocaleString('en-US') + 'ms';
-      window.dispatchEvent(new CustomEvent('execute-ended'));
+      window.dispatchEvent(new CustomEvent('execute-ended', { detail: { result: 'success' } }));
     })
     .catch(() => {
       stopQueryTimer(timer);
-      window.dispatchEvent(new CustomEvent('execute-ended'));
+      const result = queryStatus === 'canceling' ? 'canceled' : 'error';
+      window.dispatchEvent(new CustomEvent('execute-ended', { detail: { result } }));
     });
-  renderLazyResults(editor);
+  renderLazyResults(editor, limited);
 }
 
 // Executes the query in a layz manner.
 // Returns the time the query took end-to-end.
 async function executeQuery(
   editor: Editor,
-  limit: number = 100,
+  limit: number | null,
   offset: number = 0
 ): Promise<number> {
-  const queryId = crypto.randomUUID();
+  const queryId =
+    crypto.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   window.dispatchEvent(
     new CustomEvent('execute-query', {
       detail: {
@@ -163,6 +175,7 @@ async function executeQuery(
         uri: editor.getDocumentUri(),
       },
       queryId: queryId,
+      accessToken: settings.general.accessToken,
       maxResultSize: limit,
       resultOffset: offset,
       lazy: true,
@@ -176,24 +189,28 @@ async function executeQuery(
             resultsErrorMessage.textContent = err.data.exception;
             if (err.data.metadata) {
               resultsErrorQuery.innerHTML =
-                err.data.query.substring(0, err.data.metadata.startIndex) +
-                `<span class="text-red-500 dark:text-red-600 font-bold">${err.data.query.substring(err.data.metadata.startIndex, err.data.metadata.stopIndex + 1)}</span>` +
-                err.data.query.substring(err.data.metadata.stopIndex + 1);
+                escapeHtml(err.data.query.substring(0, err.data.metadata.startIndex)) +
+                `<span class="text-red-500 dark:text-red-600 font-bold">${escapeHtml(err.data.query.substring(err.data.metadata.startIndex, err.data.metadata.stopIndex + 1))}</span>` +
+                escapeHtml(err.data.query.substring(err.data.metadata.stopIndex + 1));
             } else {
               resultsErrorQuery.innerHTML = err.data.query;
             }
             break;
           case 'Connection':
             resultsErrorMessage.innerHTML = `The connection to the SPARQL endpoint is broken (${err.data.statusText}).<br> The most common cause is that the QLever server is down. Please try again later and contact us if the error perists`;
-            resultsErrorQuery.innerHTML = err.data.query;
+            resultsErrorQuery.innerText = err.data.query;
             break;
           case 'Canceled':
             resultsErrorMessage.innerHTML = `Operation was manually cancelled.`;
-            resultsErrorQuery.innerHTML = err.data.query;
+            resultsErrorQuery.innerText = err.data.query;
             break;
           case 'InvalidFormat':
             resultsErrorMessage.innerHTML = `Update result could not be deserialized: ${err.data.message}`;
-            resultsErrorQuery.innerHTML = err.data.query;
+            resultsErrorQuery.innerText = err.data.query;
+            break;
+          case 'Deserialization':
+            resultsErrorMessage.innerHTML = `Query result could not be deserialized: ${err.data.message}`;
+            resultsErrorQuery.innerText = err.data.query;
             break;
           default:
             console.log('uncaught error:', err);
@@ -240,9 +257,10 @@ function renderUpdateResult(result: ExecuteUpdateResultEntry[]) {
   );
 }
 
-function renderLazyResults(editor: Editor) {
+function renderLazyResults(editor: Editor, limited: boolean) {
   let head: Head | undefined;
   let first_bindings = true;
+  let results_count = 0;
   // NOTE: For a lazy sparql query, the languag server will send "qlueLs/partialResult"
   // notifications. These contain a partial result.
   editor.languageClient.onNotification('qlueLs/partialResult', (partialResult: PartialResult) => {
@@ -253,7 +271,11 @@ function renderLazyResults(editor: Editor) {
     } else if ('meta' in partialResult) {
       showQueryMetaData(partialResult.meta);
     } else {
-      renderTableRows(head!, partialResult.bindings);
+      renderTableRows(head!, partialResult.bindings, results_count);
+      results_count += partialResult.bindings.length;
+      if (limited && results_count > settings.results.limit) {
+        showFullResultButton();
+      }
       if (first_bindings) {
         showMapViewButton(editor, head!, partialResult.bindings);
         scrollToResults();
@@ -270,29 +292,4 @@ function renderLazyResults(editor: Editor) {
     const { size } = (event as CustomEvent<QueryResultSizeDetails>).detail;
     document.getElementById('resultSize')!.innerText = size.toLocaleString('en-US');
   });
-}
-
-// Show "Map view" button if the last column contains a WKT string.
-async function showMapViewButton(editor: Editor, head: Head, bindings: Binding[]) {
-  const mapViewButton = document.getElementById('mapViewButton') as HTMLAnchorElement;
-  const n_rows = bindings.length;
-  const last_col_var = head.vars[head.vars.length - 1];
-  if (n_rows > 0 && last_col_var in bindings[0]) {
-    const binding = bindings[0][last_col_var];
-    if (
-      binding.type == 'literal' &&
-      binding.datatype === 'http://www.opengis.net/ont/geosparql#wktLiteral'
-    ) {
-      mapViewButton?.classList.remove('hidden');
-      const query: string = editor.getContent();
-      const backend = (await editor.languageClient.sendRequest('qlueLs/getBackend', {})) as Service;
-      mapViewButton?.addEventListener('click', () => {
-        const params = {
-          query: query,
-          backend: backend.url,
-        };
-        mapViewButton.href = `https://qlever.dev/petrimaps/?${new URLSearchParams(params)}`;
-      });
-    }
-  }
 }

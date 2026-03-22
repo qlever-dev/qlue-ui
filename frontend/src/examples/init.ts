@@ -1,44 +1,34 @@
 import type { Editor } from '../editor/init';
 import { setupKeywordSearch } from './keyword_search';
+import { clearExamples, handleClickEvents } from './utils';
 
-export async function setupExamples(editor: Editor) {
-  const examplesButton = document.getElementById('examplesButton')!;
-  const examplesModal = document.getElementById('examplesModal')!;
-  const examplesSearch = document.getElementById('examplesSearch')!;
-  const examplesKeywordSearchInput = document.getElementById(
-    'examplesKeywordSearchInput'
-  )! as HTMLInputElement;
-
-  examplesButton.addEventListener('click', () => {
-    examplesModal.classList.remove('hidden');
-    examplesKeywordSearchInput.focus();
-    examplesKeywordSearchInput.value = '';
-  });
-
-  examplesModal.addEventListener('click', () => {
-    examplesModal.classList.add('hidden');
-    document.dispatchEvent(new Event('examples-closed'));
-  });
-
-  examplesSearch.addEventListener('click', (e) => {
-    e.stopPropagation();
-  });
-
-  document.addEventListener('backend-selected', () => loadExamples(editor));
-
-  setupKeywordSearch();
+interface QueryExample {
+  name: string;
+  service: string;
+  query: string;
 }
 
-async function loadExamples(editor: Editor) {
-  const backendSelector = document.getElementById('backendSelector')! as HTMLSelectElement;
+/**
+ * Initializes the example queries panel. Listens for backend-selection
+ * changes and fetches the corresponding example queries from the API.
+ * Selecting an example populates the editor with its query text.
+ */
+export async function setupExamples(editor: Editor) {
+  handleClickEvents();
+  setupKeywordSearch();
+
+  document.addEventListener('backend-selected', (e: Event) => {
+    clearExamples();
+    loadExamples(editor, (e as CustomEvent<string>).detail);
+  });
+}
+
+export async function loadExamples(editor: Editor, serviceSlug: string) {
   const examplesList = document.getElementById('examplesList')!;
   const examplesModal = document.getElementById('examplesModal')!;
 
-  examplesList.innerHTML = '';
-  const backend_slug = backendSelector.value;
-
-  let examples = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/backends/${backend_slug}/examples`
+  let examples = (await fetch(
+    `${import.meta.env.VITE_API_URL}/api/backends/${serviceSlug}/examples`
   )
     .then((response) => {
       if (!response.ok) {
@@ -51,12 +41,13 @@ async function loadExamples(editor: Editor) {
     .catch((err) => {
       console.error('Error while fetching backends examples:', err);
       return [];
-    });
+    })) as QueryExample[];
 
   const fragment = new DocumentFragment();
   for (const example of examples) {
     const li = document.createElement('li');
-    li.classList = 'p-2 hover:bg-neutral-500  hover:dark:bg-neutral-700 cursor-pointer';
+    li.classList =
+      'text-neutral-500 hover:text-neutral-200 dark:text-white p-2 hover:bg-neutral-500  hover:dark:bg-neutral-700 cursor-pointer';
     li.dataset.query = example.query;
     const span = document.createElement('span');
     span.innerText = example.name;
@@ -64,7 +55,11 @@ async function loadExamples(editor: Editor) {
     li.onclick = () => {
       editor.setContent(example.query);
       examplesModal.classList.add('hidden');
-      document.dispatchEvent(new Event('example-selected'));
+      document.dispatchEvent(
+        new CustomEvent('example-selected', {
+          detail: { name: example.name, service: serviceSlug },
+        })
+      );
       setTimeout(() => editor.focus(), 50);
     };
     fragment.appendChild(li);

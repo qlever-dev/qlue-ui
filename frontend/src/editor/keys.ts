@@ -8,6 +8,11 @@ import * as monaco from 'monaco-editor';
 import type { FormattingResult, JumpResult } from '../types/lsp_messages';
 import type { Edit } from '../types/monaco';
 import type { Editor } from './init';
+import { settings } from '../settings/init';
+import { toMonacoRange } from './utils';
+import { openCommandPrompt } from '../commands/utils';
+import { openSettings } from '../settings/utils';
+import { closeAllModals } from '../keybindings';
 
 export function setup_key_bindings(editor: Editor) {
   const monacoEditor = editor.editorApp.getEditor()!;
@@ -24,15 +29,41 @@ export function setup_key_bindings(editor: Editor) {
     },
   });
 
-  // NOTE format on Ctrl + f
+  // NOTE: format on Ctrl + f
   monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF, () => {
     monacoEditor.getAction('editor.action.formatDocument')!.run();
   });
 
-  // NOTE:jump to next or prev position (Alt + n, Alt + p)
+  // NOTE: override Ctrl + P (disables Monaco's Quick Open) with custom command line
+  monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyP, () => {
+    openCommandPrompt();
+  });
+
+  // NOTE: open settings  on Ctrl + ,
+  monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Comma, () => {
+    closeAllModals();
+    openSettings();
+  });
+
+  // NOTE: jump forward on TAB and backward on Shift + TAB
+  monaco.editor.addKeybindingRule({
+    command: 'jumpToNextPosition',
+    commandArgs: 'next',
+    keybinding: monaco.KeyCode.Tab,
+    when: '!inSnippetMode && editorTextFocus',
+  });
+  monaco.editor.addKeybindingRule({
+    command: 'jumpToNextPosition',
+    commandArgs: 'prev',
+    keybinding: monaco.KeyMod.Shift | monaco.KeyCode.Tab,
+    when: '!inSnippetMode && editorTextFocus',
+  });
+
+  // NOTE:jump to next or prev position
   monaco.editor.addCommand({
     id: 'jumpToNextPosition',
     run: (_get, args) => {
+      if (!settings.editor.jumpWithTab) return;
       // NOTE: Format document
       editor.languageClient
         .sendRequest('textDocument/formatting', {
@@ -44,17 +75,10 @@ export function setup_key_bindings(editor: Editor) {
         })
         .then((response) => {
           const jumpResult = response as FormattingResult;
-          const edits: Edit[] = jumpResult.map((edit) => {
-            return {
-              range: new monaco.Range(
-                edit.range.start.line + 1,
-                edit.range.start.character + 1,
-                edit.range.end.line + 1,
-                edit.range.end.character + 1
-              ),
-              text: edit.newText,
-            };
-          });
+          const edits: Edit[] = jumpResult.map((edit) => ({
+            range: toMonacoRange(edit.range),
+            text: edit.newText,
+          }));
           monacoEditor.getModel()!.applyEdits(edits);
 
           // NOTE: request jump position
@@ -108,15 +132,5 @@ export function setup_key_bindings(editor: Editor) {
         });
       monacoEditor.trigger('jumpToNextPosition', 'editor.action.formatDocument', {});
     },
-  });
-  monaco.editor.addKeybindingRule({
-    command: 'jumpToNextPosition',
-    commandArgs: 'next',
-    keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.Comma,
-  });
-  monaco.editor.addKeybindingRule({
-    command: 'jumpToNextPosition',
-    commandArgs: 'prev',
-    keybinding: monaco.KeyMod.Alt | monaco.KeyCode.Minus,
   });
 }

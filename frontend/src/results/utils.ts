@@ -1,5 +1,8 @@
 import * as d3 from 'd3';
-import type { Meta } from '../types/lsp_messages';
+import type { Head, Meta } from '../types/lsp_messages';
+import type { Editor } from '../editor/init';
+import type { Binding } from '../types/rdf';
+import type { QlueLsServiceConfig } from '../types/backend';
 
 export function clearQueryStats() {
   document.getElementById('resultSize')!.innerText = '?';
@@ -51,6 +54,41 @@ export function scrollToResults() {
   });
 }
 
+export function extractIriLabel(iri: string): string {
+  try {
+    const url = new URL(iri);
+
+    // Priority 1: Fragment
+    if (url.hash && url.hash.length > 1) {
+      return url.hash.slice(1);
+    }
+
+    // Priority 2 & 3: Last non-empty path segment (handles trailing slashes)
+    const pathSegments = url.pathname.split('/').filter((segment) => segment.length > 0);
+    if (pathSegments.length > 0) {
+      return pathSegments[pathSegments.length - 1];
+    }
+
+    // Priority 5: Fallback to domain only
+    return url.hostname;
+  } catch {
+    // Fallback for malformed URLs: return original
+    return iri;
+  }
+}
+
+const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg', 'avif', 'tiff'];
+
+export function isImageUrl(url: string): boolean {
+  try {
+    const { pathname } = new URL(url);
+    const ext = pathname.split('.').pop()?.toLowerCase();
+    return ext !== undefined && IMAGE_EXTENSIONS.includes(ext);
+  } catch {
+    return false;
+  }
+}
+
 export function startQueryTimer(): d3.Timer {
   const timerEl = document.getElementById('queryTimeTotal')!;
   timerEl.classList.remove('normal-nums');
@@ -66,6 +104,56 @@ export function stopQueryTimer(timer: d3.Timer) {
   timerEl.classList.add('normal-nums');
   timerEl.classList.remove('tabular-nums');
   timer.stop();
+}
+
+export function escapeHtml(text: string): string {
+  const escapeMap: Record<string, string> = {
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    '"': '&quot;',
+    "'": '&#39;',
+  };
+  return text.replace(/[<>&"']/g, (char) => escapeMap[char] ?? char);
+}
+
+// Show "Map view" button if the last column contains a WKT string otherwise.
+export async function showMapViewButton(editor: Editor, head: Head, bindings: Binding[]) {
+  const mapViewButton = document.getElementById('mapViewButton') as HTMLAnchorElement;
+  const n_rows = bindings.length;
+  const last_col_var = head.vars[head.vars.length - 1];
+  if (n_rows > 0 && last_col_var in bindings[0]) {
+    const binding = bindings[0][last_col_var];
+    if (
+      binding.type == 'literal' &&
+      binding.datatype === 'http://www.opengis.net/ont/geosparql#wktLiteral'
+    ) {
+      const backend = (await editor.languageClient.sendRequest(
+        'qlueLs/getBackend',
+        {}
+      )) as QlueLsServiceConfig;
+      let mapViewBaseUrl = backend.additionalData.mapViewUrl ?? 'https://qlever.dev/petrimaps/';
+      mapViewButton?.classList.remove('hidden');
+      const query: string = editor.getContent();
+      const params = {
+        query: query,
+        backend: backend.url,
+      };
+      mapViewButton.href = `${mapViewBaseUrl}?${new URLSearchParams(params)}`;
+      return;
+    }
+  }
+  mapViewButton?.classList.add('hidden');
+}
+
+export function showFullResultButton() {
+  const fullResultButton = document.getElementById('fullResultButton') as HTMLButtonElement;
+  fullResultButton.classList.remove('hidden');
+}
+
+export function hideFullResultButton() {
+  const fullResultButton = document.getElementById('fullResultButton') as HTMLButtonElement;
+  fullResultButton.classList.add('hidden');
 }
 
 export type QueryStatus = 'idle' | 'running' | 'canceling';

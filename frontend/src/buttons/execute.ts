@@ -17,6 +17,10 @@ export function setupExecute() {
   });
 }
 
+export function executeQuery() {
+  window.dispatchEvent(new Event('cancel-or-execute'));
+}
+
 export function updateExecuteButton(queryStatus: QueryStatus) {
   const executeButton = document.getElementById('executeButton')! as HTMLButtonElement;
   switch (queryStatus) {

@@ -21,12 +21,11 @@ let timeScale = d3.scaleLinear();
 function loadRequests(editor: Editor) {
   const services = [
     ['wikidata-qlever', 'QLever'],
-    ['wikidata', 'QLever (full wikidata)'],
-    // ['wikidata-jena', 'Jena'],
-    // ['wikidata-blazegraph', 'Blazegraph'],
-    // ['wikidata-millenniumdb', 'MilliniumDB'],
-    // ['wikidata-graphdb', 'GraphDB'],
-    // ['wikidata-virtuoso', 'Virtuoso'],
+    ['wikidata-jena', 'Jena'],
+    ['wikidata-blazegraph', 'Blazegraph'],
+    ['wikidata-millenniumdb', 'MilliniumDB'],
+    ['wikidata-graphdb', 'GraphDB'],
+    ['wikidata-virtuoso', 'Virtuoso'],
   ];
   const query = editor.getContent()
   requests.length = 0;

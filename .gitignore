@@ -222,3 +222,8 @@ playground-temp
 temp
 TODOs.md
 .eslintcache
+
+# Coding Agents
+CLAUDE.md
+.claude/
+AGENTS.md
