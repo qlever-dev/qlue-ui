@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
 // import { sleep } from '../utils';
+// import { data } from './data';
 // import { renderQueryExecutionTree } from './tree';
 
 export function replaceIRIs(text: string): string {
@@ -69,24 +70,15 @@ export function activeSubTree(root: d3.HierarchyNode<QueryExecutionTree>): [d3.H
 }
 
 export function findActiveNode(root: d3.HierarchyNode<QueryExecutionTree>) {
-  const preOrder: d3.HierarchyNode<QueryExecutionNode>[] = [];
-  root.eachBefore((node) => preOrder.push(node));
-  return preOrder.find((node) => {
-    return (
-      !['fully materialized completed', 'lazily materialized completed'].some(status => node.data.status == status) &&
-      (
-        node.children == undefined ||
-        node.children.every((child) =>
-          [
-            'not started',
-            'optimized out',
-            'fully materialized completed',
-            'lazily materialized completed',
-            'lazily materialized in progress',
-          ].some((status) => child.data.status === status))
-      )
+  let node = root;
+  while (node.children) {
+    const activeChild = node.children.find(
+      (c) => c.data.status === 'fully materialized in progress'
     );
-  }) ?? root;
+    if (!activeChild) break;
+    node = activeChild;
+  }
+  return node;
 }
 
 
