@@ -35,7 +35,6 @@ export async function updateExample(editor: Editor) {
   })
     .then(async (response) => {
       if (!response.ok) {
-        console.log(response);
         let message = `Example "${example.name}" update failed`;
         if (response.status == 403) {
           message = 'Missing permissions!<br>Log into the API to update examples.';

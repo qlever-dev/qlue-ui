@@ -1,5 +1,8 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
+import { sleep } from '../utils';
+import { renderQueryExecutionTree } from './tree';
+import { data } from './data';
 
 export function replaceIRIs(text: string): string {
   const iriPattern = /<([^>]+)>/g;
@@ -43,11 +46,23 @@ export function setupWebSocket(urlStr: string, queryId: string): WebSocket {
   return new WebSocket(url);
 }
 
-export function operatioIsDone(operation: QueryExecutionNode): boolean {
-  return (
-    operation.status === 'lazily materialized completed' ||
-    operation.status === 'fully materialized completed'
-  );
+
+export function activeSubTree(root: d3.HierarchyNode<QueryExecutionTree>): [d3.HierarchyNode<QueryExecutionNode>[], d3.HierarchyNode<QueryExecutionNode>[]] {
+  const stack = [root];
+  const active = [];
+  const inactive: d3.HierarchyNode<QueryExecutionNode>[] = [];
+  while (stack.length != 0) {
+    const node = stack.pop()!;
+    active.push(node);
+    node.children?.forEach(child => {
+      if (child.data.status === "lazily materialized in progress") {
+        stack.push(child);
+      } else {
+        inactive.push(...child.descendants())
+      }
+    });
+  }
+  return [active, inactive];
 }
 
 export function findActiveNode(root: d3.HierarchyNode<QueryExecutionTree>) {
@@ -55,29 +70,33 @@ export function findActiveNode(root: d3.HierarchyNode<QueryExecutionTree>) {
   root.eachBefore((node) => preOrder.push(node));
   return preOrder.find((node) => {
     return (
-      node.children == undefined ||
-      node.children.every((child) =>
-        [
-          'not started',
-          'optimized out',
-          'fully materialized completed',
-          'lazily materialized completed',
-          'lazily materialized in progress',
-        ].some((status) => child.data.status === status)
+      !['fully materialized completed', 'lazily materialized completed'].some(status => node.data.status == status) &&
+      (
+        node.children == undefined ||
+        node.children.every((child) =>
+          [
+            'not started',
+            'optimized out',
+            'fully materialized completed',
+            'lazily materialized completed',
+            'lazily materialized in progress',
+          ].some((status) => child.data.status === status))
       )
     );
   });
 }
 
-// export async function simulateMessages(zoom_to) {
-//   sleep(2000);
-//   let index = 0;
-//   while (true) {
-//
-//     const queryExecutionTree = data[index] as QueryExecutionTree;
-//     renderQueryExecutionTree(queryExecutionTree, zoom_to);
-//     await sleep(500);
-//     index = (index + 1) % data.length;
-//     // if (index == 99) break;
-//   }
-// }
+
+export async function simulateMessages(zoom_to: (x: number, y: number, duration: number) => void
+) {
+  await sleep(2000);
+  let index = 0;
+  while (true) {
+
+    const queryExecutionTree = data[index] as QueryExecutionTree;
+    renderQueryExecutionTree(queryExecutionTree, zoom_to);
+    await sleep(500);
+    index = (index + 1) % data.length;
+    // if (index == 99) break;
+  }
+}

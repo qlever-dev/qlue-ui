@@ -181,8 +181,8 @@ export function setupQueryExecutionTree(editor: Editor) {
 
     window.addEventListener('execute-cancle-request', () => {
       queryRunning = false;
-      socket.send('cancel');
-      socket.close();
+      // socket.send('cancel');
+      // socket.close();
     });
 
     window.addEventListener('execute-ended', () => {

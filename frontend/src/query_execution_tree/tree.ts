@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
-import { replaceIRIs, truncateText, line, operatioIsDone, findActiveNode } from './utils';
+import { replaceIRIs, truncateText, line, findActiveNode, activeSubTree } from './utils';
 
 const colorScaleDark = d3
   .scaleSymlog<string, string>()
@@ -72,51 +72,39 @@ function updateTree(
 ) {
   const oldNodes = root!.descendants();
   const newRoot = d3.hierarchy<QueryExecutionTree>(queryExecutionTree);
-
   const newNodes = newRoot.descendants();
-
-  const updatedNodes = d3
+  d3
     .zip(newNodes, oldNodes)
-    .filter(([newNode, oldNode]) => {
+    .forEach(([newNode, oldNode]) => {
       newNode.data.id = oldNode.data.id;
       newNode.x = oldNode.x;
       newNode.y = oldNode.y;
-      return (
-        newNode.data.cache_status != oldNode.data.cache_status ||
-        newNode.data.operation_time != oldNode.data.operation_time ||
-        newNode.data.original_operation_time != oldNode.data.original_operation_time ||
-        newNode.data.operation_time != oldNode.data.operation_time ||
-        newNode.data.result_cols != oldNode.data.result_cols ||
-        newNode.data.result_rows != oldNode.data.result_rows ||
-        newNode.data.status != oldNode.data.status
-      );
-    })
-    .map(([node, _]) => node);
-
-  for (const node of updatedNodes) {
-    if (
-      node.data.status === 'lazily materialized in progress' &&
-      node.parent != null &&
-      !updatedNodes.includes(node.parent)
-    ) {
-      updatedNodes.push(node.parent);
-    }
-  }
-
+    });
   root = newRoot;
+  const topNode = findActiveNode(root);
+  if (topNode == undefined) return;
+  if (autoZoom && zoomTimeout == null) {
+    zoomTo(topNode.x!, topNode.y! + height / 4 - boxHeight - boxMargin, 500);
+  }
+  const [activeNodes, inactiveNodes] = activeSubTree(topNode);
+  const changedInactiveNodes = inactiveNodes.filter(node => {
+    const prevStatus = oldNodes[node.data.id!].data.status;
+    return node.data.status != prevStatus;
+  })
+  const nodesToUpdate = [...activeNodes, ...changedInactiveNodes];
 
   const container = d3.select('#treeContainer');
 
-  const node_selection = container
+  const updateNodeSelection = container
     .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('.node')
-    .data(updatedNodes, (d) => d.data.id!);
+    .data(nodesToUpdate, (d) => d.data.id!);
 
-  node_selection
+  updateNodeSelection
     .selectAll('text.size')
     .data((d) => [d])
     .text((d) => `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols}`);
 
-  node_selection
+  updateNodeSelection
     .selectAll('text.time')
     .data((d) => [d])
     .text(
@@ -124,30 +112,29 @@ function updateTree(
         `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms (${d.data.original_operation_time})`
     );
 
-  node_selection
-    .selectAll('text.status')
-    .data((d) => [d])
-    .text((d) => `Status: ${d.data.status}`);
+  const formatStatus = (d: d3.HierarchyNode<QueryExecutionNode>) => `Status: ${d.data.status}`;
+  let statusTexts = updateNodeSelection.selectAll('text.status').data((d) => [d]);
+  statusTexts.text(formatStatus);
 
+  const highlightNodeSelection = container
+    .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('.node')
+    .data(activeNodes, (d) => d.data.id!);
   const darkMode = localStorage.getItem('theme') === 'dark';
-  node_selection
+  highlightNodeSelection
     .selectAll('rect')
     .data((d) => [d])
-    .attr(
-      'class',
-      (d) =>
-        `stroke-2 ${operatioIsDone(d.data) ? 'stroke-neutral-400 dark:stroke-neutral-500' : ''}`
-    )
+    .attr('class', 'stroke-2')
     .attr('fill', (d) =>
       darkMode ? colorScaleDark(d.data.operation_time) : colorScaleLight(d.data.operation_time)
     )
-    .attr('stroke', (d) => (operatioIsDone(d.data) ? '' : 'url(#glowGradientRect)'))
+    .attr('stroke', 'url(#glowGradientRect)')
     .attr('filter', 'url(#glow)');
 
-  node_selection
+  highlightNodeSelection
     .exit()
     .selectAll('rect')
     .data((d) => [d])
+    .attr('class', 'stroke-neutral-400 dark:stroke-neutral-500 stroke-2')
     .attr('stroke', '')
     .attr('filter', '');
 
@@ -155,7 +142,7 @@ function updateTree(
   container
     .selectAll<SVGPathElement, d3.HierarchyNode<QueryExecutionTree>>('path.glow')
     .data(
-      updatedNodes.filter((node) =>
+      activeNodes.filter((node) =>
         node.parent ? node.data.status == 'lazily materialized in progress' : false
       ),
       (d) => d.data.id!
@@ -175,18 +162,6 @@ function updateTree(
         [cx, cy - boxHeight / 2 - 2],
       ])!;
     });
-
-  // NOTE: zoom to currently executed subtree root.
-  // Except if the user has manually zoomed in the last 5 sec.
-  // Or if the user has turned auto zoom off.
-  //
-  if (autoZoom && zoomTimeout == null) {
-    // const min_depth = Math.min(...updatedNodes.map(node => node.depth));
-    const topNode = findActiveNode(root);
-    if (topNode) {
-      zoomTo(topNode.x!, topNode.y! + height / 4 - boxHeight - boxMargin, 500);
-    }
-  }
 }
 
 function initializeTree(queryExectionTree: QueryExecutionNode) {
