@@ -157,25 +157,35 @@ export function setupQueryExecutionTree(editor: Editor) {
     const throttleTimeMs = 50;
     let latestMessage: string | null = null;
     let running = false;
+    let messageCount = 0;
+    let renderedCount = 0;
+
+    function processMessage() {
+      renderedCount = messageCount;
+      const queryExecutionTree = JSON.parse(latestMessage!) as QueryExecutionTree;
+      renderQueryExecutionTree(queryExecutionTree, zoom_to);
+      if (queryRunning) {
+        window.dispatchEvent(
+          new CustomEvent('query-result-size', {
+            detail: {
+              size: queryExecutionTree.result_rows,
+            },
+          })
+        );
+      }
+      if (messageCount !== renderedCount) {
+        setTimeout(processMessage, throttleTimeMs);
+      } else {
+        running = false;
+      }
+    }
 
     socket.addEventListener('message', (event) => {
       latestMessage = event.data;
+      messageCount++;
       if (!running) {
         running = true;
-        setTimeout(() => {
-          const queryExecutionTree = JSON.parse(latestMessage!) as QueryExecutionTree;
-          renderQueryExecutionTree(queryExecutionTree, zoom_to);
-          if (queryRunning) {
-            window.dispatchEvent(
-              new CustomEvent('query-result-size', {
-                detail: {
-                  size: queryExecutionTree.result_rows,
-                },
-              })
-            );
-          }
-          running = false;
-        }, throttleTimeMs);
+        setTimeout(processMessage, throttleTimeMs);
       }
     });
 

@@ -53,7 +53,11 @@ export function activeSubTree(root: d3.HierarchyNode<QueryExecutionTree>): [d3.H
   const inactive: d3.HierarchyNode<QueryExecutionNode>[] = [];
   while (stack.length != 0) {
     const node = stack.pop()!;
-    active.push(node);
+    if (node.data.status === "lazily materialized in progress" || node.data.status === "fully materialized in progress") {
+      active.push(node);
+    } else {
+      inactive.push(node);
+    }
     node.children?.forEach(child => {
       if (child.data.status === "lazily materialized in progress") {
         stack.push(child);
@@ -83,7 +87,7 @@ export function findActiveNode(root: d3.HierarchyNode<QueryExecutionTree>) {
           ].some((status) => child.data.status === status))
       )
     );
-  });
+  }) ?? root;
 }
 
 
