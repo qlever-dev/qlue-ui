@@ -2,7 +2,6 @@ import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
 import { sleep } from '../utils';
 import { renderQueryExecutionTree } from './tree';
-import { data } from './data';
 
 export function replaceIRIs(text: string): string {
   const iriPattern = /<([^>]+)>/g;
