@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
-import { sleep } from '../utils';
-import { renderQueryExecutionTree } from './tree';
+// import { sleep } from '../utils';
+// import { renderQueryExecutionTree } from './tree';
 
 export function replaceIRIs(text: string): string {
   const iriPattern = /<([^>]+)>/g;
@@ -90,16 +90,16 @@ export function findActiveNode(root: d3.HierarchyNode<QueryExecutionTree>) {
 }
 
 
-export async function simulateMessages(zoom_to: (x: number, y: number, duration: number) => void
-) {
-  await sleep(2000);
-  let index = 0;
-  while (true) {
-
-    const queryExecutionTree = data[index] as QueryExecutionTree;
-    renderQueryExecutionTree(queryExecutionTree, zoom_to);
-    await sleep(500);
-    index = (index + 1) % data.length;
-    // if (index == 99) break;
-  }
-}
+// export async function simulateMessages(zoom_to: (x: number, y: number, duration: number) => void
+// ) {
+//   await sleep(2000);
+//   let index = 0;
+//   while (true) {
+//
+//     const queryExecutionTree = data[index] as QueryExecutionTree;
+//     renderQueryExecutionTree(queryExecutionTree, zoom_to);
+//     await sleep(500);
+//     index = (index + 1) % data.length;
+//     // if (index == 99) break;
+//   }
+// }
