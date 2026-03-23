@@ -70,6 +70,7 @@ function updateTree(
   queryExecutionTree: QueryExecutionTree,
   zoomTo: (x: number, y: number, duration: number) => void
 ) {
+  const darkMode = localStorage.getItem('theme') === 'dark';
   const oldNodes = root!.descendants();
   const newRoot = d3.hierarchy<QueryExecutionTree>(queryExecutionTree);
   const newNodes = newRoot.descendants();
@@ -99,6 +100,14 @@ function updateTree(
     .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('.node')
     .data(nodesToUpdate, (d) => d.data.id!);
 
+
+  updateNodeSelection
+    .selectAll('rect')
+    .data((d) => [d])
+    .attr('fill', (d) =>
+      darkMode ? colorScaleDark(d.data.operation_time) : colorScaleLight(d.data.operation_time)
+    );
+
   updateNodeSelection
     .selectAll('text.size')
     .data((d) => [d])
@@ -119,14 +128,10 @@ function updateTree(
   const highlightNodeSelection = container
     .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('.node')
     .data(activeNodes, (d) => d.data.id!);
-  const darkMode = localStorage.getItem('theme') === 'dark';
   highlightNodeSelection
     .selectAll('rect')
     .data((d) => [d])
     .attr('class', 'stroke-2')
-    .attr('fill', (d) =>
-      darkMode ? colorScaleDark(d.data.operation_time) : colorScaleLight(d.data.operation_time)
-    )
     .attr('stroke', 'url(#glowGradientRect)')
     .attr('filter', 'url(#glow)');
 
