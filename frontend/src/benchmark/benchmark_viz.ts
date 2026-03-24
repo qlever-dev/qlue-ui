@@ -15,6 +15,7 @@ let clampFactor = 10;
 let fastest_time = Infinity;
 let done_counter = 0;
 const done = () => done_counter == requests.length;
+let canceled = false;
 let timer: d3.Timer | undefined;
 let timeScale = d3.scaleLinear();
 
@@ -52,14 +53,23 @@ function clampTime(time: number): number {
   return clamp ? Math.min(time, fastest_time * clampFactor) : time;
 }
 
+export function cancel() {
+  canceled = true;
+  timer?.stop();
+  fetchAbortControllers.forEach(([_, controller]) => {
+    controller.abort('canceled');
+  });
+  window.dispatchEvent(new Event('execute-ended'));
+}
+
 export async function run(editor: Editor) {
+  canceled = false;
   loadRequests(editor);
   const container = document.getElementById('benchmarkViz')! as HTMLDivElement;
   const width = container.getBoundingClientRect().width - margin.left - margin.right;
   const height = 40 * requests.length - margin.top - margin.bottom;
   setupVisualization(width, height, requests);
   const svg = d3.select('#benchmarkViz');
-
 
   const controllers = startQueries(requests, ({ index, resultSize, timeMs, error }) => {
     if (error) {
@@ -130,11 +140,13 @@ export async function run(editor: Editor) {
     //
     stepSize = 100;
     setTimeout(() => {
+      if (canceled) return;
       if (requests.some((request) => !request.done)) {
         update();
       } else {
         timer!.stop();
         finalize();
+        window.dispatchEvent(new Event('execute-ended'));
       }
     }, stepSize);
   }
@@ -267,11 +279,9 @@ function barColor(query: SparqlRequest): string {
 }
 
 export async function clear() {
+  cancel();
   d3.select('#benchmarkViz').select('svg').remove();
-  fetchAbortControllers.forEach((controller) => {
-    controller[1].abort('canceled');
-  });
-  await Promise.allSettled(fetchAbortControllers.map(([promise, _controller]) => promise));
+  await Promise.allSettled(fetchAbortControllers.map(([promise]) => promise));
   fetchAbortControllers.length = 0;
   requests.length = 0;
   fastest_time = Infinity;
