@@ -7,7 +7,6 @@
   --animate-tab-status-pop: tab-status-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 
   @keyframes grow-shrink {
-
     0%,
     75%,
     100% {
@@ -48,7 +47,6 @@
 }
 
 @layer utilities {
-
   /* Hide scrollbar for Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;

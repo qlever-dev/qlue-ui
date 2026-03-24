@@ -9,6 +9,7 @@ interface QueryResult {
 
 export function startQueries(
   requests: SparqlRequest[],
+  startTime: number,
   onProcessDone: (res: QueryResult) => void
 ): [Promise<void>, AbortController][] {
   const requests_and_controller: [Promise<void>, AbortController][] = [];
@@ -16,7 +17,6 @@ export function startQueries(
     const controller = new AbortController();
     const signal = controller.signal;
 
-    const start = performance.now();
     const promise = fetch(request.url, {
       signal,
       method: 'POST',
@@ -28,7 +28,7 @@ export function startQueries(
     })
       .then((result) => {
         const end = performance.now();
-        const timeMs = end - start;
+        const timeMs = end - startTime;
         if (result.ok) {
           onProcessDone({ index, resultSize: 42, timeMs });
         } else {
@@ -40,7 +40,7 @@ export function startQueries(
           console.log('Fetch was cancelled');
         } else {
           const end = performance.now();
-          const timeMs = end - start;
+          const timeMs = end - startTime;
           onProcessDone({ index, resultSize: null, timeMs, error });
         }
       });

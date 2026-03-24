@@ -1,12 +1,25 @@
-import * as d3 from 'd3';
-
-import { startQueries } from './utils';
 import type { SparqlRequest } from './types';
+import type { Editor } from '../editor/init';
+import * as d3 from 'd3';
+import { startQueries } from './utils';
 
+// NOTE: settings of the visualization
+const initialScale = 2_000;
+const margin = { top: 0, right: 40, bottom: 20, left: 90, value: 5 };
+
+// NOTE: state of the visualization
+const requests: SparqlRequest[] = [];
 const fetchAbortControllers: [Promise<void>, AbortController][] = [];
+let clamp = true;
+let clampFactor = 10;
+let fastest_time = Infinity;
+let done_counter = 0;
+const done = () => done_counter == requests.length;
+let canceled = false;
+let timer: d3.Timer | undefined;
+let timeScale = d3.scaleLinear();
 
-export async function run(query: string) {
-  const container = document.getElementById('benchmarkViz')! as HTMLDivElement;
+function loadRequests(editor: Editor) {
   const services = [
     ['wikidata-qlever', 'QLever'],
     ['wikidata-jena', 'Jena'],
@@ -15,9 +28,8 @@ export async function run(query: string) {
     ['wikidata-graphdb', 'GraphDB'],
     ['wikidata-virtuoso', 'Virtuoso'],
   ];
-
-  const requests: SparqlRequest[] = [];
-
+  const query = editor.getContent()
+  requests.length = 0;
   for (const [service, label] of services) {
     requests.push({
       serviceLabel: label,
@@ -28,11 +40,174 @@ export async function run(query: string) {
       failed: false,
     });
   }
+}
 
-  const margin = { top: 0, right: 40, bottom: 20, left: 90 };
+export function toggleClamp() {
+  clamp = !clamp;
+  if (done()) {
+    finalize(0, 300);
+  }
+}
+
+function clampTime(time: number): number {
+  return clamp ? Math.min(time, fastest_time * clampFactor) : time;
+}
+
+export function cancel() {
+  canceled = true;
+  timer?.stop();
+  fetchAbortControllers.forEach(([_, controller]) => {
+    controller.abort('canceled');
+  });
+  window.dispatchEvent(new Event('execute-ended'));
+}
+
+export async function run(editor: Editor) {
+  canceled = false;
+  loadRequests(editor);
+  const container = document.getElementById('benchmarkViz')! as HTMLDivElement;
   const width = container.getBoundingClientRect().width - margin.left - margin.right;
   const height = 40 * requests.length - margin.top - margin.bottom;
+  setupVisualization(width, height, requests);
+  const svg = d3.select('#benchmarkViz');
+
+  let startTime = performance.now();
+
+  const controllers = startQueries(requests, startTime, ({ index, resultSize, timeMs, error }) => {
+    if (error) {
+      console.error(`Process ${index} failed:`, error);
+    } else {
+      console.log(`Process ${index} finished in ${timeMs?.toFixed(2)} ms: ${resultSize} results`);
+      fastest_time = Math.min(fastest_time, timeMs);
+    }
+    requests[index].done = true;
+    requests[index].timeMs = timeMs;
+    requests[index].failed = error != undefined;
+    done_counter += 1;
+  });
+  fetchAbortControllers.push(...controllers);
+
+
+  let timeAxisSvgElement = svg.select<SVGGElement>('.timeAxis');
+
+  timer = d3.timer(() => {
+    const elapsed = performance.now() - startTime;
+    requests
+      .filter((query) => !query.done)
+      .forEach((query) => {
+        query.timeMs = elapsed;
+      });
+    timeScale = d3
+      .scaleLinear()
+      .domain([
+        0,
+        Math.max(clampTime(elapsed) * 1.1, clampTime(clampTime(elapsed) + initialScale) * 1.1),
+      ])
+      .range([0, width])
+      .clamp(true);
+    svg
+      .selectAll('.value')
+      .data(requests, (query) => (query as SparqlRequest).serviceLabel)
+      .text((request) => {
+        if (clamp && request.timeMs > fastest_time * 10) {
+          return `>${((fastest_time * 10) / 1_000).toFixed(2)}s (${(request.timeMs / 1_000).toFixed(2)}s)`;
+        } else {
+          return `${(request.timeMs / 1_000).toFixed(2)}s`;
+        }
+      });
+  });
+
+  let stepSize = 0;
+  function update() {
+    timeAxisSvgElement
+      .transition()
+      .duration(stepSize)
+      .ease(d3.easeLinear)
+      .call(timeAxis(timeScale, height));
+    svg
+      .selectAll('.bar')
+      .data(requests, (request) => (request as SparqlRequest).serviceLabel)
+      .transition()
+      .duration(stepSize)
+      .ease(d3.easeLinear)
+      .attr('width', (request) => timeScale(clampTime(request.timeMs)))
+      .attr('fill', barColor);
+    //
+    svg
+      .selectAll('.value')
+      .data(requests, (request) => (request as SparqlRequest).serviceLabel)
+      .transition()
+      .duration(stepSize)
+      .ease(d3.easeLinear)
+      .attr('x', (request) => timeScale(clampTime(request.timeMs)) + margin.value);
+    //
+    stepSize = 100;
+    setTimeout(() => {
+      if (canceled) return;
+      if (requests.some((request) => !request.done)) {
+        update();
+      } else {
+        timer!.stop();
+        finalize();
+        window.dispatchEvent(new Event('execute-ended'));
+      }
+    }, stepSize);
+  }
+  update();
+}
+
+function finalize(delay = 500, duration = 1_500) {
+  console.log("finalize");
+
+  const container = document.getElementById('benchmarkViz')! as HTMLDivElement;
+  const width = container.getBoundingClientRect().width - margin.left - margin.right;
+  const height = 40 * requests.length - margin.top - margin.bottom;
+  const svg = d3.select('#benchmarkViz');
+  let timeAxisSvgElement = svg.select<SVGGElement>('.timeAxis');
+
+  const easeFn = d3.easeBackOut;
+  timer!.stop();
+  let maxTime = Math.max(...requests.map((request) => request.timeMs));
+  timeScale = d3
+    .scaleLinear()
+    .domain([0, clampTime(maxTime) * 1.1])
+    .range([0, width]);
+  timeAxisSvgElement
+    .transition()
+    .delay(delay)
+    .duration(duration)
+    .ease(easeFn)
+    .call(timeAxis(timeScale, height));
+  svg
+    .selectAll('.bar')
+    .data(requests, (query) => (query as SparqlRequest).serviceLabel)
+    .attr('fill', barColor)
+    .transition()
+    .delay(delay)
+    .duration(duration)
+    .ease(easeFn)
+    .attr('width', (query) => timeScale(clampTime(query.timeMs)));
+  svg
+    .selectAll('.value')
+    .data(requests, (query) => (query as SparqlRequest).serviceLabel)
+    .transition()
+    .delay(delay)
+    .duration(duration)
+    .ease(easeFn)
+    .attr('x', (query) => timeScale(clampTime(query.timeMs)) + 5)
+    .text(request => {
+      if (clamp && request.timeMs > fastest_time * 10) {
+        return `>${((fastest_time * 10) / 1000).toFixed(2)}s (${(request.timeMs / 1000).toFixed(2)}s)`;
+      } else {
+        return `${(request.timeMs / 1000).toFixed(2)}s`;
+      }
+    });
+}
+
+function setupVisualization(width: number, height: number, requests: SparqlRequest[]) {
   const barHeight = height / requests.length;
+
+  timeScale = d3.scaleLinear().domain([0, initialScale]).range([0, width]);
 
   const svg = d3
     .select('#benchmarkViz')
@@ -42,26 +217,15 @@ export async function run(query: string) {
     .attr('height', height + margin.top + margin.bottom)
     .append('g')
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-  // Add X axis
-  const initial_scale = 2_000;
-  let x = d3.scaleLinear().domain([0, initial_scale]).range([0, width]);
-  const xAxis = d3
-    .axisBottom(x)
-    .ticks(4)
-    .tickFormat((d) => `${d.valueOf() / 1000}s`)
-    .tickPadding(6)
-    .tickSize(-height)
-    .tickSizeOuter(0);
-  const xAxisElement = svg
+  const timeAxisElement = svg
     .append('g')
     .attr('transform', 'translate(0,' + height + ')')
-    .call(xAxis);
-  xAxisElement.selectAll('line').attr('stroke-width', 0.3);
-  xAxisElement.select('.domain').remove();
-  xAxisElement.selectAll('text').style('text-anchor', 'center');
+    .attr('class', 'timeAxis')
+    .call(timeAxis(timeScale, height));
+  timeAxisElement.selectAll('line').attr('stroke-width', 0.3);
+  timeAxisElement.select('.domain').remove();
+  timeAxisElement.selectAll('text').style('text-anchor', 'center');
 
-  // Y axis
   const y = d3
     .scaleBand()
     .range([0, height])
@@ -73,165 +237,56 @@ export async function run(query: string) {
   yAxisElement.select('.domain').remove();
   yAxisElement.selectAll('.tick').attr('font-size', 12);
 
-  //Bars
   svg
     .selectAll('.bar')
     .data(requests, (query) => (query as SparqlRequest).serviceLabel)
     .join('rect')
     .attr('class', 'bar')
-    .attr('x', x(0))
+    .attr('x', timeScale(0))
     .attr('y', (d) => y(d.serviceLabel)!)
     .attr('width', 0)
     .attr('height', y.bandwidth())
     .attr('fill', '#6340AC');
 
-  // Values
-  const valueMargin = 3;
   svg
     .selectAll('.value')
     .data(requests, (query) => (query as SparqlRequest).serviceLabel)
     .join('text')
     .attr('class', 'value fill-black dark:fill-white')
     .attr('dominant-baseline', 'middle')
-    .attr('x', valueMargin)
+    .attr('x', margin.value)
     .attr('y', (request) => y(request.serviceLabel)! + barHeight / 3)
     .text('0ms');
 
-  // NOTE: very large times can be clamped
-  let clamp = true;
-  let clampFactor = 10;
-  let fastest_time = Infinity;
-  function clampTime(time: number): number {
-    return clamp ? Math.min(time, fastest_time * clampFactor) : time;
-  }
+  return svg;
+}
 
-  const controllers = await startQueries(requests, ({ index, resultSize, timeMs, error }) => {
-    if (error) {
-      console.error(`Process ${index} failed:`, error);
-    } else {
-      console.log(`Process ${index} finished in ${timeMs?.toFixed(2)} ms: ${resultSize} results`);
-      fastest_time = Math.min(fastest_time, timeMs);
+function timeAxis(timeScale: d3.ScaleLinear<number, number, number>, height: number) {
+  return d3
+    .axisBottom(timeScale)
+    .ticks(5)
+    .tickFormat((d) => `${d.valueOf() / 1000}s`)
+    .tickPadding(6)
+    .tickSize(-height)
+    .tickSizeOuter(0);
+}
+
+function barColor(query: SparqlRequest): string {
+  if (query.done) {
+    if (query.failed) {
+      return '#dc2626';
     }
-    requests[index].done = true;
-    requests[index].timeMs = timeMs;
-    requests[index].failed = error != undefined;
-  });
-  fetchAbortControllers.push(...controllers);
-
-  function barColor(query: SparqlRequest): string {
-    if (query.done) {
-      if (query.failed) {
-        return '#dc2626';
-      }
-      return '#16a34a';
-    }
-    return '#6340AC';
+    return '#16a34a';
   }
-
-  const timer = d3.timer((elapsed) => {
-    requests
-      .filter((query) => !query.done)
-      .forEach((query) => {
-        query.timeMs = elapsed;
-      });
-    x = d3
-      .scaleLinear()
-      .domain([0, clampTime(elapsed) + initial_scale])
-      .range([0, width])
-      .clamp(true);
-    svg
-      .selectAll('.value')
-      .data(requests, (query) => (query as SparqlRequest).serviceLabel)
-      .text((request) => {
-        if (request.timeMs > fastest_time * 10) {
-          return `>${((fastest_time * 10) / 1000).toFixed(2)}s (${(request.timeMs / 1000).toFixed(2)}s)`;
-        } else {
-          return `${(request.timeMs / 1000).toFixed(2)}s`;
-        }
-      });
-  });
-
-  let stepSize = 0;
-  function update() {
-    const xAxis = d3
-      .axisBottom(x)
-      .ticks(5)
-      .tickFormat((d) => `${d.valueOf() / 1000}s`)
-      .tickPadding(6)
-      .tickSize(-height)
-      .tickSizeOuter(0);
-    xAxisElement.transition().duration(stepSize).ease(d3.easeLinear).call(xAxis);
-    svg
-      .selectAll('.bar')
-      .data(requests, (request) => (request as SparqlRequest).serviceLabel)
-      .transition()
-      .duration(stepSize)
-      .ease(d3.easeLinear)
-      .attr('width', (request) => x(clampTime(request.timeMs)))
-      .attr('fill', barColor);
-    //
-    svg
-      .selectAll('.value')
-      .data(requests, (request) => (request as SparqlRequest).serviceLabel)
-      .transition()
-      .duration(stepSize)
-      .ease(d3.easeLinear)
-      .attr('x', (request) => x(clampTime(request.timeMs)) + valueMargin);
-    //
-    stepSize = 100;
-    setTimeout(() => {
-      if (requests.some((request) => !request.done)) {
-        update();
-      } else {
-        finalize();
-      }
-    }, stepSize);
-  }
-  update();
-
-  function finalize() {
-    const delay = 500;
-    const duration = 1_500;
-    const easeFn = d3.easeLinear;
-    timer.stop();
-    let maxTime = Math.max(...requests.map((request) => request.timeMs));
-    x = d3
-      .scaleLinear()
-      .domain([0, maxTime * 1.1])
-      .range([0, width]);
-    const xAxis = d3
-      .axisBottom(x)
-      .ticks(8)
-      .tickFormat((d) => `${d.valueOf() / 1000}s`)
-      .tickPadding(6)
-      .tickSize(-height)
-      .tickSizeOuter(0);
-    xAxisElement.transition().delay(delay).duration(duration).ease(easeFn).call(xAxis);
-    svg
-      .selectAll('.bar')
-      .data(requests, (query) => (query as SparqlRequest).serviceLabel)
-      .attr('fill', barColor)
-      .transition()
-      .delay(delay)
-      .duration(duration)
-      .ease(easeFn)
-      .attr('width', (query) => x(query.timeMs));
-    svg
-      .selectAll('.value')
-      .data(requests, (query) => (query as SparqlRequest).serviceLabel)
-      .transition()
-      .delay(delay)
-      .duration(duration)
-      .ease(easeFn)
-      .attr('x', (query) => x(query.timeMs) + 5);
-  }
+  return '#6340AC';
 }
 
 export async function clear() {
+  cancel();
   d3.select('#benchmarkViz').select('svg').remove();
-  fetchAbortControllers.forEach((controller) => {
-    controller[1].abort('canceled');
-  });
-  await Promise.allSettled(fetchAbortControllers.map(([promise, _controller]) => promise));
+  await Promise.allSettled(fetchAbortControllers.map(([promise]) => promise));
   fetchAbortControllers.length = 0;
+  requests.length = 0;
+  fastest_time = Infinity;
+  done_counter = 0;
 }
