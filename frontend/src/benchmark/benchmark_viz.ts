@@ -71,7 +71,9 @@ export async function run(editor: Editor) {
   setupVisualization(width, height, requests);
   const svg = d3.select('#benchmarkViz');
 
-  const controllers = startQueries(requests, ({ index, resultSize, timeMs, error }) => {
+  let startTime = performance.now();
+
+  const controllers = startQueries(requests, startTime, ({ index, resultSize, timeMs, error }) => {
     if (error) {
       console.error(`Process ${index} failed:`, error);
     } else {
@@ -88,7 +90,8 @@ export async function run(editor: Editor) {
 
   let timeAxisSvgElement = svg.select<SVGGElement>('.timeAxis');
 
-  timer = d3.timer((elapsed) => {
+  timer = d3.timer(() => {
+    const elapsed = performance.now() - startTime;
     requests
       .filter((query) => !query.done)
       .forEach((query) => {
@@ -107,9 +110,9 @@ export async function run(editor: Editor) {
       .data(requests, (query) => (query as SparqlRequest).serviceLabel)
       .text((request) => {
         if (clamp && request.timeMs > fastest_time * 10) {
-          return `>${((fastest_time * 10) / 1000).toFixed(2)}s (${(request.timeMs / 1000).toFixed(2)}s)`;
+          return `>${((fastest_time * 10) / 1_000).toFixed(2)}s (${(request.timeMs / 1_000).toFixed(2)}s)`;
         } else {
-          return `${(request.timeMs / 1000).toFixed(2)}s`;
+          return `${(request.timeMs / 1_000).toFixed(2)}s`;
         }
       });
   });
