@@ -1,6 +1,5 @@
 import type { Editor } from './editor/init';
 import type { QlueLsServiceConfig } from './types/backend';
-import { getPathParameters } from './utils';
 
 /**
  * Initializes the share modal. Clicking the share button generates multiple
@@ -37,11 +36,12 @@ export async function setupShare(editor: Editor) {
     }
     openShare();
 
-    const [slug, _] = getPathParameters();
     const backend = (await editor.languageClient.sendRequest(
       'qlueLs/getBackend',
       {}
     )) as QlueLsServiceConfig;
+    const slug = backend.name;
+
     const shareLinkId = await getShareLinkId(query);
 
     // NOTE: URL to this query in the QLever UI (short, with query hash)
