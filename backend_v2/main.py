@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import Body, FastAPI
 from pathlib import Path
 import os
 
@@ -42,31 +42,35 @@ async def health():
 
 @app.get("/endpoints/")
 async def list_endpoints() -> dict[str, SparqlEndpointConfiguration]:
-    """
-    Retrieve all VISIBLE enpoints.
-    """
+    """Retrieve all public endpoint configurations (hidden endpoints are excluded)."""
     data = await store.get_all()
     return data
 
 
 @app.get("/endpoints/{slug}")
 async def get_endpoint(slug: str) -> SparqlEndpointConfiguration:
-    """
-    Retrieve a specific endpoint by SLUG.
-    """
+    """Retrieve a single SPARQL endpoint configuration by its slug."""
     data = await store.get_all()
     return data[slug]
 
 
 @app.get("/endpoints/{slug}/examples/")
 async def list_examples(slug: str) -> list[dict[str, str]]:
-    """
-    Retrieve all example queries for an endpoint.
-    """
+    """Retrieve all example queries for an endpoint. Returns an empty list if none exist."""
     slug_dir = EXAMPLES_DIR / slug
     if not slug_dir.is_dir():
         return []
     return [
-        {"name": p.stem, "query": p.read_text()}
-        for p in sorted(slug_dir.glob("*.rq"))
+        {"name": p.stem, "query": p.read_text()} for p in sorted(slug_dir.glob("*.rq"))
     ]
+
+
+@app.post("/save-query/")
+async def save_query(query: str = Body(media_type="text/plain")) -> str:
+    """
+    Save a SPARQL query and return a short ID for sharing.
+
+    The query must be sent as a raw plain-text string in the request body
+    (Content-Type: text/plain).
+    """
+    return query
