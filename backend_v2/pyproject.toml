@@ -1,15 +1,11 @@
 [project]
-name = "fastapi-test"
+name = "qlue-ui-backend"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "Backend API for QLue-UI"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.135.1",
+    "pydantic>=2.12",
+    "pyyaml>=6.0",
     "watchdog>=6.0.0",
-]
-
-[tool.uv.workspace]
-members = [
-    "dumper",
 ]

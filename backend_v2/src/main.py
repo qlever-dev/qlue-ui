@@ -1,18 +1,24 @@
 from contextlib import asynccontextmanager
+from datetime import date
 from fastapi import Body, FastAPI
 from pathlib import Path
 import os
 
 from config_store import Store
-from models import SparqlEndpointConfiguration
+from database import connect
+from models import SharedQueryResponse, SparqlEndpointConfiguration
+from query_store import QueryStore
 
 CONFIG_PATH = Path(os.getenv("CONFIG_FILE", "config.yaml")).resolve()
 EXAMPLES_DIR = Path(os.getenv("EXAMPLES_DIR", "examples")).resolve()
+DB_PATH = Path(os.getenv("DB_FILE", "shared_queries.db")).resolve()
 API_TOKEN = os.getenv("API_TOKEN", "changeme")  # WARN: rotate in production!
 
 
-# ── In-memory store ─────────────────────────────────────────────────────────
+# ── Stores ─────────────────────────────────────────────────────────────────
 store = Store(CONFIG_PATH)
+db = connect(DB_PATH)
+query_store = QueryStore(db)
 
 
 # ── Lifespan (startup / shutdown) ───────────────────────────────────────────
@@ -22,6 +28,7 @@ async def lifespan(app: FastAPI):
     await store.load()
     yield
     # Shutdown
+    db.close()
 
 
 # ── App & Routes ─────────────────────────────────────────────────────────
@@ -65,12 +72,15 @@ async def list_examples(slug: str) -> list[dict[str, str]]:
     ]
 
 
-@app.post("/save-query/")
-async def save_query(query: str = Body(media_type="text/plain")) -> str:
+@app.post("/shared-query/")
+async def share_query(
+    query: str = Body(media_type="text/plain"),
+) -> SharedQueryResponse:
     """
-    Save a SPARQL query and return a short ID for sharing.
+    Store a SPARQL query and return a short ID for sharing.
 
     The query must be sent as a raw plain-text string in the request body
     (Content-Type: text/plain).
     """
-    return query
+    short_id, creation_date = query_store.save(query)
+    return SharedQueryResponse(id=short_id, count=0, creation_date=creation_date)

@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any, Optional
 from pydantic import AnyUrl, BaseModel, ConfigDict, HttpUrl, RootModel, ValidationError
 from pydantic.alias_generators import to_camel
@@ -42,3 +43,9 @@ def validate_config(data: dict[str, Any]) -> dict[str, Any]:
         return config.model_dump()
     except ValidationError as exc:
         raise ValueError(f"Schema validation failed:\n{exc}") from exc
+
+
+class SharedQueryResponse(CamelModel):
+    id: str
+    count: int
+    creation_date: date
