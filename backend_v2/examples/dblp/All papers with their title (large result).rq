@@ -1,0 +1,4 @@
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+SELECT ?paper ?title WHERE {
+  ?paper dblp:title ?title .
+}

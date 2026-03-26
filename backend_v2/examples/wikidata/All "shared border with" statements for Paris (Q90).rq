@@ -1,0 +1,9 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wikibase: <http://wikiba.se/ontology-beta#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wds: <http://www.wikidata.org/entity/statement/>
+SELECT ?o ?p ?oo WHERE {
+  wd:Q90 <http://www.wikidata.org/prop/P47> ?o .
+  ?o ?p ?oo
+}
+ORDER BY ASC(?o)

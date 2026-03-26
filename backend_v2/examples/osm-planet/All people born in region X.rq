@@ -1,0 +1,20 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX osm2rdf: <https://osm2rdf.cs.uni-freiburg.de/rdf#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+SELECT ?person ?person_name ?place_of_birth ?place_of_birth_name ?place_of_birth_location WHERE {
+  osmrel:3255371 osm2rdf:contains_area+ ?place_of_birth .
+  ?place_of_birth osm:wikidata ?place_of_birth_wikidata .
+  ?place_of_birth osmkey:name ?place_of_birth_name .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    ?person wdt:P19 ?place_of_birth_wikidata .
+    ?place_of_birth_wikidata wdt:P625 ?place_of_birth_location .
+    ?place_of_birth_wikidata wdt:P17 wd:Q183 .
+    ?person @en@rdfs:label ?person_name .
+  }
+}

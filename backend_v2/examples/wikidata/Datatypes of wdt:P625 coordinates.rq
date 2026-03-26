@@ -1,0 +1,8 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?datatype (COUNT(?location) as ?num_locations) WHERE {
+  ?subject wdt:P625 ?location .
+  BIND (DATATYPE(?location) AS ?datatype)
+}
+GROUP BY ?datatype 
+ORDER BY DESC(?num_locations)

@@ -1,0 +1,15 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?professions (COUNT(?professions) AS ?count_professions) WHERE {
+  SELECT ?person_id ?person (COUNT(?profession_id) AS ?count) (GROUP_CONCAT(DISTINCT ?profession; separator=", ") AS ?professions) WHERE {
+    SELECT * WHERE {
+      ?person_id wdt:P31 wd:Q5 .
+      ?person_id wdt:P106 ?profession_id .
+      ?profession_id rdfs:label ?profession .
+      ?person_id rdfs:label ?person .
+      FILTER (LANG(?person) = "en") .
+      FILTER (LANG(?profession) = "en")
+    } INTERNAL SORT BY ?person ?person_id ?profession
+  } GROUP BY ?person_id ?person HAVING (?count >= 5)
+} GROUP BY ?professions ORDER BY DESC(?count_professions)

@@ -1,0 +1,12 @@
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?subject ?subject_label ?date_of_birth ?sitelinks WHERE {
+  ?subject wdt:P569 ?date_of_birth .
+  ?subject ^schema:about/wikibase:sitelinks ?sitelinks .
+  ?subject rdfs:label ?subject_label .
+  FILTER (LANG(?subject_label) = "en") .
+  FILTER ISBLANK(?date_of_birth)
+}
+ORDER BY DESC(?sitelinks)

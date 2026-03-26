@@ -1,0 +1,11 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?p (COUNT(?o) as ?count) (SAMPLE(?label) as ?pname) WHERE {
+  wd:Q90 ?p ?o .
+  ?x wikibase:claim ?p .
+  ?x rdfs:label ?label .
+  FILTER (LANG(?label) = "en")
+}
+GROUP BY ?p
+ORDER BY DESC(?count)

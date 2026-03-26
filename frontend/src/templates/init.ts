@@ -8,7 +8,7 @@ import { getCookie } from '../utils';
 
 const DEBOUNCE_MS = 300;
 
-const TEMPLATE_GROUPS: { label: string; keys: { key: string; display: string }[] }[] = [
+const TEMPLATE_GROUPS: { label: string; keys: { key: QueryTemplate; display: string }[] }[] = [
   { label: 'Subject', keys: [{ key: 'subjectCompletion', display: 'Subject' }] },
   {
     label: 'Predicate',
@@ -34,20 +34,11 @@ const TEMPLATE_GROUPS: { label: string; keys: { key: string; display: string }[]
   { label: 'Hover', keys: [{ key: 'hover', display: 'Hover' }] },
 ];
 
-// NOTE: Maps camelCase query keys (used by the language server) to snake_case API fields.
-const CAMEL_TO_SNAKE: Record<string, string> = {
-  subjectCompletion: 'subject_completion',
-  predicateCompletionContextSensitive: 'predicate_completion_context_sensitive',
-  predicateCompletionContextInsensitive: 'predicate_completion_context_insensitive',
-  objectCompletionContextSensitive: 'object_completion_context_sensitive',
-  objectCompletionContextInsensitive: 'object_completion_context_insensitive',
-  valuesCompletionContextSensitive: 'values_completion_context_sensitive',
-  valuesCompletionContextInsensitive: 'values_completion_context_insensitive',
-  hover: 'hover',
-};
+type QueryTemplate = "subjectCompletion" | "predicateCompletionContextSensitive" | "predicateCompletionContextInsensitive" | "objectCompletionContextSensitive" | "objectCompletionContextInsensitive" | "valuesCompletionContextSensitive" | "valuesCompletionContextInsensitive" | "hover"
+  ;
 
 let templateEditor: monaco.editor.IStandaloneCodeEditor | null = null;
-let activeKey: string | null = null;
+let activeKey: QueryTemplate | null = null;
 let currentConfig: QlueLsServiceConfig | null = null;
 let debounceTimer: number | undefined;
 let changeListener: monaco.IDisposable | null = null;
@@ -154,12 +145,12 @@ function buildSelector(editor: Editor) {
   });
 }
 
-function selectTemplate(key: string, editor: Editor) {
+function selectTemplate(key: QueryTemplate, editor: Editor) {
   if (!currentConfig || !templateEditor) return;
 
   // NOTE: Save current editor content back before switching.
   if (activeKey && currentConfig.queries[activeKey] !== undefined) {
-    currentConfig.queries[activeKey] = templateEditor.getValue();
+    currentConfig.queries[activeKey]! = templateEditor.getValue();
   }
 
   activeKey = key;
@@ -220,13 +211,6 @@ function saveTemplates() {
     return;
   }
 
-  // NOTE: Convert camelCase query keys to snake_case for the API.
-  const payload: Record<string, string> = {};
-  for (const [camel, snake] of Object.entries(CAMEL_TO_SNAKE)) {
-    if (currentConfig.queries[camel] !== undefined) {
-      payload[snake] = currentConfig.queries[camel];
-    }
-  }
 
   fetch(`${import.meta.env.VITE_API_URL}/api/backends/${currentConfig.name}/templates`, {
     method: 'PATCH',
@@ -235,7 +219,7 @@ function saveTemplates() {
       'Content-Type': 'application/json',
       'X-CSRFToken': csrftoken,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(currentConfig.queries),
   })
     .then((response) => {
       if (!response.ok) {

@@ -1,0 +1,5 @@
+SELECT ?p ?count ?percent WHERE {
+  { SELECT ?p (COUNT(?p) AS ?count) WHERE { ?s ?p ?o } GROUP BY ?p }
+  BIND(100 * ?count / SUM(?count) AS ?percent)
+}
+ORDER BY DESC(?count)

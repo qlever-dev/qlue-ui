@@ -1,0 +1,11 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?employer ?employer_label (COUNT(DISTINCT ?person) as ?count_person) (SAMPLE(?coordinates) AS ?coordinates_) WHERE {
+  ?person wdt:P2456 ?dblp_author_id .
+  ?person wdt:P108 ?employer .
+  ?employer @en@rdfs:label ?employer_label .
+  ?employer (wdt:P159|wdt:P625)/wdt:P625 ?coordinates
+}
+GROUP BY ?employer ?employer_label
+ORDER BY DESC(?count_person)

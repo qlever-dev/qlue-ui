@@ -1,0 +1,9 @@
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT ?building ?powerline ?building_geometry WHERE {
+  ?building osmkey:building [] .
+  ?powerline osmkey:power "line" .
+  ?building ogc:sfIntersects ?powerline .
+  ?building geo:hasGeometry/geo:asWKT ?building_geometry .
+}

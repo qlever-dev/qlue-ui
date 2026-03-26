@@ -1,0 +1,20 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX imdb: <https://www.imdb.com/>
+SELECT ?movie ?movie_imdb ?movie_title ?movie_abstract ?imdb_rating ?imdb_votes WHERE {
+  ?movie wdt:P345 ?imdb_id .
+  ?movie rdfs:label ?movie_title .
+  ?wikipedia schema:about ?movie .
+  ?wikipedia schema:description ?movie_abstract .
+  FILTER (LANG(?movie_title) = "en") .
+  FILTER (LANG(?movie_abstract) = "en") .
+  FILTER CONTAINS(?movie_abstract, "dream")
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/imdb> {
+	?movie_imdb imdb:id ?imdb_id .
+	?movie_imdb imdb:type "movie" .
+    ?movie_imdb imdb:numVotes ?imdb_votes .
+    ?movie_imdb imdb:averageRating ?imdb_rating .
+  }
+}
+ORDER BY DESC(?imdb_votes)

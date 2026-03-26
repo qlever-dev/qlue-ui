@@ -1,0 +1,24 @@
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?person_name ?party_name ?max_join_date ?sitelinks WHERE {
+  { SELECT ?person (MAX(?join_date) AS ?max_join_date) WHERE {
+      ?person wdt:P27 wd:Q183 .
+      ?person p:P102/pq:P580 ?join_date .
+  } GROUP BY ?person }
+  ?person wdt:P27 wd:Q183 .
+  ?person p:P102 ?p102 .
+  ?p102 ps:P102 ?party .
+  ?p102 pq:P580 ?max_join_date .
+  ?person rdfs:label ?person_name . FILTER (LANG(?person_name) = "de") .
+  ?party rdfs:label ?party_name . FILTER (LANG(?party_name) = "de") .
+  ?about schema:about ?person .
+  ?about wikibase:sitelinks ?sitelinks .
+}
+ORDER BY DESC(?sitelinks)

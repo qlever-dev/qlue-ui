@@ -1,0 +1,19 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX schema: <http://schema.org/>
+PREFIX imdb: <https://www.imdb.com/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX p: <http://www.wikidata.org/prop/>
+SELECT ?movie ?title ?year ?imdb_id ?imdb_votes ?imdb_rating WHERE {
+  { SELECT ?movie (YEAR(MIN(?date)) AS ?year) WHERE { ?movie wdt:P31 wd:Q11424; wdt:P577 ?date } GROUP BY ?movie }
+  ?movie wdt:P345 ?imdb_id .
+  ?movie wdt:P57 wd:Q13595531 .
+  ?movie rdfs:label ?title FILTER (LANG(?title) = "en") .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/imdb> {
+	?movie_imdb imdb:id ?imdb_id .
+	?movie_imdb imdb:type "movie" .
+    ?movie_imdb imdb:numVotes ?imdb_votes .
+    ?movie_imdb imdb:averageRating ?imdb_rating .
+  }
+}
+ORDER BY DESC(?imdb_votes)

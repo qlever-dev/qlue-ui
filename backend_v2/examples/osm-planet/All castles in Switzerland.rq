@@ -1,0 +1,13 @@
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+SELECT ?castle ?name ?class ?ruins WHERE {
+  osmrel:51701 ogc:contains ?castle .
+  { { ?castle osmkey:historic "castle" } UNION
+  { ?castle osmkey:historic "tower" . ?castle osmkey:castle_type "defensive" } } UNION
+  { ?castle osmkey:historic "archaeological_site" . ?castle osmkey:site_type "fortification" }
+  ?castle osmkey:name ?name .
+  ?castle osmkey:ruins ?ruins .
+  OPTIONAL { ?castle osmkey:historic ?class }
+  OPTIONAL { ?castle osmkey:archaeological_site ?class }
+}

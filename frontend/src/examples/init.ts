@@ -2,9 +2,10 @@ import type { Editor } from '../editor/init';
 import { setupKeywordSearch } from './keyword_search';
 import { clearExamples, handleClickEvents } from './utils';
 
+const BASE_PATH = import.meta.env.BASE_URL ?? '/';
+
 interface QueryExample {
   name: string;
-  service: string;
   query: string;
 }
 
@@ -27,9 +28,7 @@ export async function loadExamples(editor: Editor, serviceSlug: string) {
   const examplesList = document.getElementById('examplesList')!;
   const examplesModal = document.getElementById('examplesModal')!;
 
-  let examples = (await fetch(
-    `${import.meta.env.VITE_API_URL}/api/backends/${serviceSlug}/examples`
-  )
+  let examples = (await fetch(`${BASE_PATH}ui-api/endpoints/${serviceSlug}/examples/`)
     .then((response) => {
       if (!response.ok) {
         throw new Error(

@@ -1,0 +1,20 @@
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+SELECT ?person ?person_name ?date_of_birth ?date_of_death ?sitelinks WHERE {
+  { SELECT ?person ?date_of_birth ?date_of_death WHERE {
+    ?person wdt:P569 ?date_of_birth .
+    ?person wdt:P570 ?date_of_death .
+	BIND (DAY(?date_of_birth) AS ?dob)
+    BIND (MONTH(?date_of_birth) AS ?mob)
+    BIND (DAY(?date_of_death) AS ?dod)
+    BIND (MONTH(?date_of_death) AS ?mod)
+	FILTER (?dob = ?dod && ?mob = ?mod && !(?dob = 1 && ?mob = 1)) } }
+  ?person ^schema:about/wikibase:sitelinks ?sitelinks . 
+  ?person rdfs:label ?person_name .
+  FILTER (LANG(?person_name) = "en") .
+}
+ORDER BY DESC(?sitelinks)

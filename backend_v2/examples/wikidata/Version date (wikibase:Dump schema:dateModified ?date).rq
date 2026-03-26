@@ -1,0 +1,7 @@
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX schema: <http://schema.org/>
+SELECT ?date WHERE {
+  wikibase:Dump schema:dateModified ?date
+}
+ORDER BY DESC(?date)
+LIMIT 1

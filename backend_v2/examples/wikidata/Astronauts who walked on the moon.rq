@@ -1,0 +1,13 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?astronaut ?astronaut_label (SAMPLE(?text) AS ?text_) (COUNT(?text) AS ?count) WHERE {
+  ?astronaut wdt:P106 wd:Q11631 .
+  ?astronaut rdfs:label ?astronaut_label .
+  FILTER (LANG(?astronaut_label) = "en") .
+  ?text ql:contains-entity ?astronaut .
+  ?text ql:contains-word "walk* moon"
+}
+GROUP BY ?astronaut ?astronaut_label
+ORDER BY DESC(?count)
+TEXTLIMIT 9999

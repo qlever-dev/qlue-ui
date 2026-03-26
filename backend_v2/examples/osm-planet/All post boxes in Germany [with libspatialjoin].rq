@@ -1,0 +1,19 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX qlss: <https://qlever.cs.uni-freiburg.de/spatialSearch/>
+SELECT ?subject ?qlss_right WHERE {
+  osmrel:51477 geo:hasGeometry/geo:asWKT ?qlss_left .
+  SERVICE qlss: {
+    _:config qlss:algorithm <libspatialjoin> ;
+             qlss:left ?qlss_left ;
+             qlss:right ?qlss_right ;
+             qlss:payload ?subject ;
+             qlss:joinType <contains> .
+    {
+      ?subject osmkey:amenity "post_box" .
+      ?subject geo:hasGeometry/geo:asWKT ?qlss_right .
+    }
+  }
+}

@@ -1,0 +1,18 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm2rdfkey: <https://osm2rdf.cs.uni-freiburg.de/rdf/key#>
+SELECT ?country_osm ?country_wd ?country_name ?religion ?shape WHERE {
+  ?country_osm osm2rdfkey:wikidata ?country_wd .
+  ?country_osm osmkey:admin_level 2 .
+  ?country_osm geo:hasGeometry/geo:asWKT ?shape .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    wd:Q984212 wdt:P17 ?country_wd .
+    { ?country_wd wdt:P463 wd:Q7172 . BIND("Islam"@en AS ?religion) }
+    UNION
+    { BIND (wd:Q801 AS ?country_wd) . BIND("Judaism"@en AS ?religion) }
+    ?country_wd rdfs:label ?country_name FILTER (LANG(?country_name) = "en") .
+  }
+}

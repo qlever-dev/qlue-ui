@@ -1,0 +1,18 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT ?region ?admin_level ?name ?shape  WHERE { {
+  osmrel:17657 geo:hasGeometry ?query_shape .
+  ?query_region geo:hasGeometry ?query_shape .
+  ?query_region osmkey:admin_level ?admin_level .
+  ?query_region ogc:sfIntersects ?region .
+  ?region osmkey:boundary "administrative" .
+  ?region osmkey:admin_level ?admin_level .
+  ?region rdf:type osm:relation .
+  ?region osmkey:name ?name .
+  ?region geo:hasGeometry/geo:asWKT ?shape }
+  FILTER (?region != ?query_region)
+}

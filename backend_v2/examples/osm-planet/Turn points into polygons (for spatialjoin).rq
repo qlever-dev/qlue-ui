@@ -1,0 +1,20 @@
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+SELECT (REPLACE(STR(?osm_id), "^.*/([0-9]+)", "osmnode:\\1") AS ?id)
+       (CONCAT("POINT(", ?lng, " ", ?lat, ")") AS ?point)
+       (CONCAT("POLYGON((", ?lng - ?radius, " ", ?lat - ?radius,
+	                   ",", ?lng + ?radius, " ", ?lat - ?radius,
+					   ",", ?lng + ?radius, " ", ?lat + ?radius,
+					   ",", ?lng - ?radius, " ", ?lat + ?radius,
+					   ",", ?lng - ?radius, " ", ?lat - ?radius, "))") AS ?square)
+WHERE {
+  ?osm_id osmkey:amenity "restaurant" .
+  ?osm_id rdf:type osm:node .
+  ?osm_id geo:hasGeometry/geo:asWKT ?point_wkt .
+  BIND(geof:longitude(?point_wkt) AS ?lng)
+  BIND(geof:latitude(?point_wkt) AS ?lat)
+  BIND(0.005 AS ?radius)
+}

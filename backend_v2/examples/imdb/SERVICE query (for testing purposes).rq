@@ -1,0 +1,13 @@
+PREFIX imdb: <https://www.imdb.com/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?movie ?imdb_id ?title ?votes ?rating WHERE {
+  ?movie imdb:id ?imdb_id .
+  ?movie imdb:title ?title .
+  ?movie imdb:numVotes ?votes .
+  ?movie imdb:averageRating ?rating .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+	SELECT ?imdb_id WHERE { ?film wdt:P31 wd:Q11424 . ?film wdt:P57 wd:Q3772 . ?film wdt:P345 ?imdb_id }
+  }
+}
+ORDER BY DESC(?votes)

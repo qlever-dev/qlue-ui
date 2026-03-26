@@ -1,0 +1,21 @@
+# Buildings in REGION more than KM away from a transit stop
+#!TEMPLATE REGION=osmrel:1686344
+#!TEMPLATE KM=1
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX qlss: <https://qlever.cs.uni-freiburg.de/spatialSearch/>
+SELECT ?building ?stop ?dist ?building_geometry WHERE {
+  { SELECT ?building ?stop ?dist WHERE {
+    %REGION% ogc:sfContains ?building . ?building osmkey:building [] . ?building geo:hasCentroid/geo:asWKT ?building_location .
+	SERVICE qlss: {
+	  _:config qlss:left ?building_location ; qlss:right ?stop_location ; qlss:numNearestNeighbors 1 ; qlss:payload ?stop ; qlss:bindDistance ?dist .
+	  { { ?stop osmkey:highway "bus" } UNION { ?stop osmkey:public_transport "station" } UNION { ?stop osmkey:public_transport "platform" }
+      ?stop geo:hasCentroid/geo:asWKT ?stop_location }
+	}
+    FILTER (?dist > %KM%) 
+  } }
+  ?building geo:hasGeometry/geo:asWKT ?building_geometry .
+  ?stop geo:hasGeometry/geo:asWKT ?stop_geometry .
+} ORDER BY DESC(?dist)

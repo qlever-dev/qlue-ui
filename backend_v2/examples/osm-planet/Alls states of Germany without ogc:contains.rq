@@ -1,0 +1,11 @@
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+SELECT ?region ?name ?iso31662 ?shape WHERE {
+  ?region rdf:type osm:relation .
+  ?region osmkey:ISO3166-2 ?iso31662 .
+  ?region osmkey:name ?name .
+  ?region geo:hasGeometry ?shape .
+  FILTER REGEX(?iso31662, "^\"DE-")
+}

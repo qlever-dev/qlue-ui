@@ -29,8 +29,11 @@ export default defineConfig({
       strict: false,
     },
     proxy: {
-      '/admin': 'http://127.0.0.1:8000',
-      '/static': 'http://127.0.0.1:8000',
+      '/ui-api': {
+        target: 'http://localhost:8000',
+        rewrite: (path) => path.replace(/^\/ui-api/, ''),
+        changeOrigin: true,
+      }
     },
   },
   plugins: [

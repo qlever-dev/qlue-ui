@@ -1,0 +1,18 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+SELECT ?university ?name
+       (MAX(?students_count_) AS ?students_count)
+	   (SAMPLE(?coordinates_) AS ?coordinates) WHERE {
+  ?university wdt:P31/wdt:P279* wd:Q3918 .
+  ?university wdt:P17 wd:Q183 .
+  ?university wdt:P2196 ?students_count_ .
+  ?university @de@rdfs:label ?name .
+  ?university @de@schema:description ?description .
+  OPTIONAL { ?university wdt:P625 ?coordinates_ }
+  FILTER (REGEX(?name, "universität", "i") || REGEX(?description, "universität", "i"))
+  FILTER (!(REGEX(?name, "musik", "i")) && !(REGEX(?description, "musik", "i")))
+}
+GROUP BY ?university ?name ?description
+ORDER BY DESC(?students_count)

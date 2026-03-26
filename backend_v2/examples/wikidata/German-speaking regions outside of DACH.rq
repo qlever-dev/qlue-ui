@@ -1,0 +1,12 @@
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX schema: <http://schema.org/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT ?region_wd ?region_name ?sitelinks WHERE {
+  ?region_wd wdt:P31/wdt:P279* wd:Q1048835 .
+  ?region_wd ^schema:about/wikibase:sitelinks ?sitelinks .
+  ?region_wd wdt:P37 wd:Q188 .
+  ?region_wd @en@rdfs:label ?region_name .
+  MINUS { VALUES ?dach { wd:Q183 wd:Q39 wd:Q40 } ?region_wd wdt:P17 ?dach }
+}

@@ -1,0 +1,13 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+SELECT ?anything ?name ?dist ?location WHERE {
+  ?anything wdt:P625 ?location .
+  ?anything rdfs:label ?name .
+  FILTER (LANG(?name) = "en") .
+  BIND ("POINT(7.85 48.00)"^^geo:wktLiteral AS ?point)
+  BIND (geof:distance(?location, ?point) AS ?dist)
+  FILTER (?dist >= 97 && ?dist <= 103)
+}
+ORDER BY ASC(?dist)

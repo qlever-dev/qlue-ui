@@ -1,0 +1,11 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?author_name (COUNT(?paper) as ?count_paper) WHERE {
+  ?author rdf:type dblp:Person .
+  ?author rdfs:label ?author_name .
+  ?paper dblp:authoredBy ?author .
+  FILTER CONTAINS(?author_name, "mich")
+}
+GROUP BY ?author_name 
+ORDER BY DESC(?count_paper)

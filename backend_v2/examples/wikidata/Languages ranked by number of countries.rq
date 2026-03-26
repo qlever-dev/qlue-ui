@@ -1,0 +1,11 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?official_language_label (COUNT(?country) AS ?num_countries) WHERE {
+  { SELECT DISTINCT ?country WHERE { ?country wdt:P31/wdt:P279* wd:Q3624078 } }
+  ?country wdt:P37 ?official_language .
+  ?official_language rdfs:label ?official_language_label .
+  FILTER (LANG(?official_language_label) = "en") .
+} 
+GROUP BY ?official_language_label
+ORDER BY DESC(?num_countries)

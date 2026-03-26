@@ -1,0 +1,16 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm2rdfmember: <https://osm2rdf.cs.uni-freiburg.de/rdf/member#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX osmway: <https://www.openstreetmap.org/way/>
+SELECT ?member ?way ?rel_pos ?way_pos ?node ?geometry WHERE {
+  osmrel:62768 osmrel:member ?member .
+  ?member osm2rdfmember:id ?way .
+  ?member osm2rdfmember:pos ?rel_pos .
+  ?member osm2rdfmember:role "outer" .
+  ?way osmway:node ?way_node .
+  ?way_node osm2rdfmember:pos ?way_pos .
+  ?way_node osmway:node ?node .
+  ?node geo:hasGeometry/geo:asWKT ?geometry .
+}
+ORDER BY ?rel_pos ?way_pos

@@ -1,0 +1,15 @@
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+SELECT DISTINCT ?person ?description ?sitelinks WHERE {
+  ?person_id wdt:P31 wd:Q5 .
+  ?person_id rdfs:label ?person .
+  ?person_id schema:description ?description .
+  ?person_node schema:about ?person_id .
+  ?person_node wikibase:sitelinks ?sitelinks .
+  FILTER (LANG(?person) = "en") . 
+  FILTER (LANG(?description) = "en")
+}
+ORDER BY DESC(?sitelinks)

@@ -1,0 +1,7 @@
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+SELECT ?paper ?title ?year WHERE {
+  ?paper dblp:title ?title .
+  ?paper dblp:publishedIn "SIGIR" .
+  ?paper dblp:yearOfPublication ?year
+}
+ORDER BY DESC(?year)

@@ -1,0 +1,11 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?title ?author ?author_label ?year WHERE {
+  ?paper dblp:title ?title .
+  ?paper dblp:authoredBy ?author .
+  ?paper dblp:yearOfPublication ?year .
+  ?author rdfs:label ?author_label .
+  FILTER (?year <= "1940"^^xsd:gYear)
+}
+ORDER BY ASC(?year) ASC(?title)

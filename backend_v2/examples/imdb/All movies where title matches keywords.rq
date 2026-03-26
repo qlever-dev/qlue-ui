@@ -1,0 +1,8 @@
+PREFIX imdb: <https://www.imdb.com/>
+SELECT ?movie ?title ?rating ?votes WHERE {
+  ?movie imdb:title ?title .
+  ?movie imdb:numVotes ?votes .
+  ?movie imdb:averageRating ?rating .
+  FILTER CONTAINS(?title, "matrix")
+}
+ORDER BY DESC(?votes)

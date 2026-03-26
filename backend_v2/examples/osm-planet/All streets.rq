@@ -1,0 +1,9 @@
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+SELECT ?osm_id ?geometry WHERE {
+  ?osm_id osmkey:highway ?highway .
+  ?osm_id rdf:type osm:way .
+  ?osm_id geo:hasGeometry ?geometry .
+}

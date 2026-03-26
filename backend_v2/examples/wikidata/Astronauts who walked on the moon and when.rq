@@ -1,0 +1,17 @@
+PREFIX s: <http://www.wikidata.org/entity/statement/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?astronaut ?name ?start_time ?end_time WHERE {
+  ?astronaut wdt:P106 wd:Q11631 .
+  ?astronaut p:P793 ?m .
+  ?m ps:P793 wd:Q42882411 .
+  ?m pq:P580 ?start_time .
+  ?m pq:P582 ?end_time .
+  ?astronaut rdfs:label ?name .
+  FILTER (LANG(?name) = "en")
+}
+ORDER BY ?start_time

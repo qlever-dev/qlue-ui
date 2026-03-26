@@ -1,0 +1,8 @@
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+SELECT ?venue (COUNT(?paper) as ?count) WHERE {
+  ?paper dblp:title ?title .
+  ?paper dblp:publishedIn ?venue .
+  [ ql:contains-entity ?title; ql:contains-word "auto* driving" ]
+}
+GROUP BY ?venue
+ORDER BY DESC(?count)

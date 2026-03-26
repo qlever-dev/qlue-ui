@@ -1,0 +1,14 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?article (SAMPLE(?author_name_) AS ?author_name) (SAMPLE(?article_name_) AS ?article_name)
+WHERE {
+  ?article wdt:P31 wd:Q13442814 .
+  ?article rdfs:label ?article_name_ FILTER (LANG(?article_name_) = "en") .
+  OPTIONAL {
+    ?article wdt:P50 ?author .
+    ?author rdfs:label ?author_name_ FILTER (LANG(?author_name_) = "en")
+  }
+}
+GROUP BY ?article
+ORDER BY DESC(?author_name)

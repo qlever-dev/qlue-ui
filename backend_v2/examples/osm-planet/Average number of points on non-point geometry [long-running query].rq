@@ -1,0 +1,5 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT (AVG(STRLEN(REPLACE(STR(?geometry), "[^,]", "")) + 1) AS ?avg_num_points) WHERE {
+  ?subject geo:asWKT ?geometry .
+  FILTER (!ql:isGeoPoint(?geometry))
+}

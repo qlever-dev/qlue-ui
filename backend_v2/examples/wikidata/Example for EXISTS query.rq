@@ -1,0 +1,17 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT ?name ?young_person_born_here  ?population WHERE {
+  ?city wdt:P31/wdt:P279* wd:Q515 .
+  ?city wdt:P17 wd:Q183 .
+  ?city wdt:P1082 ?population .
+  ?city rdfs:label ?name .
+  FILTER (LANG(?name) = "de")
+  BIND (EXISTS {
+    ?person wdt:P19 ?city .
+    ?person wdt:P569 ?date_of_birth .
+    FILTER (?date_of_birth > "2000-01-01T00:00:00Z"^^xsd:dateTime)
+  } AS ?young_person_born_here)
+}
+ORDER BY DESC(?population)

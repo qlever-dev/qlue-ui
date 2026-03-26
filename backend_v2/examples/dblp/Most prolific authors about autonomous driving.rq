@@ -1,0 +1,9 @@
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+SELECT ?name (COUNT(?paper) as ?count)  WHERE {
+  ?paper dblp:title ?title .
+  ?paper dblp:authoredBy ?author .
+  ?author dblp:primaryCreatorName ?name .
+  [ ql:contains-entity ?title; ql:contains-word "auto* driving" ]
+}
+GROUP BY ?author ?name
+ORDER BY DESC(?count)

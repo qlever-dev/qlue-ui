@@ -1,0 +1,9 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX sc: <http://schema.org/>
+SELECT ?x ?name WHERE {
+  ?x wdt:P31 wd:Q13442814 .
+  ?x sc:name ?name .
+  FILTER (lang(?name) = "en")
+}
+LIMIT 1000

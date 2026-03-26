@@ -1,0 +1,13 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+SELECT ?anything ?name ?latitude ?longitude ?location WHERE {
+  ?anything wdt:P625 ?location .
+  ?anything rdfs:label ?name .
+  FILTER (LANG(?name) = "en") .
+  BIND (geof:latitude(?location) AS ?latitude)
+  BIND (geof:longitude(?location) AS ?longitude)
+  FILTER (?latitude >= 47.99) FILTER (?latitude <= 48.01)
+}
+ORDER BY ASC(?longitude)

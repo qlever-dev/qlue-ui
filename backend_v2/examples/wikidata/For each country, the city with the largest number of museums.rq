@@ -1,0 +1,26 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?country_label ?city_label ?max_num_museums ?coordinates WHERE {
+  # For each country, the largest number of museums in a city.
+  { SELECT ?country (MAX(?num_museums) AS ?max_num_museums) WHERE {
+    { SELECT ?city (COUNT(DISTINCT ?museum) AS ?num_museums) WHERE {
+        ?museum wdt:P131+ ?city .
+        ?city wdt:P31/wdt:P279* wd:Q515 .
+        ?museum wdt:P31/wdt:P279* wd:Q33506 .
+    } GROUP BY ?city }
+    ?city wdt:P17 ?country .
+  } GROUP BY ?country }
+  # Join the corresponding city.
+  { SELECT ?city (COUNT(DISTINCT ?museum) AS ?num_museums) WHERE {
+      ?museum wdt:P131+ ?city .
+      ?city wdt:P31/wdt:P279* wd:Q515 .
+      ?museum wdt:P31/wdt:P279* wd:Q33506 .
+  } GROUP BY ?city }
+  ?city wdt:P17 ?country .
+  FILTER (?num_museums = ?max_num_museums)
+  # The name for each city and country and the coordinate of the city.
+  ?city wdt:P625 ?coordinates .
+  ?city rdfs:label ?city_label FILTER (LANG(?city_label) = "en") .
+  ?country rdfs:label ?country_label FILTER (LANG(?country_label) = "en") .
+} ORDER BY DESC(?max_num_museums)

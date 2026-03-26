@@ -1,0 +1,12 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+SELECT ?person_id ?person_name (SAMPLE(?text) AS ?sample_text) (COUNT(?text) AS ?count_text) WHERE {
+  ?person_id wdt:P31 wd:Q5 .
+  ?person_id rdfs:label ?person_name .
+  FILTER (LANG(?person_name) = "en") .
+  ?text ql:contains-entity ?person_id .
+  ?text ql:contains-word "beatles"
+}
+GROUP BY ?person_id ?person_name
+ORDER BY DESC(?count_text)

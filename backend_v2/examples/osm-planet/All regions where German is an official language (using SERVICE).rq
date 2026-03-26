@@ -1,0 +1,21 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX schema: <http://schema.org/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT DISTINCT ?region_osm ?region_wd ?region_name ?sitelinks ?geometry WHERE {
+  ?region_osm osm:wikidata ?region_wd .
+  ?region_osm geo:hasGeometry ?geometry .
+  ?region_osm osmkey:name ?region_name .
+  ?region_osm rdf:type osm:relation .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    ?region_wd wdt:P31/wdt:P279* wd:Q1048835 .
+    ?region_wd ^schema:about/wikibase:sitelinks ?sitelinks .
+    ?region_wd wdt:P37 wd:Q188 .
+  }
+} ORDER BY DESC(?sitelinks)

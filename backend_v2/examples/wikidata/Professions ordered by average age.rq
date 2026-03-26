@@ -1,0 +1,17 @@
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?occupation ?occupation_label (AVG(?age) AS ?avg_age) (COUNT(?age) AS ?count_age) WHERE {
+  ?person wdt:P31 wd:Q5 .
+  ?person wdt:P106 ?occupation .
+  ?person wdt:P569 ?date_of_birth .
+  ?person wdt:P570 ?date_of_death .
+  ?occupation rdfs:label ?occupation_label .
+  FILTER (LANG(?occupation_label) = "en") . 
+  BIND (YEAR(?date_of_death) - YEAR(?date_of_birth) AS ?age)
+  FILTER (?age = ?age) # filter out invalid dates
+  # FILTER (YEAR(?date_of_birth) >= 1900)
+}
+GROUP BY ?occupation ?occupation_label
+HAVING (?count_age > 100)
+ORDER BY DESC(?avg_age)

@@ -1,0 +1,19 @@
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?period_label ?era_label ?eon_label (YEAR(?start_time) AS ?start_year) WHERE {
+  ?period wdt:P31 wd:Q392928 .
+  ?period wdt:P580 ?start_time .
+  ?period wdt:P582 ?end_time .
+  ?period wdt:P361 ?era . 
+  ?era wdt:P361 ?eon . 
+  ?era wdt:P31 wd:Q630830 .
+  ?eon wdt:P31 wd:Q108256 .
+  ?period rdfs:label ?period_label .
+  ?era rdfs:label ?era_label .
+  ?eon rdfs:label ?eon_label .
+  FILTER (LANG(?period_label) = "de") .
+  FILTER (LANG(?era_label) = "de") .
+  FILTER (LANG(?eon_label) = "de") .
+}
+ORDER BY ASC(?start_time)

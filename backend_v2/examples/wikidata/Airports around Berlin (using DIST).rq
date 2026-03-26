@@ -1,0 +1,15 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+SELECT ?airport ?airport_label ?dist ?location WHERE {
+  ?airport wdt:P31/wdt:P279* wd:Q1248784 .
+  ?airport wdt:P625 ?location .
+  ?airport rdfs:label ?airport_label .
+  FILTER (LANG(?airport_label) = "en") .
+  BIND ("POINT(13.38 52.52)"^^geo:wktLiteral AS ?point)
+  BIND (geof:distance(?location, ?point) AS ?dist)
+  FILTER (?dist <= 100)
+}
+ORDER BY ASC(?dist)

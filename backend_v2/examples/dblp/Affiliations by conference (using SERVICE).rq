@@ -1,0 +1,22 @@
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?affiliation (COUNT(?venue) AS ?count) (GROUP_CONCAT(DISTINCT ?person_name) AS ?people) ?coordinates WHERE {
+  ?person_dblp rdf:type dblp:Person .
+  ?person_dblp dblp:wikidata ?person_wikidata_id .
+  ?person_dblp ^dblp:authoredBy/dblp:publishedIn ?venue .
+  ?person_dblp rdfs:label ?person_name .
+  FILTER REGEX(?venue, "SIGIR|CIKM|ECIR")
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    SELECT ?person_wikidata_id ?affiliation ?coordinates {
+      ?person_wikidata_id wdt:P2456 ?person_dblp_id .
+      ?person_wikidata_id wdt:P108 ?affiliation_id .
+      ?affiliation_id @en@rdfs:label ?affiliation .
+      ?affiliation_id wdt:P625 ?coordinates
+    }
+  }
+}
+GROUP BY ?affiliation ?coordinates
+HAVING (?count > 10)
+ORDER BY DESC(?count)
