@@ -1,7 +1,6 @@
 import type { Editor } from './editor/init';
 import type { QlueLsServiceConfig } from './types/backend';
-
-const BASE_PATH = import.meta.env.BASE_URL ?? '/';
+import { apiFetch } from './api';
 
 /**
  * Initializes the share modal. Clicking the share button generates multiple
@@ -114,7 +113,7 @@ export function closeShare() {
 
 /** Posts the query to the share API and returns the generated short ID. */
 export async function getShareLinkId(query: string): Promise<string> {
-  const response = await fetch(`${BASE_PATH}ui-api/shared-query/`, {
+  const response = await apiFetch('shared-query/', {
     method: 'POST',
     body: query,
   });
@@ -141,7 +140,7 @@ export async function getShareLinkId(query: string): Promise<string> {
 
 /** Fetches the saved query text for the given short ID from the share API. */
 export async function getSharedQuery(id: string): Promise<string> {
-  return await fetch(`${BASE_PATH}ui-api/shared-query/${id}`)
+  return await apiFetch(`shared-query/${id}`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`Could not get query with ID "${id}".`);

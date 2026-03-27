@@ -8,13 +8,10 @@ import type { EndpointListResponse, QlueLsServiceConfig, SparqlEndpointConfigura
 import { MonacoLanguageClient } from 'monaco-languageclient';
 import { getPathParameters } from '../utils';
 import type { Editor } from '../editor/init';
+import { apiFetch } from '../api';
+import { BASE_PATH } from '../utils';
 
-
-const BASE_PATH = import.meta.env.BASE_URL ?? '/';
-
-const endpointConfigPromise: Promise<EndpointListResponse> = fetch(
-  `${BASE_PATH}ui-api/endpoints/`
-)
+const endpointConfigPromise: Promise<EndpointListResponse> = apiFetch('endpoints/')
   .then((response) => {
     if (!response.ok) {
       throw new Error(

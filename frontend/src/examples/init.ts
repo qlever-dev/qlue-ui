@@ -1,8 +1,7 @@
 import type { Editor } from '../editor/init';
 import { setupKeywordSearch } from './keyword_search';
 import { clearExamples, handleClickEvents } from './utils';
-
-const BASE_PATH = import.meta.env.BASE_URL ?? '/';
+import { apiFetch } from '../api';
 
 interface QueryExample {
   name: string;
@@ -28,7 +27,7 @@ export async function loadExamples(editor: Editor, serviceSlug: string) {
   const examplesList = document.getElementById('examplesList')!;
   const examplesModal = document.getElementById('examplesModal')!;
 
-  let examples = (await fetch(`${BASE_PATH}ui-api/endpoints/${serviceSlug}/examples/`)
+  let examples = (await apiFetch(`endpoints/${serviceSlug}/examples/`)
     .then((response) => {
       if (!response.ok) {
         throw new Error(
