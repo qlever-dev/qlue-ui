@@ -45,7 +45,7 @@ def validate_config(data: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"Schema validation failed:\n{exc}") from exc
 
 
-class SharedQueryResponse(CamelModel):
+class SharedQuery(CamelModel):
     id: str
-    count: int
+    query: str
     creation_date: date
