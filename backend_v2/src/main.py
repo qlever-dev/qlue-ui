@@ -111,6 +111,27 @@ async def update_example(slug: str, example: ExampleQuery):
     file_path.write_text(example.query)
 
 
+@app.post(
+    "/endpoints/{slug}/examples/",
+    dependencies=[Depends(require_api_key)],
+    status_code=201,
+)
+async def create_example(slug: str, example: ExampleQuery):
+    """Create a new example query file. Returns 409 if it already exists."""
+    slug_dir = (EXAMPLES_DIR / slug).resolve()
+    if not slug_dir.is_relative_to(EXAMPLES_DIR):
+        raise HTTPException(status_code=400, detail="Invalid slug")
+    file_path = (slug_dir / f"{example.name}.rq").resolve()
+    if not file_path.is_relative_to(slug_dir):
+        raise HTTPException(status_code=400, detail="Invalid example name")
+    if file_path.exists():
+        raise HTTPException(
+            status_code=409, detail=f'Example "{example.name}" already exists'
+        )
+    slug_dir.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(example.query)
+
+
 @app.post("/shared-query/")
 def share_query(
     query: str = Body(media_type="text/plain"),
