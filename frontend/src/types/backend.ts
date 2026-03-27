@@ -5,11 +5,11 @@ export interface PrefixMap {
 export interface QlueLsServiceConfig {
   name: string;
   url: string;
-  engine?: string;
   healthCheckUrl?: string;
+  engine?: string;
+  default: boolean;
   prefixMap: Record<string, string>;
   queries: CompletionTemplates;
-  default: boolean;
   additionalData: any;
 }
 
