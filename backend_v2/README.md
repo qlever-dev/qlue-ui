@@ -28,6 +28,8 @@ FastAPI service that serves SPARQL endpoint configurations and shared queries.
 | `CONFIG_FILE` | `config.yaml` | Path to the YAML endpoint configuration file |
 | `EXAMPLES_DIR` | `examples` | Directory containing example query files |
 | `DB_FILE` | `data.db` | Path to the SQLite database |
+| `CORS_ORIGINS` | `*` | Comma-separated list of allowed CORS origins |
+| `API_KEY` | — | Required to use write endpoints (e.g. updating examples) |
 
 ## Running
 

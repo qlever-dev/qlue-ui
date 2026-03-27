@@ -1,18 +1,27 @@
 from contextlib import asynccontextmanager
-from fastapi import Body, FastAPI, HTTPException
+from fastapi import Body, Depends, FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from pathlib import Path
 import os
 
+from fastapi.openapi.models import Example
+
 from config_store import Store
 from database import connect
-from models import SharedQuery, SparqlEndpointConfiguration
+from models import ExampleQuery, SharedQuery, SparqlEndpointConfiguration
 from query_store import QueryStore
 
 CONFIG_PATH = Path(os.getenv("CONFIG_FILE", "config.yaml")).resolve()
 EXAMPLES_DIR = Path(os.getenv("EXAMPLES_DIR", "examples")).resolve()
 DB_PATH = Path(os.getenv("DB_FILE", "data.db")).resolve()
 MAX_QUERY_LENGTH = 100_000  # bytes — reject unreasonably large shared queries
+API_KEY = os.getenv("API_KEY")
+
+
+def require_api_key(x_api_key: str | None = Header(default=None)):
+    if API_KEY is None or x_api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API key")
 
 
 # ── Stores ─────────────────────────────────────────────────────────────────
@@ -40,6 +49,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/health")
 async def health():
@@ -54,7 +70,7 @@ async def list_endpoints() -> dict[str, SparqlEndpointConfiguration]:
     return data
 
 
-@app.get("/endpoints/{slug}")
+@app.get("/endpoints/{slug}/")
 async def get_endpoint(slug: str) -> SparqlEndpointConfiguration:
     """Retrieve a single SPARQL endpoint configuration by its slug."""
     data = await store.get_all()
@@ -66,7 +82,7 @@ async def get_endpoint(slug: str) -> SparqlEndpointConfiguration:
 
 
 @app.get("/endpoints/{slug}/examples/")
-async def list_examples(slug: str) -> list[dict[str, str]]:
+async def list_examples(slug: str) -> list[ExampleQuery]:
     """Retrieve all example queries for an endpoint. Returns an empty list if none exist."""
     slug_dir = (EXAMPLES_DIR / slug).resolve()
     if not slug_dir.is_relative_to(EXAMPLES_DIR):
@@ -74,8 +90,25 @@ async def list_examples(slug: str) -> list[dict[str, str]]:
     if not slug_dir.is_dir():
         return []
     return [
-        {"name": p.stem, "query": p.read_text()} for p in sorted(slug_dir.glob("*.rq"))
+        ExampleQuery(name=p.stem, query=p.read_text())
+        for p in sorted(slug_dir.glob("*.rq"))
     ]
+
+
+@app.put("/endpoints/{slug}/examples/", dependencies=[Depends(require_api_key)])
+async def update_example(slug: str, example: ExampleQuery):
+    """Overwrite the content of an existing example query file."""
+    slug_dir = (EXAMPLES_DIR / slug).resolve()
+    if not slug_dir.is_relative_to(EXAMPLES_DIR):
+        raise HTTPException(status_code=400, detail="Invalid slug")
+    file_path = (slug_dir / f"{example.name}.rq").resolve()
+    if not file_path.is_relative_to(slug_dir):
+        raise HTTPException(status_code=400, detail="Invalid example name")
+    if not file_path.is_file():
+        raise HTTPException(
+            status_code=404, detail=f'Example "{example.name}" not found'
+        )
+    file_path.write_text(example.query)
 
 
 @app.post("/shared-query/")
