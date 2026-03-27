@@ -3,13 +3,17 @@ from fastapi import Body, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from pathlib import Path
+from typing import Any
 import os
-
-from fastapi.openapi.models import Example
 
 from config_store import Store
 from database import connect
-from models import ExampleQuery, SharedQuery, SparqlEndpointConfiguration
+from models import (
+    ExampleQuery,
+    SharedQuery,
+    SparqlEndpointConfiguration,
+    SparqlEndpointPatch,
+)
 from query_store import QueryStore
 
 CONFIG_PATH = Path(os.getenv("CONFIG_FILE", "config.yaml")).resolve()
@@ -60,17 +64,17 @@ app.add_middleware(
 @app.get("/health")
 async def health():
     """Unauthenticated health check."""
-    return {"status": "ok", "yaml_path": str(CONFIG_PATH)}
+    return {"status": "ok"}
 
 
-@app.get("/endpoints/")
+@app.get("/endpoints/", response_model_exclude_none=True)
 async def list_endpoints() -> dict[str, SparqlEndpointConfiguration]:
     """Retrieve all public endpoint configurations (hidden endpoints are excluded)."""
     data = await store.get_all()
     return data
 
 
-@app.get("/endpoints/{slug}/")
+@app.get("/endpoints/{slug}/", response_model_exclude_none=True)
 async def get_endpoint(slug: str) -> SparqlEndpointConfiguration:
     """Retrieve a single SPARQL endpoint configuration by its slug."""
     data = await store.get_all()
@@ -79,6 +83,26 @@ async def get_endpoint(slug: str) -> SparqlEndpointConfiguration:
             status_code=404, detail=f'endpoint with slug "{slug}" not found'
         )
     return data[slug]
+
+
+@app.patch("/endpoints/{slug}/", dependencies=[Depends(require_api_key)])
+async def patch_endpoint(slug: str, patch: SparqlEndpointPatch):
+    """Partially update an endpoint configuration. Only provided top-level fields
+    are changed. Nested objects like `queryTemplates` are replaced in full — send
+    the complete object, not individual sub-fields."""
+    update_data = patch.model_dump(exclude_unset=True)
+
+    def apply(current: dict[str, Any]) -> dict[str, Any]:
+        stored = SparqlEndpointConfiguration.model_validate(current)
+        updated = stored.model_copy(update=update_data)
+        return updated.model_dump(mode="json", exclude_none=True)
+
+    try:
+        return await store.patch(slug, apply)
+    except KeyError:
+        raise HTTPException(
+            status_code=404, detail=f'endpoint with slug "{slug}" not found'
+        )
 
 
 @app.get("/endpoints/{slug}/examples/")

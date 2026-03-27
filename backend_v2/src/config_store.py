@@ -2,9 +2,21 @@ import yaml
 import hashlib
 import asyncio
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+from models import validate_config
 
-from models import AppConfig, validate_config
+
+class _Dumper(yaml.Dumper):
+    pass
+
+
+def _str_representer(dumper: yaml.Dumper, data: str) -> yaml.ScalarNode:
+    if "\n" in data:
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+_Dumper.add_representer(str, _str_representer)
 
 
 class Store:
@@ -31,3 +43,37 @@ class Store:
         """Return the live internal state. DO NOT mutate the result."""
         async with self._lock:
             return self._data
+
+    async def patch(
+        self, slug: str, apply: Callable[[dict[str, Any]], dict[str, Any]]
+    ) -> dict[str, Any]:
+        """Read-modify-write an endpoint atomically.
+
+        *apply* receives the current stored dict and must return the new one.
+        Raises KeyError if the slug does not exist.  Rolls back on write failure.
+        """
+        async with self._lock:
+            if slug not in self._data:
+                raise KeyError(slug)
+            prev = self._data[slug]
+            self._data[slug] = apply(prev)
+            try:
+                self._persist()
+            except Exception:
+                self._data[slug] = prev
+                raise
+            return self._data[slug]
+
+    def _persist(self) -> None:
+        """Atomically write current state back to the YAML file."""
+        raw = yaml.dump(
+            self._data,
+            Dumper=_Dumper,
+            default_flow_style=False,
+            allow_unicode=True,
+            sort_keys=False,
+        )
+        tmp = self._file_path.with_suffix(".tmp")
+        tmp.write_text(raw)
+        tmp.replace(self._file_path)
+        self._file_hash = hashlib.sha256(raw.encode()).hexdigest()

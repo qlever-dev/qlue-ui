@@ -4,7 +4,7 @@ import * as monaco from 'monaco-editor';
 import type { Editor } from '../editor/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import { applyPanelWidth, toggleWideMode } from '../buttons/wide_mode';
-import { getCookie } from '../utils';
+import { apiFetch, clearApiKey, getApiKey } from '../api';
 
 const DEBOUNCE_MS = 300;
 
@@ -197,13 +197,13 @@ function saveTemplates() {
   // NOTE: Flush current editor content into the active template.
   currentConfig.queries[activeKey] = templateEditor.getValue();
 
-  const csrftoken = getCookie('csrftoken');
-  if (csrftoken == null) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
     document.dispatchEvent(
       new CustomEvent('toast', {
         detail: {
           type: 'error',
-          message: 'Missing CSRF token!<br>Log into the API to save templates.',
+          message: 'Missing API key!<br>Enter an API key to save templates.',
           duration: 3000,
         },
       })
@@ -211,20 +211,16 @@ function saveTemplates() {
     return;
   }
 
-
-  fetch(`${import.meta.env.VITE_API_URL}/api/backends/${currentConfig.name}/templates`, {
+  apiFetch(`endpoints/${currentConfig.name}/`, {
     method: 'PATCH',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken,
-    },
-    body: JSON.stringify(currentConfig.queries),
+    headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+    body: JSON.stringify({ queryTemplates: currentConfig.queries }),
   })
     .then((response) => {
       if (!response.ok) {
         let message = 'Templates could not be saved.';
         if (response.status === 403) {
+          clearApiKey();
           message = 'Missing permissions!<br>Log into the API to save templates.';
         }
         document.dispatchEvent(

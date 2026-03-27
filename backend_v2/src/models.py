@@ -12,14 +12,14 @@ class CamelModel(BaseModel):
 
 
 class Query_Templates(CamelModel):
-    subject_completion: Optional[str]
-    predicate_completion_context_sensitive: Optional[str]
-    predicate_completion_context_insensitive: Optional[str]
-    object_completion_context_sensitive: Optional[str]
-    object_completion_context_insensitive: Optional[str]
-    values_completion_context_sensitive: Optional[str]
-    values_completion_context_insensitive: Optional[str]
-    hover: Optional[str]
+    subject_completion: Optional[str] = None
+    predicate_completion_context_sensitive: Optional[str] = None
+    predicate_completion_context_insensitive: Optional[str] = None
+    object_completion_context_sensitive: Optional[str] = None
+    object_completion_context_insensitive: Optional[str] = None
+    values_completion_context_sensitive: Optional[str] = None
+    values_completion_context_insensitive: Optional[str] = None
+    hover: Optional[str] = None
 
 
 class SparqlEndpointConfiguration(CamelModel):
@@ -27,6 +27,7 @@ class SparqlEndpointConfiguration(CamelModel):
     url: HttpUrl
     engine: Optional[str] = None
     default: bool
+    sort_key: Optional[str] = None
     prefix_map: Optional[dict[str, AnyUrl]] = None
     map_view_url: Optional[str] = None
     query_templates: Optional[Query_Templates] = None
@@ -40,9 +41,20 @@ def validate_config(data: dict[str, Any]) -> dict[str, Any]:
     """Validate and return the normalized dict. Raises ValueError on failure."""
     try:
         config = AppConfig.model_validate(data)
-        return config.model_dump()
+        return config.model_dump(mode="json", exclude_none=True)
     except ValidationError as exc:
         raise ValueError(f"Schema validation failed:\n{exc}") from exc
+
+
+class SparqlEndpointPatch(CamelModel):
+    name: Optional[str] = None
+    url: Optional[HttpUrl] = None
+    engine: Optional[str] = None
+    default: Optional[bool] = None
+    sort_key: Optional[str] = None
+    prefix_map: Optional[dict[str, AnyUrl]] = None
+    map_view_url: Optional[str] = None
+    query_templates: Optional[Query_Templates] = None
 
 
 class ExampleQuery(BaseModel):
