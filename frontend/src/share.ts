@@ -1,6 +1,8 @@
 import type { Editor } from './editor/init';
 import type { QlueLsServiceConfig } from './types/backend';
 
+const BASE_PATH = import.meta.env.BASE_URL ?? '/';
+
 /**
  * Initializes the share modal. Clicking the share button generates multiple
  * link formats (short URL, auto-execute URL, full query-string URL, direct
@@ -42,7 +44,10 @@ export async function setupShare(editor: Editor) {
     )) as QlueLsServiceConfig;
     const slug = backend.name;
 
-    const shareLinkId = await getShareLinkId(query);
+    const shareLinkId = await getShareLinkId(query).catch(() => {
+      closeShare();
+    });
+    if (!shareLinkId) return;
 
     // NOTE: URL to this query in the QLever UI (short, with query hash)
     const url1 = new URL(`${slug}/${shareLinkId}`, window.location.origin);
@@ -109,23 +114,51 @@ export function closeShare() {
 
 /** Posts the query to the share API and returns the generated short ID. */
 export async function getShareLinkId(query: string): Promise<string> {
-  return await fetch(`${import.meta.env.VITE_API_URL}/api/share/`, {
+  const response = await fetch(`${BASE_PATH}ui-api/shared-query/`, {
     method: 'POST',
     body: query,
-  }).then(async (response) => {
-    if (!response.ok) {
-      throw new Error(`Could not aquire share link`);
-    }
-    return response.text();
   });
+
+  if (!response.ok) {
+    if (response.status === 413) {
+      document.dispatchEvent(
+        new CustomEvent('toast', {
+          detail: {
+            type: 'warning',
+            message: 'Query is too large to share via short link.',
+            duration: 4000,
+          },
+        })
+      );
+      throw new Error('Query too large');
+    }
+    throw new Error('Could not acquire share link');
+  }
+
+  const json = await response.json();
+  return json.id;
 }
 
 /** Fetches the saved query text for the given short ID from the share API. */
-export async function getSavedQuery(id: string): Promise<string> {
-  return await fetch(`${import.meta.env.VITE_API_URL}/api/share/${id}`).then(async (response) => {
-    if (!response.ok) {
-      throw new Error(`Could not aquire share link`);
-    }
-    return response.text();
-  });
+export async function getSharedQuery(id: string): Promise<string> {
+  return await fetch(`${BASE_PATH}ui-api/shared-query/${id}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Could not get query with ID "${id}".`);
+      }
+      return response.json();
+    })
+    .then(json => json.query)
+    .catch(err => {
+      console.log(err);
+      document.dispatchEvent(
+        new CustomEvent('toast', {
+          detail: {
+            type: 'error',
+            message: `Failed to load query with ID: "${id}"`,
+            duration: 2000,
+          },
+        })
+      );
+    });
 }

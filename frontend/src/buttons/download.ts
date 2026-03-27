@@ -54,7 +54,8 @@ export function setupDownload(editor: Editor) {
       const dataUrl = `${sparqlService.url}?query=${encodeURIComponent(query)}&action=tsv_export`;
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.setAttribute('download', `${sparqlService.name}-${await getShareLinkId(query)}.tsv`);
+      const shareId = await getShareLinkId(query).catch(() => 'query');
+      a.setAttribute('download', `${sparqlService.name}-${shareId}.tsv`);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
