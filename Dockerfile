@@ -20,7 +20,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.11.2 /uv /uvx /bin/
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
-    UV_PYTHON_DOWNLOADS=0
+    UV_PYTHON_DOWNLOADS=0 \
+    DB_FILE=data/data.db
 
 WORKDIR /app
 

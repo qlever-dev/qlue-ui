@@ -24,7 +24,7 @@ logger = logging.getLogger("uvicorn.error")
 
 CONFIG_PATH = Path(os.getenv("CONFIG_FILE", "config.yaml")).resolve()
 EXAMPLES_DIR = Path(os.getenv("EXAMPLES_DIR", "examples")).resolve()
-DB_PATH = Path(os.getenv("DB_FILE", "data/data.db")).resolve()
+DB_PATH = Path(os.getenv("DB_FILE", "data.db")).resolve()
 FRONTEND_DIR = Path(os.getenv("FRONTEND_DIR", "frontend_dist"))
 MAX_QUERY_LENGTH = 100_000  # bytes — reject unreasonably large shared queries
 API_KEY = os.getenv("API_KEY")
