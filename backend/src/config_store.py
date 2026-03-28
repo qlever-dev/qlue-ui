@@ -1,9 +1,12 @@
 import yaml
 import hashlib
 import asyncio
+import logging
 from pathlib import Path
 from typing import Any, Callable
 from models import validate_config
+
+logger = logging.getLogger("uvicorn.error")
 
 
 class _Dumper(yaml.Dumper):
@@ -35,8 +38,10 @@ class ConfigStore:
                 self._file_hash = hashlib.sha256(raw).hexdigest()
                 parsed_data = yaml.safe_load(raw) or {}
                 self._data = validate_config(parsed_data)
-                print(
-                    f"Loaded {len(self._data)} endpoint config from config file {self._file_path}."
+                logger.info(
+                    "Loaded %d endpoint config(s) from %s",
+                    len(self._data),
+                    self._file_path,
                 )
             else:
                 self._data = {}

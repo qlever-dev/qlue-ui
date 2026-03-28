@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -15,6 +16,8 @@ from models import (
     SparqlEndpointPatch,
 )
 from query_store import QueryStore
+
+logger = logging.getLogger("uvicorn.error")
 
 CONFIG_PATH = Path(os.getenv("CONFIG_FILE", "config.yaml")).resolve()
 EXAMPLES_DIR = Path(os.getenv("EXAMPLES_DIR", "examples")).resolve()
@@ -37,11 +40,14 @@ query_store = QueryStore(db)
 # ── Lifespan (startup / shutdown) ───────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    logger.info("Config file: %s", CONFIG_PATH)
+    logger.info("Examples dir: %s", EXAMPLES_DIR)
+    logger.info("Database: %s", DB_PATH)
+    logger.info("API key: %s", "set" if API_KEY else "not set")
     await store.load()
     yield
-    # Shutdown
     db.close()
+    logger.info("Database connection closed")
 
 
 # ── App & Routes ─────────────────────────────────────────────────────────
