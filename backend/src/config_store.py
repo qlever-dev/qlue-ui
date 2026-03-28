@@ -19,7 +19,7 @@ def _str_representer(dumper: yaml.Dumper, data: str) -> yaml.ScalarNode:
 _Dumper.add_representer(str, _str_representer)
 
 
-class Store:
+class ConfigStore:
     """Thread/async-safe wrapper around the in-memory YAML data."""
 
     def __init__(self, filepath: Path) -> None:
@@ -35,6 +35,9 @@ class Store:
                 self._file_hash = hashlib.sha256(raw).hexdigest()
                 parsed_data = yaml.safe_load(raw) or {}
                 self._data = validate_config(parsed_data)
+                print(
+                    f"Loaded {len(self._data)} endpoint config from config file {self._file_path}."
+                )
             else:
                 self._data = {}
                 self._file_hash = ""

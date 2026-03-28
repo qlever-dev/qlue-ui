@@ -1,12 +1,12 @@
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Any
+
 from fastapi import Body, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from pathlib import Path
-from typing import Any
-import os
-
-from config_store import Store
+from config_store import ConfigStore
 from database import connect
 from models import (
     ExampleQuery,
@@ -29,7 +29,7 @@ def require_api_key(x_api_key: str | None = Header(default=None)):
 
 
 # ── Stores ─────────────────────────────────────────────────────────────────
-store = Store(CONFIG_PATH)
+store = ConfigStore(CONFIG_PATH)
 db = connect(DB_PATH)
 query_store = QueryStore(db)
 
@@ -154,6 +154,24 @@ async def create_example(slug: str, example: ExampleQuery):
         )
     slug_dir.mkdir(parents=True, exist_ok=True)
     file_path.write_text(example.query)
+
+
+@app.delete(
+    "/endpoints/{slug}/examples/",
+    dependencies=[Depends(require_api_key)],
+    status_code=204,
+)
+async def delete_example(slug: str, name: str = Body(embed=True)):
+    """Delete an existing example query file."""
+    slug_dir = (EXAMPLES_DIR / slug).resolve()
+    if not slug_dir.is_relative_to(EXAMPLES_DIR):
+        raise HTTPException(status_code=400, detail="Invalid slug")
+    file_path = (slug_dir / f"{name}.rq").resolve()
+    if not file_path.is_relative_to(slug_dir):
+        raise HTTPException(status_code=400, detail="Invalid example name")
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail=f'Example "{name}" not found')
+    file_path.unlink()
 
 
 @app.post("/shared-query/")
