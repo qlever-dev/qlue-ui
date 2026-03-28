@@ -1,14 +1,8 @@
 #!/bin/sh
-
 set -e
 
-echo "Running database migrations..."
-python ./api/manage.py migrate --noinput
+echo "Starting API server..."
+cd /app/src && uvicorn main:app --host 0.0.0.0 --port 8000 &
 
-echo "Syncing configuration"
-
-echo "Starting internal API server"
-cd ./api && gunicorn --bind 0.0.0.0:8000 --workers 3 configuration.wsgi:application &
-
-echo "Starting Caddy application..."
+echo "Starting Caddy..."
 exec "$@"

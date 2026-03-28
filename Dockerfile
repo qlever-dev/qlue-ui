@@ -1,5 +1,5 @@
-# ---- Stage 1: Build the UI app ----
-FROM node:22-alpine AS ui-builder
+# ---- Stage 1: Build the frontend ----
+FROM node:22-alpine AS frontend
 
 WORKDIR /app
 
@@ -8,68 +8,44 @@ ARG GIT_COMMIT
 ENV VITE_API_URL=${BASE_URL}
 ENV VITE_GIT_COMMIT=${GIT_COMMIT}
 
-# Install node dependencies
-COPY ./frontend/package*.json ./
+COPY frontend/package*.json ./
 RUN npm ci
-# Build static files
-COPY ./frontend .
+COPY frontend/ .
 RUN npm run build
 
-# ---- Stage 2: Build the API app ----
-FROM python:3.13-slim AS builder
-
-WORKDIR /app
-
-# Set environment variables to optimize Python
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Upgrade pip and install dependencies
-RUN pip install --upgrade pip
-COPY ./backend/pyproject.toml .
-RUN pip install --no-cache-dir .
-
-# ---- Stage 3: Final image ----
-FROM python:3.13-slim
+# ---- Stage 2: Final image ----
+FROM python:3.14-slim
 
 RUN useradd -m -r -u 1000 appuser && \
-	mkdir /app && \
-	chown -R appuser /app
+    mkdir /app && \
+    chown -R appuser /app
 
-# Copy the Python dependencies from the builder stage
-COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
-
-# Set the working directory
 WORKDIR /app
 
-# Copy API application code
-COPY --chown=appuser:appuser ./backend ./api
+# Install Python dependencies
+# uv is bind-mounted (not added to the image), cache speeds up rebuilds
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
-# Copy frontend build from Stage 1
-COPY --from=ui-builder /app/dist ./frontend_dist
+RUN --mount=from=ghcr.io/astral-sh/uv:0.11.2,source=/uv,target=/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=backend/pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=backend/uv.lock,target=uv.lock \
+    uv sync --locked --no-install-project --no-dev
 
-# Set environment variables to optimize Python
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+COPY --chown=appuser:appuser backend/src src/
+COPY --chown=appuser:appuser backend/examples examples/
+COPY --from=frontend /app/dist frontend_dist/
+COPY --from=caddy:2-alpine /usr/bin/caddy /usr/bin/caddy
+COPY Caddyfile entrypoint.sh ./
 
-# Switch to non-root user
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
 USER appuser
 
-# Collect static files
-RUN python ./api/manage.py collectstatic --noinput
-
-# Install caddy
-COPY --from=caddy:2 /usr/bin/caddy /usr/bin/caddy
-COPY Caddyfile .
-
-# Expose the application port
 EXPOSE 7000
 
-# setup entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-# RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
-
-# Start the application using Gunicorn
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["caddy", "run"]
