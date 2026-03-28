@@ -13,7 +13,23 @@ RUN npm ci
 COPY frontend/ .
 RUN npm run build
 
-# ---- Stage 2: Final image ----
+# ---- Stage 2: Install Python dependencies ----
+FROM python:3.14-slim AS builder
+
+COPY --from=ghcr.io/astral-sh/uv:0.11.2 /uv /uvx /bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=0
+
+WORKDIR /app
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=backend/pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=backend/uv.lock,target=uv.lock \
+    uv sync --locked --no-install-project --no-dev
+
+# ---- Stage 3: Final image ----
 FROM python:3.14-slim
 
 RUN useradd -m -r -u 1000 appuser && \
@@ -22,22 +38,12 @@ RUN useradd -m -r -u 1000 appuser && \
 
 WORKDIR /app
 
-# Install Python dependencies
-# uv is bind-mounted (not added to the image), cache speeds up rebuilds
-ENV UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy
-
-RUN --mount=from=ghcr.io/astral-sh/uv:0.11.2,source=/uv,target=/bin/uv \
-    --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=backend/pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=backend/uv.lock,target=uv.lock \
-    uv sync --locked --no-install-project --no-dev
-
-COPY --chown=appuser:appuser backend/src src/
+COPY --from=builder /app/.venv .venv/
+COPY --chown=appuser:appuser backend/src api/src/
 COPY --chown=appuser:appuser backend/examples examples/
 COPY --from=frontend /app/dist frontend_dist/
-COPY --from=caddy:2-alpine /usr/bin/caddy /usr/bin/caddy
-COPY Caddyfile entrypoint.sh ./
+COPY --chown=appuser:appuser config.default.yaml config.yaml
+RUN mkdir data/ && chown appuser:appuser data/
 
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -47,5 +53,4 @@ USER appuser
 
 EXPOSE 7000
 
-ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["caddy", "run"]
+CMD ["uvicorn", "main:app", "--app-dir", "api/src", "--host", "0.0.0.0", "--port", "7000", "--proxy-headers", "--forwarded-allow-ips", "*"]

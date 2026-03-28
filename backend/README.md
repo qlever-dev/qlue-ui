@@ -19,7 +19,7 @@ FastAPI service that serves SPARQL endpoint configurations and shared queries.
 
 **Example queries** are read from the filesystem. Each endpoint slug has a directory under `examples/` containing `.rq` files.
 
-**Shared queries** are stored in a SQLite database (`data.db` by default). Queries are deduplicated by SHA-256 hash. Each row stores a 6-character alphanumeric short ID, the query text, a hash, creation date, share count, and view count. The database uses WAL mode.
+**Shared queries** are stored in a SQLite database (`data/data.db` by default). Queries are deduplicated by SHA-256 hash. Each row stores a 6-character alphanumeric short ID, the query text, a hash, creation date, share count, and view count. The database uses WAL mode.
 
 ## Environment variables
 
@@ -27,7 +27,7 @@ FastAPI service that serves SPARQL endpoint configurations and shared queries.
 |---|---|---|
 | `CONFIG_FILE` | `config.yaml` | Path to the YAML endpoint configuration file |
 | `EXAMPLES_DIR` | `examples` | Directory containing example query files |
-| `DB_FILE` | `data.db` | Path to the SQLite database |
+| `DB_FILE` | `data/data.db` | Path to the SQLite database |
 | `CORS_ORIGINS` | `*` | Comma-separated list of allowed CORS origins |
 | `API_KEY` | — | Required to use write endpoints (e.g. updating examples) |
 

@@ -8,11 +8,11 @@ services:
     env_file:
       - .env
     volumes:
-      - ./data.db:/app/data.db
-
-      # If the APP should be available on your HOST add this:
+      - data:/app/data
     ports:
       - 7000:7000
+
+      # If the APP should be available on your HOST add this:
 
     # If your proxy is traefik add this:
     # networks:
@@ -29,3 +29,6 @@ services:
 # networks:
 #   proxy:
 #     external: true
+
+volumes:
+  data:
