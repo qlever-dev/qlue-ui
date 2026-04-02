@@ -1,0 +1,14 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+SELECT ?film_id ?film ?award WHERE {
+  wd:Q873 p:P166 ?p166 .
+  ?p166 ps:P166 ?award_id .
+  ?p166 pq:P1686 ?film_id .
+  ?award_id wdt:P31 wd:Q19020 .
+  ?award_id rdfs:label ?award . FILTER (LANG(?award) = "en")
+  ?film_id rdfs:label ?film . FILTER (LANG(?film) = "en")
+}

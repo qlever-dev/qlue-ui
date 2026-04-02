@@ -1,0 +1,8 @@
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+SELECT ?year (COUNT(?author)/COUNT(DISTINCT ?paper) AS ?authors_per_paper) WHERE {
+  ?paper dblp:authoredBy ?author .
+  ?paper dblp:yearOfPublication ?year .
+  # FILTER (?year != "2023")
+}
+GROUP BY ?year
+ORDER BY DESC(?year)

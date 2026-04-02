@@ -1,0 +1,19 @@
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX psv: <http://www.wikidata.org/prop/statement/value/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?occupation ?gender (AVG(?height) AS ?avg_height) (COUNT(?height) AS ?count) WHERE {
+  ?x wdt:P31 wd:Q5 .
+  ?x wdt:P106 ?occupation_id . ?occupation_id rdfs:label ?occupation .
+  ?x wdt:P21 ?gender_id . ?gender_id rdfs:label ?gender .
+  ?x p:P2048/psv:P2048/wikibase:quantityNormalized ?quantity .
+  ?quantity wikibase:quantityUnit wd:Q11573 .
+  ?quantity wikibase:quantityAmount ?height .
+  FILTER (LANG(?gender) = "en") .
+  FILTER (LANG(?occupation) = "en")
+}
+GROUP BY ?occupation ?gender
+HAVING (?count > 100)
+ORDER BY DESC(?avg_height)

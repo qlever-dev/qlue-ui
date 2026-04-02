@@ -1,0 +1,12 @@
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+SELECT ?osm_id ?shape WHERE {
+  osmrel:62768 ogc:sfContains ?osm_id .
+  ?osm_id osmkey:building ?building .
+  ?osm_id rdf:type osm:way .
+  ?osm_id geo:hasGeometry/geo:asWKT ?shape
+}

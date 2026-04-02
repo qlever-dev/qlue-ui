@@ -1,0 +1,19 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT ?country_osm ?country_wd ?border WHERE {
+  ?country_osm osm:wikidata ?country_wd .
+  ?country_osm geo:hasGeometry/geo:asWKT ?border .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    SELECT ?country_wd WHERE {
+	  ?country_wd wdt:P463 wd:Q7184 .
+      MINUS { ?country_wd p:P463 ?m . ?m ps:P463 wd:Q7184 . ?m pq:P582 ?end_time }
+	}
+  }
+}

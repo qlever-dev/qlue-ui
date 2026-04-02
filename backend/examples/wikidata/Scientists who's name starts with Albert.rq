@@ -1,0 +1,9 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?scientist ?name WHERE {
+  ?scientist wdt:P106 wd:Q901 .
+  ?scientist rdfs:label ?name .
+  FILTER (LANG(?name) = "en") .
+  FILTER REGEX(STR(?name), "^Albert") .
+}

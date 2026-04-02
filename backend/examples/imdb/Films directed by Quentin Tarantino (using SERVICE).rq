@@ -1,0 +1,14 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX imdb: <https://www.imdb.com/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?movie ?title ?rating ?votes WHERE {
+  ?movie imdb:title ?title .
+  ?movie imdb:id ?imdb_id .
+  ?movie imdb:numVotes ?votes .
+  ?movie imdb:averageRating ?rating .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    ?imdb_id ^wdt:P345/wdt:P57/@en@rdfs:label "Quentin Tarantino"@en .
+  }
+}
+ORDER BY DESC(?votes)

@@ -1,3 +1,5 @@
+export const BASE_PATH = import.meta.env.BASE_URL ?? '/';
+
 /** Returns a debounced version of `fn` that delays invocation by `delay` ms. */
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,

@@ -1,0 +1,6 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?x (isIRI(?x) AS ?isiri) (isBlank(?x) AS ?isblank) (isLiteral(?x) AS ?isliteral) WHERE {
+  { VALUES ?x { wd:Q5 "Hannah"@en "local___vocab" "2023-10-02"^^xsd:date 3.14 42 UNDEF } } UNION { wd:Q1001122 wdt:P569 ?x }
+}

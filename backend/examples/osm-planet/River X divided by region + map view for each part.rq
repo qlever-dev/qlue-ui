@@ -1,0 +1,42 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm2rdf: <https://osm2rdf.cs.uni-freiburg.de/rdf#>
+PREFIX osm2rdfmember: <https://osm2rdf.cs.uni-freiburg.de/rdf/member#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+SELECT ?country ?country_name 
+       (111.32 * ?length_in_country AS ?length_in_km)
+       (100 * ?length_in_country / ?total_length AS ?percent)
+       (?river_piece_query AS ?river_piece_mapview) WHERE {
+  { SELECT ?country (SUM(?length) AS ?length_in_country) (SAMPLE(?river) AS ?river_) WHERE {
+    osmrel:123924 geo:hasGeometry ?geometry .
+    ?river geo:hasGeometry ?geometry .
+    ?country osmkey:admin_level 2 .
+    ?river osmrel:member ?river_member .
+    ?river_member osm2rdfmember:id ?river_piece .
+    ?river_piece osm2rdf:length ?length .
+    ?country osmkey:boundary "administrative" .
+    ?country rdf:type osm:relation .
+    ?country ogc:sfIntersects ?river_piece .
+  } GROUP BY ?country } 
+  OPTIONAL { ?country osmkey:name:en ?country_name }
+  OPTIONAL { ?country osmkey:name ?country_name }
+  BIND(SUM(?length_in_country) AS ?total_length) 
+  BIND(CONCAT(
+    "PREFIX osmrel: <https://www.openstreetmap.org/relation/>\n",
+    "PREFIX osm: <https://www.openstreetmap.org/>\n",
+    "PREFIX ogc: <http://www.opengis.net/rdf#>\n",
+    "PREFIX geo: <http://www.opengis.net/ont/geosparql#>\n",
+    "PREFIX osm2rdf: <https://osm2rdf.cs.uni-freiburg.de/rdf#>\n",
+    "PREFIX osm2rdfmember: <https://osm2rdf.cs.uni-freiburg.de/rdf/member#>\n",
+    "SELECT ?river_piece ?length ?geometry WHERE {\n",
+    " <", ?country, "> ogc:sfIntersects ?river_piece .\n",
+    " <", ?river_, "> osmrel:member ?river_member .\n",
+    " ?river_member osm2rdfmember:id ?river_piece .\n",
+    " ?river_piece geo:hasGeometry/geo:asWKT ?geometry .\n",
+    " ?river_piece osm2rdf:length ?length .\n",
+    "} ORDER BY DESC(?length)") AS ?river_piece_query)
+}
+ORDER BY DESC(?percent)

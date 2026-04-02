@@ -1,0 +1,6 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+SELECT ?osm_id ?geometry WHERE {
+  ?osm_id osmkey:natural "tree" .
+  ?osm_id geo:hasGeometry/geo:asWKT ?geometry .
+}

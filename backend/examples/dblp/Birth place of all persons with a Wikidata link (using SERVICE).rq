@@ -1,0 +1,22 @@
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?person_name ?person_wikidata_id ?place_of_birth (COUNT(DISTINCT ?paper_title) AS ?count) ?coordinates WHERE {
+  ?person_dblp rdf:type dblp:Person .
+  ?person_dblp dblp:wikidata ?person_wikidata_id .
+  ?person_dblp ^dblp:authoredBy/dblp:title ?paper_title .
+  ?person_dblp rdfs:label ?person_name .
+  ?text ql:contains-entity ?paper_title .
+  ?text ql:contains-word "graph algo*" .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    SELECT ?person_wikidata_id ?place_of_birth ?coordinates {
+	  ?person_wikidata_id wdt:P2456 ?person_dblp_id .
+	  ?person_wikidata_id wdt:P19 ?place_of_birth_id .
+	  ?place_of_birth_id @en@rdfs:label ?place_of_birth .
+      ?place_of_birth_id wdt:P625 ?coordinates
+	}
+  }
+}
+GROUP BY ?person_name ?person_wikidata_id ?place_of_birth ?coordinates
+ORDER BY DESC(?count)

@@ -1,0 +1,9 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?p ?p_label ?o WHERE {
+  wd:Q183 ?p ?o .
+  FILTER (! REGEX(STR(?o), "http:"))
+  ?p ^wikibase:directClaim ?m . ?m rdfs:label ?p_label .
+  FILTER (LANG(?p_label) = "en")
+}

@@ -1,0 +1,9 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+SELECT ?osm_id ?hasgeometry WHERE {
+  osmrel:1960198 ogc:sfContains ?osm_id .
+  ?osm_id geo:hasGeometry/geo:asWKT ?hasgeometry .
+  ?osm_id osmkey:building ?building .
+}

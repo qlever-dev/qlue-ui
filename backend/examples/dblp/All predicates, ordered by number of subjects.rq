@@ -1,0 +1,5 @@
+SELECT ?predicate (COUNT(?subject) as ?count) WHERE {
+  ?subject ?predicate ?object
+}
+GROUP BY ?predicate 
+ORDER BY DESC(?count)

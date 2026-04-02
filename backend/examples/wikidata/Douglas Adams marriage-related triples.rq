@@ -1,0 +1,6 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX p: <http://www.wikidata.org/prop/>
+SELECT ?statement ?predicate ?object WHERE {
+  wd:Q42 p:P26 ?statement .
+  ?statement ?predicate ?object
+}

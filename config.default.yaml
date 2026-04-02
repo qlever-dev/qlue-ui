@@ -1,0 +1,5 @@
+wikidata:
+  name: Wikidata
+  url: https://qlever.dev/api/wikidata
+  default: true
+  engine: QLever

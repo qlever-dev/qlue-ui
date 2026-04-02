@@ -1,0 +1,28 @@
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX osm2rdf: <https://osm2rdf.cs.uni-freiburg.de/rdf#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+SELECT ?region ?name ?geometry WHERE {
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/osm-planet> {
+    ?country osm2rdf:contains_area ?region .
+    ?country osm:wikidata ?country_wikidata .
+    ?region osmkey:boundary "administrative" .
+    ?region osmkey:admin_level "4"^^xsd:int .
+    ?region rdf:type osm:relation .
+    ?region osmkey:name ?name .
+    ?region geo:hasGeometry ?geometry .
+  }
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    SELECT DISTINCT ?country_wikidata WHERE {
+      ?country_wikidata wdt:P361 wd:Q458 .
+      ?country_wikidata wdt:P31/wdt:P279* wd:Q3624078 .
+    }
+  }
+}

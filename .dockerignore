@@ -7,8 +7,9 @@ backend/__pycache__/
 # Files
 .git
 .env
-db.sqlite3
-db.sqlite3.dist
+*.db
+*.sqlite3
+data/
 
 # Testing
 testing/

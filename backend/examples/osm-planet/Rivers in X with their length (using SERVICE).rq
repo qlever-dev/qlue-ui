@@ -1,0 +1,15 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX osm: <https://www.openstreetmap.org/>
+SELECT ?river_osm ?river_wd ?river_name ?length ?geometry WHERE {
+  ?river_osm osmkey:waterway ?waterway .
+  ?river_osm geo:hasGeometry ?geometry .
+  ?river_osm osmkey:name ?river_name .
+  ?river_osm osm:wikidata ?river_wd .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    ?river_wd wdt:P31/wdt:P279* wd:Q4022 .
+    ?river_wd wdt:P17 wd:Q38 .
+    ?river_wd wdt:P2043 ?length FILTER (?length > 100)
+  }
+}

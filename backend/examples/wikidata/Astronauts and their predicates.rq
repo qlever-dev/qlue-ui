@@ -1,0 +1,24 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT ?pred ?predLabel ?count WHERE {
+  {
+    SELECT ?pred (COUNT(?pred) AS ?count) WHERE {
+      ?astronaut wdt:P106 wd:Q11631 .
+      ?astronaut ql:has-predicate ?pred .
+    }
+    GROUP BY ?pred
+    ORDER BY DESC(?count)
+  }
+  OPTIONAL {
+    {
+      ?pred rdfs:label ?predLabel .
+      FILTER (lang(?predLabel) = "en")
+    } UNION {
+      { ?claim wikibase:directClaim ?pred } UNION { ?claim wikibase:claim ?pred }
+      ?claim rdfs:label ?predLabel .
+      FILTER (lang(?predLabel) = "en")
+    }
+  }
+}

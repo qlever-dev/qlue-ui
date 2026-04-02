@@ -1,0 +1,11 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dblp: <https://dblp.org/rdf/schema#>
+SELECT ?author ?author_label ?count WHERE {
+  { SELECT ?author ?author_label (COUNT(?paper) as ?count) WHERE {
+    ?paper dblp:authoredBy ?author .
+    ?paper dblp:publishedIn "SIGIR" .
+    ?author rdfs:label ?author_label .
+  } GROUP BY ?author ?author_label }
+  FILTER REGEX(STR(?author_label), "M.*D.*", "i")
+}
+ORDER BY DESC(?count)

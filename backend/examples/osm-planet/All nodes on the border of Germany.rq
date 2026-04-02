@@ -1,0 +1,14 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmway: <https://www.openstreetmap.org/way/>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+SELECT ?way_id ?way_pos ?node_id ?node_pos ?geometry WHERE {
+  osmrel:51477 osmrel:member ?way_member .
+  ?way_member osmrel:member_id ?way_id .
+  ?way_member osmrel:member_role "outer" .
+  ?way_member osmrel:member_pos ?way_pos .
+  ?way_id osmway:member ?node_member .
+  ?node_member osmway:member_id ?node_id .
+  ?node_member osmway:member_pos ?node_pos .
+  ?node_id geo:hasGeometry/geo:asWKT ?geometry .
+}
+ORDER BY ?way_pos ?node_pos

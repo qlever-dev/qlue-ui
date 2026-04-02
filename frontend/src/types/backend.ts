@@ -2,33 +2,41 @@ export interface PrefixMap {
   [key: string]: string;
 }
 
-export interface Queries {
-  [key: string]: string;
-}
-
 export interface QlueLsServiceConfig {
   name: string;
   url: string;
-  engine: string;
   healthCheckUrl?: string;
-  prefixMap: PrefixMap;
-  queries: Queries;
+  engine?: string;
   default: boolean;
+  prefixMap: Record<string, string>;
+  queries: CompletionTemplates;
   additionalData: any;
 }
 
-export interface UiServiceConfig {
-  slug: string;
-  url: string;
-  engine: string;
-  prefix_map: PrefixMap;
-  subject_completion: string;
-  predicate_completion_context_sensitive: string;
-  predicate_completion_context_insensitive: string;
-  object_completion_context_sensitive: string;
-  object_completion_context_insensitive: string;
-  values_completion_context_sensitive: string;
-  values_completion_context_insensitive: string;
-  hover: string;
-  map_view_url?: string;
+// --- Types derived from the UI-API Swagger spec ---
+
+/** Completion query templates for a SPARQL endpoint (from /endpoints/ API). */
+export interface CompletionTemplates {
+  subjectCompletion?: string;
+  predicateCompletionContextSensitive?: string;
+  predicateCompletionContextInsensitive?: string;
+  objectCompletionContextSensitive?: string;
+  objectCompletionContextInsensitive?: string;
+  valuesCompletionContextSensitive?: string;
+  valuesCompletionContextInsensitive?: string;
+  hover?: string;
 }
+
+/** A single SPARQL endpoint configuration as returned by the UI-API. */
+export interface SparqlEndpointConfiguration {
+  name: string;
+  url: string;
+  engine?: string;
+  default: boolean;
+  prefixMap: Record<string, string>;
+  mapViewUrl?: string;
+  queryTemplates?: CompletionTemplates;
+}
+
+/** Response from GET /endpoints/ — a dict keyed by slug. */
+export type EndpointListResponse = Record<string, SparqlEndpointConfiguration>;

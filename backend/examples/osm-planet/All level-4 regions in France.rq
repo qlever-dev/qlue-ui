@@ -1,0 +1,15 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT ?region ?name ?geometry WHERE {
+  osmrel:2202162 ogc:sfContains ?region .
+  ?region osmkey:boundary "administrative" .
+  ?region osmkey:admin_level "4"^^xsd:int .
+  ?region rdf:type osm:relation .
+  ?region osmkey:name ?name .
+  ?region geo:hasGeometry/geo:asWKT ?geometry .
+}

@@ -1,0 +1,21 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm2rdf: <https://osm2rdf.cs.uni-freiburg.de/rdf#>
+PREFIX osm2rdfkey: <https://osm2rdf.cs.uni-freiburg.de/rdf/key#>
+SELECT ?street ?geometry WHERE {
+  ?country_osm osm2rdfkey:wikidata ?country_wd .
+  ?country_osm ogc:sfContains ?street .
+  ?street osmkey:highway ?any .
+  ?street geo:hasGeometry/geo:asWKT ?geometry .
+  SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    ?country_wd wdt:P31 wd:Q6256 .
+	?country_wd wdt:P30 wd:Q15 .
+  }
+}

@@ -1,0 +1,14 @@
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osmt: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmway: <https://www.openstreetmap.org/way/>
+SELECT DISTINCT ?node_1 ?node_2 ?dist ?highway ?maxspeed WHERE {
+  ?way osmt:highway ?highway .
+  ?way rdf:type osm:way .
+  ?way osmway:node ?m .
+  ?m osmway:node ?node_1 .
+  ?m osmway:next_node ?node_2 .
+  ?m osmway:next_node_distance ?dist .
+  OPTIONAL { ?way osmt:maxspeed ?maxspeed }
+}

@@ -1,0 +1,15 @@
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX schema: <http://schema.org/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT DISTINCT ?wikidata_id ?wikipedia_id ?movie_title ?movie_abstract ?sitelinks WHERE {
+  ?wikidata_id wdt:P31/wdt:P279* wd:Q11424 .
+  ?wikidata_id schema:name ?movie_title .
+  ?wikipedia_id schema:about ?wikidata_id.
+  ?wikipedia_id schema:inLanguage "en" .
+  ?wikipedia_id schema:description ?movie_abstract .
+  ?wikidata_id ^schema:about/wikibase:sitelinks ?sitelinks .
+  FILTER (LANG(?movie_title) = "en")
+  FILTER (LANG(?movie_abstract) = "en")
+}
+ORDER BY DESC(?sitelinks)

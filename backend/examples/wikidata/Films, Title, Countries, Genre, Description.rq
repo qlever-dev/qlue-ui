@@ -1,0 +1,28 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT ?film
+       ?title
+	   (GROUP_CONCAT(DISTINCT ?country; SEPARATOR = "|") AS ?countries) 
+	   (GROUP_CONCAT(DISTINCT ?genre; SEPARATOR = "|") AS ?genres) 
+           (SAMPLE(?description_) AS ?description)
+           (SAMPLE(?sitelinks_) AS ?sitelinks)
+WHERE {
+  ?film wdt:P31 wd:Q11424 .
+  ?film rdfs:label ?title .
+  FILTER (LANG(?title) = "en") .
+  ?film wdt:P495 ?country_id .
+  ?country_id rdfs:label ?country .
+  FILTER (LANG(?country) = "en") .
+  ?film wdt:P136 ?genre_id .
+  ?genre_id rdfs:label ?genre .
+  FILTER (LANG(?genre) = "en") .
+  ?film schema:description ?description_ .
+  FILTER (LANG(?description_) = "en") .
+  ?about schema:about ?film .
+  ?about wikibase:sitelinks ?sitelinks_
+}
+GROUP BY ?film ?title 
+ORDER BY DESC(?sitelinks)

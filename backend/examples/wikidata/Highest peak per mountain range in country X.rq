@@ -1,0 +1,37 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX psn: <http://www.wikidata.org/prop/statement/value-normalized/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?mountain_range
+       ?highest_peak
+       ?elevation
+       (SAMPLE(?image) AS ?image_)
+       (SAMPLE(?coordinates) AS ?coordinates_) WHERE {
+  {
+    SELECT ?range (MAX(?elevation_tmp) AS ?elevation) (COUNT(?mountain) AS ?count) WHERE {
+      ?mountain wdt:P31 wd:Q8502 ;
+                p:P2044/psn:P2044/wikibase:quantityAmount ?elevation_tmp ;
+                wdt:P4552 ?range .
+    }
+    GROUP BY ?range
+  }
+  {
+    SELECT ?mountain ?range ?elevation WHERE {
+      ?mountain wdt:P31 wd:Q8502 ;
+                p:P2044/psn:P2044/wikibase:quantityAmount ?elevation ;
+                wdt:P4552 ?range .
+    }
+  }
+  ?mountain wdt:P625 ?coordinates ;
+            wdt:P17 wd:Q183 ;
+            rdfs:label ?highest_peak ;
+            wdt:P18 ?image .
+  ?range rdfs:label ?mountain_range .
+  FILTER (LANG(?mountain_range) = "de") .
+  FILTER (LANG(?highest_peak) = "de")
+  FILTER (?count > 10)
+}
+GROUP BY ?mountain_range ?highest_peak ?elevation
+ORDER BY DESC(?elevation)

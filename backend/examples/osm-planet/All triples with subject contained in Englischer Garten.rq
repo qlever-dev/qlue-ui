@@ -1,0 +1,6 @@
+PREFIX osmway: <https://www.openstreetmap.org/way/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+SELECT ?s ?p ?o WHERE {
+  osmway:159075298 ogc:sfContains ?s .
+  ?s ?p ?o
+}

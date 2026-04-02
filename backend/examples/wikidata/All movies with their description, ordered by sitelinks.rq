@@ -1,0 +1,15 @@
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+SELECT DISTINCT ?movie ?description ?sitelinks WHERE {
+  ?movie_id wdt:P31 wd:Q11424 ;
+            rdfs:label ?movie ;
+            schema:description ?description .
+  ?movie_node schema:about ?movie_id ;
+              wikibase:sitelinks ?sitelinks .
+  FILTER (LANG(?movie) = "en") .
+  FILTER (LANG(?description) = "en")
+}
+ORDER BY DESC(?sitelinks) DESC(?description)

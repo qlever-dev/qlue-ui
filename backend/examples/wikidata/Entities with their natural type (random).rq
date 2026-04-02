@@ -1,0 +1,12 @@
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT ?subject ?subject_label ?type ?type_label ?sitelinks WHERE {
+  ?subject wdt:P31279 ?type .
+  ?subject @en@rdfs:label ?subject_label .
+  ?type @en@rdfs:label ?type_label .
+  ?subject ^schema:about/wikibase:sitelinks ?sitelinks .
+  FILTER (?sitelinks > 10)
+}
+ORDER BY RAND()

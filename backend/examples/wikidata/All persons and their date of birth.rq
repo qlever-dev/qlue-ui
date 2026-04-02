@@ -1,0 +1,10 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?person ?date_of_birth ?str ?year ?month ?day WHERE {
+  ?person wdt:P569 ?date_of_birth .
+  ?person rdfs:label ?person_label FILTER(LANG(?person_label) = "en")
+  BIND (STR(?date_of_birth) AS ?str)
+  BIND (YEAR(?date_of_birth) AS ?year)
+  BIND (MONTH(?date_of_birth) AS ?month)
+  BIND (DAY(?date_of_birth) AS ?day)
+}

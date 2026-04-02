@@ -1,0 +1,18 @@
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX schema: <http://schema.org/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?s_name ?p_name ?o_name ?statements ?sitelinks WHERE {
+  VALUES ?p { wdt:P30 } .
+  ?s ?p ?o .
+  ?s_name schema:about ?s .
+  ?s_name schema:isPartOf <https://en.wikipedia.org/> .
+  ?o_name schema:about ?o .
+  ?o_name schema:isPartOf <https://en.wikipedia.org/> .
+  ?mp wikibase:directClaim ?p .
+  ?mp schema:name ?p_name .
+  ?ms schema:about ?s .
+  ?ms wikibase:statements ?statements .
+  ?ms wikibase:sitelinks ?sitelinks .
+  FILTER (LANG(?p_name) = "en")
+}
+ORDER BY DESC(?sitelinks)

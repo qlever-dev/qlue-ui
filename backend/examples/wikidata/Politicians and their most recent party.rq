@@ -1,0 +1,20 @@
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+SELECT ?person_name ?party_name ?join_date ?sitelinks WHERE {
+  { SELECT ?person (MAX(?join_date_tmp) AS ?join_date) WHERE {
+      ?person p:P102/pq:P580 ?join_date_tmp .
+  } GROUP BY ?person }
+  ?person p:P102 ?p102 .
+  ?p102 ps:P102 ?party .
+  ?p102 pq:P580 ?join_date .
+  ?person schema:name ?person_name . FILTER (LANG(?person_name) = "en") .
+  ?party schema:name ?party_name . FILTER (LANG(?party_name) = "en") .
+  ?about schema:about ?person .
+  ?about wikibase:sitelinks ?sitelinks .
+}
+ORDER BY DESC(?sitelinks)

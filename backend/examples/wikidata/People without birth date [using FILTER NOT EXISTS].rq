@@ -1,0 +1,15 @@
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?person ?label ?sitelinks WHERE {
+  ?person wdt:P31 wd:Q5 .
+  ?person ^schema:about/wikibase:sitelinks ?sitelinks .
+  ?person @en@rdfs:label ?label .
+  FILTER NOT EXISTS {
+    ?person wdt:P569 []
+  }
+}
+ORDER BY DESC(?sitelinks)

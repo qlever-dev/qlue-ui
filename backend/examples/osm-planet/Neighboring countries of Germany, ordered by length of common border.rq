@@ -1,0 +1,22 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm2rdf: <https://osm2rdf.cs.uni-freiburg.de/rdf#>
+SELECT ?country ?country_name (SUM(?length) AS ?length_in_country) (100 * SUM(?length) / SAMPLE(?total_length) AS ?percent) WHERE {
+  ?country osmkey:boundary "administrative" .
+  ?country osmkey:admin_level 2 .
+  ?country ogc:sfIntersects ?river_piece .
+  ?river osmkey:name "Rhein" .
+  ?river osmrel:member ?river_member .
+  ?river_member osm:id ?river_piece .
+  ?river_piece geo:hasGeometry ?geometry .
+  ?river_piece osm2rdf:length ?length .
+  BIND (SUM(?length) AS ?total_length)
+  OPTIONAL { ?country osmkey:name:de ?country_name }
+  OPTIONAL { ?country osmkey:name:en ?country_name }
+  OPTIONAL { ?country osmkey:name ?country_name }
+}
+GROUP BY ?country ?country_name
+ORDER BY DESC(?percent)

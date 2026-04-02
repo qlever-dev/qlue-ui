@@ -1,0 +1,13 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT ?osm_id ?wikidata_id ?hasgeometry WHERE {
+  osmrel:62768 ogc:sfContains ?osm_id .
+  ?osm_id osm:wikidata ?wikidata_id .
+  ?osm_id geo:hasGeometry ?hasgeometry .
+  ?osm_id osmkey:name ?osm_name .
+  ?wikidata_id @en@rdfs:label ?wikidata_name 
+}

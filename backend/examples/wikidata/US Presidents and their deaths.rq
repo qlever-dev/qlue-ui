@@ -1,0 +1,40 @@
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX p: <http://www.wikidata.org/prop/>
+SELECT ?president_label
+       ?image
+       ?start_year
+       ?end_year
+       ?death_year
+       (GROUP_CONCAT(?death; SEPARATOR=", ") AS ?death_reasons)
+       ?place_of_death WHERE {
+  ?president p:P39 ?position ;
+             rdfs:label ?president_label ;
+             wdt:P31 wd:Q5 .
+  ?position ps:P39 wd:Q11696 ;
+            pq:P580 ?start_time .
+  FILTER (LANG(?president_label) = "en")
+  OPTIONAL {
+    ?position pq:P582 ?end_time .
+  }
+  OPTIONAL {
+    ?president wdt:P18 ?image
+  }
+  BIND (YEAR(?start_time) AS ?start_year)
+  BIND (YEAR(?end_time) AS ?end_year)
+  OPTIONAL {
+    ?president p:P509 ?cause_of_death ;
+               wdt:P570 ?date_of_death .
+    ?cause_of_death ps:P509/rdfs:label ?death .
+    FILTER (LANG(?death) = "en")
+    BIND (YEAR(?date_of_death) AS ?death_year)
+  }
+  OPTIONAL {
+    ?president wdt:P20/wdt:P625 ?place_of_death .
+  }
+}
+GROUP BY ?president_label ?image ?start_year ?end_year ?death_year ?place_of_death
+ORDER BY ASC(?start_year)

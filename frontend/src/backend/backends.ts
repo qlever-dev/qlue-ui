@@ -4,23 +4,14 @@
 // │ Licensed under the MIT license. │ \\
 // └─────────────────────────────────┘ \\
 
-import type { QlueLsServiceConfig, UiServiceConfig } from '../types/backend';
+import type { EndpointListResponse, QlueLsServiceConfig, SparqlEndpointConfiguration } from '../types/backend';
 import { MonacoLanguageClient } from 'monaco-languageclient';
 import { getPathParameters } from '../utils';
 import type { Editor } from '../editor/init';
+import { apiFetch } from '../api';
+import { BASE_PATH } from '../utils';
 
-interface ServiceDescription {
-  name: string;
-  slug: string;
-  is_default: boolean;
-  api_url: string;
-}
-
-const serviceConfigPromisses: Record<string, Promise<Response>> = {};
-
-const serviceDescriptionPromises: Promise<ServiceDescription[]> = fetch(
-  `${import.meta.env.VITE_API_URL}/api/backends/`
-)
+const endpointConfigPromise: Promise<EndpointListResponse> = apiFetch('endpoints/')
   .then((response) => {
     if (!response.ok) {
       throw new Error(
@@ -28,12 +19,6 @@ const serviceDescriptionPromises: Promise<ServiceDescription[]> = fetch(
       );
     }
     return response.json();
-  })
-  .then((serviceDescriptions) => {
-    for (const service of serviceDescriptions) {
-      serviceConfigPromisses[service.slug] = fetch(service.api_url);
-    }
-    return serviceDescriptions;
   })
   .catch((err) => {
     document.dispatchEvent(
@@ -49,8 +34,8 @@ const serviceDescriptionPromises: Promise<ServiceDescription[]> = fetch(
   });
 
 /**
- * Fetches all SPARQL endpoint configurations from the API, registers them
- * with the language server, and populates the backend selector dropdown.
+ * Register each SPARQL endpoint at the language server,
+ * and populates the backend selector dropdown.
  *
  * The default backend is determined by the URL path slug, falling back to
  * the API-designated default. Non-default backends are loaded in the
@@ -60,24 +45,23 @@ const serviceDescriptionPromises: Promise<ServiceDescription[]> = fetch(
 export async function configureBackends(editor: Editor) {
   const backendSelector = document.getElementById('backendSelector') as HTMLSelectElement;
   const [path_slug, _] = getPathParameters();
-  let default_service_slug: string | null = null;
-
-  // NOTE: fetch ALL service descriptions
-  const services = await serviceDescriptionPromises;
+  let activeEndpointSlug: string | null = null;
+  let defaultEndpointSlug: string | null = null;
+  const endpointConfigs = await endpointConfigPromise;
 
   // NOTE: find default service then fetch & load its configuration (blocking)
-  for (const service of services) {
-    const is_default = path_slug == service.slug || (path_slug == undefined && service.is_default);
-    backendSelector.add(new Option(service.name, service.slug, false, is_default));
-    default_service_slug = is_default ? service.slug : default_service_slug;
-    if (is_default) {
-      await addService(editor.languageClient, service, true);
+  for (const [slug, config] of Object.entries(endpointConfigs)) {
+    const is_active = path_slug == slug || (path_slug == undefined && config.default);
+    backendSelector.add(new Option(config.name, slug, false, is_active));
+    activeEndpointSlug = is_active ? slug : activeEndpointSlug;
+    if (config.default) {
+      defaultEndpointSlug = slug;
     }
+    await addService(editor.languageClient, slug, config, is_active);
   }
-  if (default_service_slug == null) {
+  if (activeEndpointSlug == null) {
     // NOTE: path slug was provided but did not match any known backend
     if (path_slug != undefined) {
-      const BASE_PATH = import.meta.env.BASE_URL ?? '/';
       history.replaceState(null, '', BASE_PATH);
       document.dispatchEvent(
         new CustomEvent('toast', {
@@ -88,36 +72,29 @@ export async function configureBackends(editor: Editor) {
         })
       );
     }
-    const service = services.find((service) => service.is_default);
-    if (service) {
-      default_service_slug = service.slug;
-      await addService(editor.languageClient, service, true);
-      backendSelector.value = service.slug;
-    } else if (services.length > 0) {
-      // NOTE: the path did not match any service and there is no default service.
-      default_service_slug = services[0].slug;
-      await addService(editor.languageClient, services[0], true);
-      backendSelector.value = services[0].slug;
+    if (defaultEndpointSlug) {
+      await addService(editor.languageClient, defaultEndpointSlug, endpointConfigs[defaultEndpointSlug], true);
+      backendSelector.value = defaultEndpointSlug;
     } else {
-      document.dispatchEvent(
-        new CustomEvent('toast', {
-          detail: {
-            type: 'warning',
-            message: 'No SPARQL endpoint configuration found.',
-          },
-        })
-      );
+      let firstConfig = Object.entries(endpointConfigs)[0];
+      if (firstConfig) {
+        // NOTE: the path did not match any service and there is no default service.
+        await addService(editor.languageClient, firstConfig[0], firstConfig[1], true);
+        backendSelector.value = firstConfig[0];
+      } else {
+        document.dispatchEvent(
+          new CustomEvent('toast', {
+            detail: {
+              type: 'warning',
+              message: 'No SPARQL endpoint configuration found.',
+            },
+          })
+        );
+      }
     }
   }
 
-  document.dispatchEvent(new CustomEvent('backend-selected', { detail: default_service_slug }));
-
-  // NOTE: add all other services non-blocking
-  for (let service of services) {
-    if (service.slug != default_service_slug) {
-      addService(editor.languageClient, service);
-    }
-  }
+  document.dispatchEvent(new CustomEvent('backend-selected', { detail: activeEndpointSlug }));
 
   backendSelector.addEventListener('change', () => {
     editor.languageClient
@@ -138,44 +115,19 @@ export async function configureBackends(editor: Editor) {
 
 async function addService(
   languageClient: MonacoLanguageClient,
-  serviceDescription: ServiceDescription,
+  slug: string,
+  sparqlEndpointconfig: SparqlEndpointConfiguration,
   is_default = false
 ) {
-  const sparqlEndpointconfig = (await serviceConfigPromisses[serviceDescription.slug]
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Error while fetching backend details: \nstatus: ${response.status} \nmessage: ${response.statusText} `
-        );
-      }
-      return response.json();
-    })
-    .catch((err) => {
-      console.error('Error while fetching SPARQL endpoint configuration:', err);
-    })) as UiServiceConfig;
-
   const serviceConfig: QlueLsServiceConfig = {
-    name: sparqlEndpointconfig.slug,
+    name: slug,
     url: sparqlEndpointconfig.url,
     engine: sparqlEndpointconfig.engine,
-    prefixMap: sparqlEndpointconfig.prefix_map,
-    queries: {
-      subjectCompletion: sparqlEndpointconfig['subject_completion'],
-      predicateCompletionContextSensitive:
-        sparqlEndpointconfig['predicate_completion_context_sensitive'],
-      predicateCompletionContextInsensitive:
-        sparqlEndpointconfig['predicate_completion_context_insensitive'],
-      objectCompletionContextSensitive: sparqlEndpointconfig['object_completion_context_sensitive'],
-      objectCompletionContextInsensitive:
-        sparqlEndpointconfig['object_completion_context_insensitive'],
-      valuesCompletionContextSensitive: sparqlEndpointconfig['values_completion_context_sensitive'],
-      valuesCompletionContextInsensitive:
-        sparqlEndpointconfig['values_completion_context_insensitive'],
-      hover: sparqlEndpointconfig['hover'],
-    },
+    prefixMap: sparqlEndpointconfig.prefixMap ?? {},
+    queries: sparqlEndpointconfig.queryTemplates ?? {},
     default: is_default,
     additionalData: {
-      mapViewUrl: sparqlEndpointconfig['map_view_url'],
+      mapViewUrl: sparqlEndpointconfig.mapViewUrl,
     },
   };
 

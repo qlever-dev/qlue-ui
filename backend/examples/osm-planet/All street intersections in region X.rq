@@ -1,0 +1,19 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX osmway: <https://www.openstreetmap.org/way/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm: <https://www.openstreetmap.org/>
+SELECT ?intersection ?street_names ?geometry WHERE {
+  {
+    SELECT ?intersection (GROUP_CONCAT(DISTINCT ?name; SEPARATOR=", ") AS ?street_names) WHERE {
+      osmrel:62422 ogc:sfIntersects ?street .
+      ?street osmkey:highway [] .
+      ?street osmkey:name ?name .
+      ?street osmway:node_ref/osmway:node_id ?intersection .
+    }
+    GROUP BY ?intersection
+    HAVING (COUNT(DISTINCT ?name) >= 2)
+  }
+  ?intersection geo:hasGeometry/geo:asWKT ?geometry .
+}

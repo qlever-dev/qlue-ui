@@ -1,0 +1,21 @@
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+SELECT DISTINCT ?restaurant ?restaurant_name ?stop ?stop_name ?loc_rest WHERE {
+  { SELECT ?restaurant ?restaurant_name ?loc_rest ?tmp WHERE { 
+    ?restaurant osmkey:amenity "restaurant" .
+    ?restaurant geo:hasGeometry ?loc_rest .
+    ?restaurant osmkey:name ?restaurant_name .
+    osmrel:2062154 ogc:contains ?restaurant .
+    BIND(1 AS ?tmp) } }
+  { SELECT ?stop ?stop_name ?loc_stop ?tmp WHERE { 
+    osmrel:2062154 ogc:contains ?stop .
+	?stop osmkey:public_transport "platform" .
+    ?stop geo:hasGeometry ?loc_stop .
+    ?stop osmkey:name ?stop_name .
+	BIND(1 AS ?tmp) } }
+  BIND(geof:distance(?loc_rest, ?loc_stop) * 1000 AS ?dist_meters)
+  FILTER (?dist_meters <= 100)
+}

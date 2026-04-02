@@ -1,0 +1,12 @@
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?region ?geometry WHERE {
+  ?region osmkey:leisure "park" .
+  ?region rdf:type osm:relation .
+  ?region osmkey:name "Lichtentaler Allee" .
+  ?region geo:hasGeometry/geo:asWKT ?geometry .
+}

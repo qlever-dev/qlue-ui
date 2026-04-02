@@ -1,0 +1,10 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+SELECT ?name WHERE {
+  ?osm_id osm:envelope ?envelope .
+  ?osm_id osmkey:building "university" .
+  ?osm_id osmkey:name ?name .
+  FILTER contained(?envelope, "LINESTRING(5 47, 16 56)")
+}

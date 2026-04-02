@@ -1,0 +1,20 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX psn: <http://www.wikidata.org/prop/statement/value-normalized/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?mountain ?mountain_label
+       (MAX(?elevation) AS ?max_elevation)
+       (SAMPLE(?image) AS ?sample_image)
+       (SAMPLE(?coordinates) AS ?sample_coordinates) WHERE {
+  ?mountain wdt:P31 wd:Q8502 .
+  ?mountain p:P2044/psn:P2044/wikibase:quantityAmount ?elevation .
+  ?mountain wdt:P625 ?coordinates .
+  ?mountain rdfs:label ?mountain_label .
+  FILTER (LANG(?mountain_label) = "en")
+  FILTER(?elevation >= 8000.0) .
+  OPTIONAL { ?mountain wdt:P18 ?image }
+}
+GROUP BY ?mountain ?mountain_label
+ORDER BY DESC(?max_elevation)

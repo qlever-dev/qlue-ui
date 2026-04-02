@@ -1,0 +1,12 @@
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osm: <https://www.openstreetmap.org/>
+SELECT ?geometry_prefix (COUNT(?geometry_prefix) as ?count_geometry_prefix) WHERE {
+  osmrel:192307 ogc:sfContains ?osm_id .
+  ?osm_id rdf:type osm:way .
+  ?osm_id geo:hasGeometry ?geometry .
+  BIND (STRBEFORE(STR(?geometry), "(") AS ?geometry_prefix)
+}
+GROUP BY ?geometry_prefix

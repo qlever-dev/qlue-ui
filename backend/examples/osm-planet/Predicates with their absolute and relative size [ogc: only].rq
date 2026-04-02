@@ -1,0 +1,9 @@
+SELECT ?p ?count_p (100 * ?count_p / ?count_all AS ?percent) WHERE {
+  { SELECT ?p ?count_p WHERE {
+    { SELECT ?p (COUNT(?p) AS ?count_p) WHERE { ?s ?p ?o } GROUP BY ?p }
+    FILTER (REGEX(STR(?p), "^http://www\\.opengis\\.net/rdf#")) } }
+  { SELECT (SUM(?count_p) AS ?count_all) WHERE {
+    { SELECT ?p (COUNT(?p) AS ?count_p) WHERE { ?s ?p ?o } GROUP BY ?p }
+    FILTER (REGEX(STR(?p), "^http://www\\.opengis\\.net/rdf#")) } }
+}
+ORDER BY DESC(?count_p)

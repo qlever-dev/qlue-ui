@@ -1,0 +1,15 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?country ?name ?population ?geometry WHERE {
+  ?country osmkey:type "boundary" .
+  ?country osmkey:admin_level 2 .
+  ?country osmrel:member ?member .
+  ?country geo:hasGeometry ?geometry .
+  ?country osmkey:name ?name .
+  ?member osm:role "label" .
+  ?member osm:id/osmkey:population ?population
+}
+ORDER BY DESC(?population)

@@ -1,0 +1,15 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wds: <http://www.wikidata.org/entity/statement/>
+PREFIX psv: <http://www.wikidata.org/prop/statement/value/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?person_id ?date_of_birth_statement ?date_of_birth_value ?date_of_birth
+WHERE {
+  ?person_id p:P569 ?date_of_birth_statement .
+  ?date_of_birth_statement psv:P569 ?date_of_birth_value .
+  ?date_of_birth_value wikibase:timePrecision "9"^^xsd:integer .
+  ?date_of_birth_value wikibase:timeValue ?date_of_birth
+}

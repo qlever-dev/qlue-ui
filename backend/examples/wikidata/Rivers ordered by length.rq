@@ -1,0 +1,14 @@
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX psv: <http://www.wikidata.org/prop/statement/value/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?river_wd ?river_name (ROUND(MAX(?length_m)/1000) AS ?length_km) WHERE {
+  ?river_wd wdt:P31/wdt:P279* wd:Q4022 .
+  ?river_wd p:P2043/psv:P2043/wikibase:quantityNormalized/wikibase:quantityAmount ?length_m .
+  OPTIONAL { ?river_wd rdfs:label ?river_name . FILTER (LANG(?river_name) = "de") }
+  OPTIONAL { ?river_wd rdfs:label ?river_name . FILTER (LANG(?river_name) = "en") }
+}
+GROUP BY ?river_wd ?river_name 
+ORDER BY DESC(?length_km)

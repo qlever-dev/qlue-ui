@@ -1,0 +1,21 @@
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+SELECT ?country ?name ?num_neighbors WHERE {
+  { SELECT ?country (COUNT(?neighbor) as ?num_neighbors)  WHERE {
+    ?country ogc:sfIntersects ?neighbor .
+    ?country osmkey:boundary "administrative" .
+    ?country rdf:type osm:relation .
+    ?country osmkey:admin_level 2 .
+    ?neighbor osmkey:boundary "administrative" .
+    ?neighbor osmkey:admin_level 2 .
+    ?neighbor rdf:type osm:relation .
+	FILTER (?neighbor != ?country)
+    } GROUP BY ?country }
+  ?country osmkey:name:en ?name .
+  ?country geo:hasGeometry/geo:asWKT ?shape .
+}
+ORDER BY DESC(?num_neighbors)

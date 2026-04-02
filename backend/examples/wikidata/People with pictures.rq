@@ -1,0 +1,12 @@
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX schema: <http://schema.org/>
+SELECT ?name ?pic ?sitelinks WHERE {
+  ?person wdt:P31 wd:Q5 .
+  ?person ^schema:about/wikibase:sitelinks ?sitelinks .
+  ?person wdt:P18 ?pic .
+  ?person schema:name ?name .
+  FILTER (lang(?name) = "en") .
+}
+ORDER BY DESC(?sitelinks)

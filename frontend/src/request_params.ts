@@ -1,6 +1,6 @@
 import type { Editor } from './editor/init';
 import { openParseTree } from './parse_tree/init';
-import { getShareLinkId, getSavedQuery } from './share';
+import { getShareLinkId, getSharedQuery } from './share';
 import { openOrCreateTab } from './tabs';
 import type { QlueLsServiceConfig } from './types/backend';
 import { getPathParameters } from './utils';
@@ -24,7 +24,7 @@ export async function handleRequestParameter(editor: Editor) {
   const segments = window.location.pathname.split('/').filter(Boolean);
   if (segments.length == 2) {
     const shareId = segments[1];
-    const savedQuery = await getSavedQuery(shareId);
+    const savedQuery = await getSharedQuery(shareId);
     if (savedQuery !== editor.getContent()) {
       await openOrCreateTab(editor, shareId, savedQuery);
     }
@@ -53,7 +53,8 @@ export function setupUrlSync(editor: Editor) {
   window.addEventListener('execute-started', async () => {
     const query = editor.getContent();
     if (!query.trim()) return;
-    const shareId = await getShareLinkId(query);
+    const shareId = await getShareLinkId(query).catch(() => null);
+    if (!shareId) return;
     let [slug] = getPathParameters();
     if (slug == undefined) {
       // NOTE: get backend slug if path parameter is empty.

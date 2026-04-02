@@ -1,0 +1,11 @@
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT  ?dateOfBirth ?astronautLabel  WHERE {
+  ?astronaut wdt:P106 wd:Q11631 .
+  ?astronaut wdt:P27 wd:Q183 .
+  ?astronaut wdt:P569 ?dateOfBirth .
+  ?astronaut rdfs:label ?astronautLabel .
+  FILTER (LANG(?astronautLabel) = "en") .
+}
+ORDER BY ASC(?dateOfBirth)
