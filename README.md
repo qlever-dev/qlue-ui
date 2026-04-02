@@ -65,38 +65,37 @@ It’s small, shiny, and ready to help you explore your RDF data effortlessly.
 
 Follow these steps to get Qlue-UI up and running:
 
-### 1. Prepare the environment
-
-```bash
-cp db.sqlite3.dist db.sqlite3
-cp .env.dist .env
-```
-
-Then open .env and update the values according to your setup.
-
-### 2. Change ownership of the db
-
-```bash
-chown 1000 db.sqlite3
-```
-
-### 3. Build and run with Docker
+### 1. Build and run with Docker
 
 ```bash
 docker compose build
 docker compose up
 ```
 
-Qlue-ui is now available under <http://localhost:7000>
+Qlue-UI is now available under <http://localhost:7000>
+
+### 2. Configuration
+
+Endpoint configurations are defined in `config.default.yaml` (copied into the container as `config.yaml`).
+To customize, mount your own `config.yaml` into the container.
+
+### 3. Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CONFIG_FILE` | `config.yaml` | Path to the endpoint configuration file |
+| `EXAMPLES_DIR` | `examples` | Directory containing example queries |
+| `DB_FILE` | `data.db` | Path to the SQLite database (shared queries) |
+| `API_KEY` | *(unset)* | If set, protects write endpoints (PATCH, PUT, POST, DELETE) |
+| `CORS_ORIGINS` | `*` | Comma-separated list of allowed CORS origins |
 
 ### 4. Deploying with a Proxy
+
+The app runs behind uvicorn with `--proxy-headers` enabled, so it trusts `X-Forwarded-*` headers by default.
 
 **Your reverse proxy MUST set these headers:**
 - X-Forwarded-Host
 - X-Forwarded-Proto
-
-In production (`DJANGO_DEBUG=False`, the default in `.env.dist`), these headers are always trusted.
-If you are running in development mode (`DJANGO_DEBUG=True`) behind a proxy, set `IS_PROXIED=True` in `.env` to trust them.
 
 > **Note:** The "Query Execution Tree View" opens a WebSocket directly from the browser to the QLever backend — it does not go through this proxy.
 
@@ -154,9 +153,8 @@ The backend uses **uv** as the package manager.
 
 ```bash
 cd backend
-uv sync                              # Install dependencies
-uv run python manage.py migrate      # Run migrations
-uv run python manage.py runserver    # Start server on port 8000
+uv sync                                                      # Install dependencies
+uv run fastapi dev src/main.py                               # Start server on port 8000
 ```
 
 ### Frontend Setup
@@ -166,114 +164,6 @@ cd frontend
 npm install
 npm run dev   # Start dev server on port 5173
 ```
-
-Or run both together:
-```bash
-cd frontend && npm run dev-test
-```
-
----
-
-## Managing the Distribution Database
-
-Qlue-UI uses a **distribution database** (`db.sqlite3.dist`) to ship default SPARQL backends and example queries. This file is committed to version control and serves as the template for new deployments.
-
-Two management commands help you sync data between your development database and the distribution database.
-
-### Sync Modes
-
-| Mode | Flags | Behavior |
-|------|-------|----------|
-| **Reset** | *(default)* | ⚠️ **DELETES all existing data** and replaces with source |
-| **Update** | `--update` | Adds new records, updates existing ones, **keeps** local-only records |
-| **Sync** | `--update --delete` | ⚠️ Adds, updates, AND **DELETES** records not in source |
-
-Records are matched by natural key (not auto-increment ID):
-- `SparqlEndpointConfiguration`: matched by `name` field
-- `QueryExample`: matched by `(backend.name, example.name)` tuple
-
-### Import from Distribution
-
-Import data from `db.sqlite3.dist` into your local database:
-
-```bash
-cd backend
-
-# Preview what would be imported (always recommended first)
-uv run python manage.py import_from_dist --backends --examples --dry-run
-uv run python manage.py import_from_dist --backends --update --dry-run
-
-# ⚠️ RESET MODE: Wipe and replace (DELETES existing data)
-uv run python manage.py import_from_dist --backends --examples --force
-
-# UPDATE MODE: Add/update records, keep local-only records (safe)
-uv run python manage.py import_from_dist --backends --examples --update --force
-
-# ⚠️ SYNC MODE: Full sync including deletions
-uv run python manage.py import_from_dist --backends --update --delete --force
-
-# Interactively select which records to import
-uv run python manage.py import_from_dist --backends --select
-uv run python manage.py import_from_dist --backends --select --update
-```
-
-### Export to Distribution
-
-Export data from your local database to `db.sqlite3.dist` (for contributors):
-
-```bash
-cd backend
-
-# Preview what would be exported
-uv run python manage.py export_to_dist --backends --examples --dry-run
-uv run python manage.py export_to_dist --backends --update --dry-run
-
-# ⚠️ RESET MODE: Wipe and replace (DELETES existing data in dist)
-uv run python manage.py export_to_dist --backends --examples --force
-
-# UPDATE MODE: Add/update records, keep dist-only records (safe)
-uv run python manage.py export_to_dist --backends --examples --update --force
-
-# ⚠️ SYNC MODE: Full sync including deletions
-uv run python manage.py export_to_dist --backends --update --delete --force
-
-# Interactively select which records to export
-uv run python manage.py export_to_dist --backends --select
-uv run python manage.py export_to_dist --backends --select --update
-```
-
-### Available Options
-
-| Option | Description |
-|--------|-------------|
-| `--backends` | Include SparqlEndpointConfiguration records |
-| `--examples` | Include QueryExample records |
-| `--saved` | Include SavedQuery records (not recommended) |
-| `--all` | Include all models |
-| `--select` | Interactively select records (use with `--backends` or `--examples`) |
-| `--update` | Upsert mode: add/update without deleting other records |
-| `--delete` | With `--update`: also delete records not in source ⚠️ |
-| `--dry-run` | Preview changes without modifying data |
-| `--force` | Skip confirmation prompt |
-
-### Dry-run Output
-
-With `--update`, the dry-run shows what will happen to each record:
-
-```
-[ADD]    new-backend          (not in destination)
-[UPDATE] wikidata             (exists, will be updated)
-[KEEP]   my-local-backend     (only in destination, will be kept)
-[DELETE] old-backend          (only with --delete flag)
-```
-
-### Notes
-
-- **Always use `--dry-run` first** to preview changes before modifying data
-- **Use `--update` for safe incremental syncs** that preserve local-only records
-- **Import order matters**: If importing examples alone, the referenced backends must already exist
-- **SavedQuery is user-generated**: Avoid importing/exporting saved queries unless necessary
-- **Interactive selection**: Add `--select` to pick specific records via checkbox UI
 
 ---
 
