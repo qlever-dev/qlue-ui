@@ -146,6 +146,7 @@ export async function buildWrapperConfig(initial: string) {
       tabCompletion: 'on',
       formatOnType: true,
       suggestOnTriggerCharacters: true,
+      quickSuggestionsDelay: 100,
       fontSize: 14,
       fontFamily: 'Source Code Pro',
       detectIndentation: false,

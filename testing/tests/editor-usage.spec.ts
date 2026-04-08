@@ -11,7 +11,7 @@ test('standard query building with completions', async ({ page }) => {
   const suggestWidget = page.locator('.suggest-widget');
 
   // Step 1: Type to trigger snippet completions and select "SELECT * WHERE {}"
-  await editor.pressSequentially('sel');
+  await editor.pressSequentially('sel', { delay: 100 });
   await expect(suggestWidget).toBeVisible({ timeout: 10000 });
   await suggestWidget.locator('.monaco-list-row', { hasText: /SELECT/ }).first().click();
 
@@ -55,9 +55,9 @@ test('standard query building with completions', async ({ page }) => {
   await suggestWidget.locator('.monaco-list-row', { hasText: /P1686/ }).first().click();
 
   // Type the object, dismiss any completions triggered by ".", then newline
-  await editor.pressSequentially('?work .');
+  await editor.pressSequentially('?work .', { delay: 100 });
   await editor.press('Escape');
-  await editor.press('Enter');
+  await editor.press('Enter',);
 
   // Verify editor content after second triple (poll to wait for onTypeFormatting)
   await expect
@@ -77,6 +77,7 @@ test('standard query building with completions', async ({ page }) => {
 
   // Type "?" to trigger variable completions and select "?award_received"
   await editor.pressSequentially('?');
+  await page.keyboard.press('Control+Space');
   await expect(suggestWidget).toBeVisible({ timeout: 30000 });
   await suggestWidget.locator('.monaco-list-row', { hasText: /\?award_received/ }).click();
 

@@ -31,7 +31,6 @@ export default defineConfig({
     proxy: {
       '/ui-api': {
         target: 'http://localhost:8000',
-        rewrite: (path) => path.replace(/^\/ui-api/, ''),
         changeOrigin: true,
       }
     },

@@ -89,10 +89,14 @@ export async function setupEditor(container_id: string): Promise<Editor> {
     // NOTE: Dismiss fixed overflow widgets on page scroll.
     // fixedOverflowWidgets uses position:fixed to prevent clipping by
     // overflow:hidden containers, but fixed elements don't move with the page.
+    // Only react to scroll events outside the editor to avoid interfering
+    // with Monaco's internal scroll events (which fire during rendering
+    // and would dismiss the suggest widget on every other keystroke).
     const monacoEditor = editorApp.getEditor()!;
     document.addEventListener(
       'scroll',
-      () => {
+      (e) => {
+        if (editorContainer.contains(e.target as Node)) return;
         monacoEditor.trigger('scroll', 'hideSuggestWidget', {});
         monacoEditor.trigger('scroll', 'editor.action.hideHover', {});
       },
