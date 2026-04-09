@@ -18,11 +18,9 @@ jobs:
     - name: Install Python dependencies
       working-directory: backend
       run: uv sync
-    - name: Setup DB
+    - name: Setup backend config
       working-directory: backend
-      run: |
-          cp ../db.sqlite3.dist db.sqlite3
-          uv run python manage.py migrate
+      run: cp ../config.default.yaml config.yaml
     - name: Install node dependencies (webapp)
       working-directory: frontend
       run: npm ci

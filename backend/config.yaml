@@ -1,11 +1,10 @@
 wikidata:
   name: Wikidata
   url: https://qlever.dev/api/wikidata
-  default: true
-  sortKey: A2
   engine: QLever
-  mapViewUrl: https://qlever.dev/petrimaps/
-  prefixMap:
+  default: true
+  sort_key: A2
+  prefix_map:
     cc: http://creativecommons.org/ns#
     data: https://www.wikidata.org/wiki/Special:EntityData/
     dct: http://purl.org/dc/terms/
@@ -42,102 +41,55 @@ wikidata:
     wdtn: http://www.wikidata.org/prop/direct-normalized/
     wikibase: http://wikiba.se/ontology#
     xsd: http://www.w3.org/2001/XMLSchema#
-  queryTemplates:
-    subjectCompletion: |-
-      # subject completion
-      {% include "prefix_declarations" %}
-      {% if search_term %}
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX wikibase: <http://wikiba.se/ontology#>
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      PREFIX schema: <http://schema.org/>
-      SELECT ?qlue_ls_entity (SAMPLE(?name) AS ?qlue_ls_label) (SAMPLE(?alias) AS ?qlue_ls_alias) (SAMPLE(?sitelinks) AS ?qlue_ls_count) WHERE {
-        {
-          SELECT ?qlue_ls_entity ?name ?alias WHERE {
-            ?qlue_ls_entity rdfs:label ?name . FILTER (LANG(?name) = "en")
-            ?qlue_ls_entity skos:altLabel ?alias . FILTER (LANG(?alias) = "en")
-            {% if search_term_uncompressed %}
-            FILTER (REGEX(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
-            {% elif search_term %}
-            FILTER (REGEX(STR(?name), "^{{ search_term }}") || REGEX(STR(?alias), "^{{ search_term }}")) 
-            {% endif %}
-          }
-        }
-        ?qlue_ls_entity wikibase:sitelinks ?sitelinks
-      } GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)
-      {% endif %}
-      LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextSensitive: |-
-      # predicate completion sensitive
-      {% for prefix in prefixes %}
-      PREFIX {{prefix.0}}: <{{prefix.1}}>
-      {% endfor %}
-      {% if subject is not variable %}
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      SELECT ?qlue_ls_entity (SAMPLE(?name) as ?qlue_ls_label) (SAMPLE(?count) as ?qlue_ls_count) WHERE {
-        {
-          SELECT ?qlue_ls_entity (COUNT(?qlue_ls_entity) AS ?count) WHERE {
-            {{ local_context }}
-          }
-          GROUP BY ?qlue_ls_entity 
-        }
-        {% if not search_term %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        BIND (?name AS ?alias)
-        {% elif search_term_uncompressed %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        FILTER REGEX(STR(?qlue_ls_entity), "{{ search_term_uncompressed }}", "i")
-        {% else %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        OPTIONAL { ?qui_tmp_1 @en@skos:altLabel ?alias }
-        FILTER (REGEX(STR(?name), "{{ search_term }}", "i") || REGEX(STR(?alias), "{{ search_term }}", "i"))
-        {% endif %}
-      }
-      GROUP BY ?qlue_ls_entity
-      ORDER BY DESC(?qlue_ls_count)
-      {% else %}
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      SELECT ?qlue_ls_entity (SAMPLE(?name) as ?qlue_ls_label) (SAMPLE(?count) as ?qlue_ls_count) WHERE {
-        {% if not context %}
-        {
-          SELECT ?qlue_ls_entity (COUNT(?qlue_ls_entity) AS ?count) WHERE {
-           {{ local_context }}
-          }
-          GROUP BY ?qlue_ls_entity
-        }
-        {% else %}
-        {
-          SELECT ?qlue_ls_entity (COUNT(DISTINCT {{ subject }}) AS ?count) WHERE {
-           {{ context }} {{ local_context }}
-          }
-          GROUP BY ?qlue_ls_entity
-        }
-        {% endif %}
-        {% if not search_term %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        BIND (?name AS ?alias)
-        {% elif search_term_uncompressed %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        FILTER REGEX(STR(?qlue_ls_entity), "{{ search_term_uncompressed }}", "i")
-        {% else %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        OPTIONAL { ?qui_tmp_1 @en@skos:altLabel ?alias }
-        FILTER (REGEX(STR(?name), "{{ search_term }}", "i") || REGEX(STR(?alias), "{{ search_term }}", "i"))
-        {% endif %}
-      }
-      GROUP BY ?qlue_ls_entity
-      ORDER BY DESC(?qlue_ls_count)
-      {% endif %}
-      LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextInsensitive: |-
+  map_view_url: https://qlever.dev/petrimaps/
+  query_templates:
+    subject_completion: "# subject completion\n{% include \"prefix_declarations\"\
+      \ %}\n{% if search_term %}\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\
+      PREFIX wikibase: <http://wikiba.se/ontology#>\nPREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n\
+      PREFIX schema: <http://schema.org/>\nSELECT ?qlue_ls_entity (SAMPLE(?name) AS\
+      \ ?qlue_ls_label) (SAMPLE(?alias) AS ?qlue_ls_alias) (SAMPLE(?sitelinks) AS\
+      \ ?qlue_ls_count) WHERE {\n  {\n    SELECT ?qlue_ls_entity ?name ?alias WHERE\
+      \ {\n      ?qlue_ls_entity rdfs:label ?name . FILTER (LANG(?name) = \"en\")\n\
+      \      ?qlue_ls_entity skos:altLabel ?alias . FILTER (LANG(?alias) = \"en\"\
+      )\n      {% if search_term_uncompressed %}\n      FILTER (REGEX(STR(?qlue_ls_entity),\
+      \ \"^{{ search_term_uncompressed }}\"))\n      {% elif search_term %}\n    \
+      \  FILTER (REGEX(STR(?name), \"^{{ search_term }}\") || REGEX(STR(?alias), \"\
+      ^{{ search_term }}\")) \n      {% endif %}\n    }\n  }\n  ?qlue_ls_entity wikibase:sitelinks\
+      \ ?sitelinks\n} GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)\n{% endif\
+      \ %}\nLIMIT {{ limit }} OFFSET {{ offset }}"
+    predicate_completion_context_sensitive: "# predicate completion sensitive\n{%\
+      \ for prefix in prefixes %}\nPREFIX {{prefix.0}}: <{{prefix.1}}>\n{% endfor\
+      \ %}\n{% if subject is not variable %}\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nSELECT ?qlue_ls_entity\
+      \ (SAMPLE(?name) as ?qlue_ls_label) (SAMPLE(?count) as ?qlue_ls_count) WHERE\
+      \ {\n  {\n    SELECT ?qlue_ls_entity (COUNT(?qlue_ls_entity) AS ?count) WHERE\
+      \ {\n      {{ local_context }}\n    }\n    GROUP BY ?qlue_ls_entity \n  }\n\
+      \  {% if not search_term %}\n  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1\
+      \ @en@rdfs:label ?name .\n  BIND (?name AS ?alias)\n  {% elif search_term_uncompressed\
+      \ %}\n  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1 @en@rdfs:label\
+      \ ?name .\n  FILTER REGEX(STR(?qlue_ls_entity), \"{{ search_term_uncompressed\
+      \ }}\", \"i\")\n  {% else %}\n  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1\
+      \ @en@rdfs:label ?name .\n  OPTIONAL { ?qui_tmp_1 @en@skos:altLabel ?alias }\n\
+      \  FILTER (REGEX(STR(?name), \"{{ search_term }}\", \"i\") || REGEX(STR(?alias),\
+      \ \"{{ search_term }}\", \"i\"))\n  {% endif %}\n}\nGROUP BY ?qlue_ls_entity\n\
+      ORDER BY DESC(?qlue_ls_count)\n{% else %}\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nSELECT ?qlue_ls_entity\
+      \ (SAMPLE(?name) as ?qlue_ls_label) (SAMPLE(?count) as ?qlue_ls_count) WHERE\
+      \ {\n  {% if not context %}\n  {\n    SELECT ?qlue_ls_entity (COUNT(?qlue_ls_entity)\
+      \ AS ?count) WHERE {\n     {{ local_context }}\n    }\n    GROUP BY ?qlue_ls_entity\n\
+      \  }\n  {% else %}\n  {\n    SELECT ?qlue_ls_entity (COUNT(DISTINCT {{ subject\
+      \ }}) AS ?count) WHERE {\n     {{ context }} {{ local_context }}\n    }\n  \
+      \  GROUP BY ?qlue_ls_entity\n  }\n  {% endif %}\n  {% if not search_term %}\n\
+      \  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1 @en@rdfs:label ?name\
+      \ .\n  BIND (?name AS ?alias)\n  {% elif search_term_uncompressed %}\n  ?qui_tmp_1\
+      \ ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1 @en@rdfs:label ?name .\n  FILTER\
+      \ REGEX(STR(?qlue_ls_entity), \"{{ search_term_uncompressed }}\", \"i\")\n \
+      \ {% else %}\n  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1 @en@rdfs:label\
+      \ ?name .\n  OPTIONAL { ?qui_tmp_1 @en@skos:altLabel ?alias }\n  FILTER (REGEX(STR(?name),\
+      \ \"{{ search_term }}\", \"i\") || REGEX(STR(?alias), \"{{ search_term }}\"\
+      , \"i\"))\n  {% endif %}\n}\nGROUP BY ?qlue_ls_entity\nORDER BY DESC(?qlue_ls_count)\n\
+      {% endif %}\nLIMIT {{ limit }} OFFSET {{ offset }}"
+    predicate_completion_context_insensitive: |-
       # predicate completion insensitive
       {% for prefix in prefixes %}
       PREFIX {{prefix.0}}: <{{prefix.1}}>
@@ -166,7 +118,7 @@ wikidata:
         {% endif %}
       } GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextSensitive: |-
+    object_completion_context_sensitive: |-
       # object completion sensitive
       {% for prefix in prefixes -%}
       PREFIX {{prefix.0}}: <{{prefix.1}}>
@@ -193,7 +145,7 @@ wikidata:
       GROUP BY ?qlue_ls_entity
       ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextInsensitive: |-
+    object_completion_context_insensitive: |-
       # object completion insensitive
       {% for prefix in prefixes -%}
       PREFIX {{prefix.0}}: <{{prefix.1}}>
@@ -219,7 +171,7 @@ wikidata:
       GROUP BY ?qlue_ls_entity
       ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    valuesCompletionContextSensitive: |-
+    values_completion_context_sensitive: |-
       {%- for prefix in prefixes -%}
       PREFIX {{prefix.0}}: <{{prefix.1}}>
       {% endfor -%}
@@ -238,7 +190,7 @@ wikidata:
       GROUP BY ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_count
       ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }}
-    valuesCompletionContextInsensitive: |-
+    values_completion_context_insensitive: |-
       {%- for prefix in prefixes -%}
       PREFIX {{prefix.0}}: <{{prefix.1}}>
       {% endfor -%}
@@ -267,11 +219,10 @@ wikidata:
 dblp:
   name: DBLP
   url: https://qlever.dev/api/dblp
-  default: false
-  sortKey: A2
   engine: QLever
-  mapViewUrl: https://qlever.dev/petrimaps/
-  prefixMap:
+  default: false
+  sort_key: A2
+  prefix_map:
     dblps: https://dblp.org/rdf/schema-2020-07-01#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
@@ -289,8 +240,9 @@ dblp:
     xsd: http://www.w3.org/2001/XMLSchema#
     issn: http://issn.org/resource/ISSN/
     br: https://w3id.org/oc/meta/br/
-  queryTemplates:
-    subjectCompletion: |-
+  map_view_url: https://qlever.dev/petrimaps/
+  query_templates:
+    subject_completion: |-
       # subject completion
       {% include "prefix_declarations" %}
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -308,7 +260,7 @@ dblp:
         {% endif %}
       } ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextSensitive: |-
+    predicate_completion_context_sensitive: |-
       # predicate completion sensitive
       {% include "prefix_declarations" %}
       SELECT ?qlue_ls_entity ?qlue_ls_count WHERE {
@@ -333,7 +285,7 @@ dblp:
         {% endif %}
       } ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextInsensitive: |-
+    predicate_completion_context_insensitive: |-
       # predicate completion insensitive
       {% include "prefix_declarations" %}
       SELECT ?qlue_ls_entity ?qlue_ls_score WHERE {
@@ -350,7 +302,7 @@ dblp:
         {% endif %}
       } ORDER BY DESC(?qlue_ls_score)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextSensitive: |-
+    object_completion_context_sensitive: |-
       # object completion sensitive
       {% include "prefix_declarations" %}
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -366,7 +318,7 @@ dblp:
         {% endif %}
       } ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextInsensitive: |-
+    object_completion_context_insensitive: |-
       # object completion insensitive
       {% include "prefix_declarations" %}
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -382,17 +334,16 @@ dblp:
         {% endif %}
       } ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    valuesCompletionContextSensitive: ''
-    valuesCompletionContextInsensitive: ''
+    values_completion_context_sensitive: ''
+    values_completion_context_insensitive: ''
     hover: ''
 osm-planet:
   name: OSM planet
   url: https://qlever.dev/api/osm-planet
-  default: false
-  sortKey: A3
   engine: QLever
-  mapViewUrl: https://qlever.dev/petrimaps/
-  prefixMap:
+  default: false
+  sort_key: A3
+  prefix_map:
     osmmeta: https://www.openstreetmap.org/meta/
     osmway: https://www.openstreetmap.org/way/
     osmkey: 'https://www.openstreetmap.org/wiki/Key:'
@@ -414,8 +365,9 @@ osm-planet:
     osm2rdfkey: https://osm2rdf.cs.uni-freiburg.de/rdf/key#
     osm2rdfgeom: https://osm2rdf.cs.uni-freiburg.de/rdf/geom#
     osm2rdfmember: https://osm2rdf.cs.uni-freiburg.de/rdf/member#
-  queryTemplates:
-    subjectCompletion: |-
+  map_view_url: https://qlever.dev/petrimaps/
+  query_templates:
+    subject_completion: |-
       # subject completion
       {% include "prefix_declarations" %}
       {% if search_term %}
@@ -476,7 +428,7 @@ osm-planet:
       } GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)
       {% endif %}
       LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextSensitive: |-
+    predicate_completion_context_sensitive: |-
       # predicate completion senstive
       {% include "prefix_declarations" %}
       SELECT ?qlue_ls_entity (SAMPLE(?score) AS ?qlue_ls_score) WHERE {
@@ -493,7 +445,7 @@ osm-planet:
         {% endif %}
       } GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_score)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextInsensitive: |-
+    predicate_completion_context_insensitive: |-
       # predicate completion insenstive
       {% include "prefix_declarations" %}
       {% if subject is not variable %}
@@ -539,7 +491,7 @@ osm-planet:
       ORDER BY DESC(?qlue_ls_count)
       {% endif %}
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextSensitive: |-
+    object_completion_context_sensitive: |-
       # object completion sensitve
       {% include "prefix_declarations" %}
       PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
@@ -566,7 +518,7 @@ osm-planet:
       GROUP BY ?qlue_ls_entity
       ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextInsensitive: |-
+    object_completion_context_insensitive: |-
       # object completion insenstive
       {% include "prefix_declarations" %}
       PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
@@ -589,17 +541,16 @@ osm-planet:
         {% endif %}
       } GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    valuesCompletionContextSensitive: ''
-    valuesCompletionContextInsensitive: ''
+    values_completion_context_sensitive: ''
+    values_completion_context_insensitive: ''
     hover: ''
 eval:
   name: Evaluationen
   url: https://qlever.dev/api/lehrevaluationen_1622
-  default: false
-  sortKey: A3
   engine: QLever
-  mapViewUrl: https://qlever.dev/petrimaps/
-  prefixMap:
+  default: false
+  sort_key: A3
+  prefix_map:
     owl: http://www.w3.org/2002/07/owl#
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
@@ -607,8 +558,9 @@ eval:
     skos: http://www.w3.org/2004/02/skos/core#
     xsd: http://www.w3.org/2001/XMLSchema#
     foaf: http://xmlns.com/foaf/0.1/
-  queryTemplates:
-    subjectCompletion: |-
+  map_view_url: https://qlever.dev/petrimaps/
+  query_templates:
+    subject_completion: |-
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
           SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
             {
@@ -634,7 +586,7 @@ eval:
               FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
             }
           }
-    predicateCompletionContextSensitive: |-
+    predicate_completion_context_sensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -645,70 +597,31 @@ eval:
               SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
                 {{ context }}
                 {{ local_context }}
-                {% if search_term_uncompressed %}
-                # User typed a prefixed IRI (e.g. rdf:type) — match against the expanded IRI string
-                FILTER(STRSTARTS(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
-                {% elif search_term %}
-                # User typed a plain text term — match against the predicate's label;
-                # accept English labels and untagged literals so language-free graphs still work
-                ?qlue_ls_entity rdfs:label ?searchLabel .
-                FILTER(LANG(?searchLabel) = "en" || LANG(?searchLabel) = "")
-                FILTER(REGEX(STR(?searchLabel), "^{ search_term }}", "i"))
-                {% endif %}
+                FILTER(REGEX(STR(?qlue_ls_entity), "^{{ search_term }}", "i") )
               }
               GROUP BY ?qlue_ls_entity
               ORDER BY DESC(?qlue_ls_count)
               LIMIT {{ limit }}
               OFFSET {{ offset }}
             }
-            # Fetch human-readable label for display; prefer English, allow untagged fallback
-            OPTIONAL {
-              ?qlue_ls_entity rdfs:label ?qlue_ls_label .
-              FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
-            }
-            # Fetch description for the completion item detail line
-            OPTIONAL {
-              ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
-              FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
-            }
+
           }
-    predicateCompletionContextInsensitive: |-
-      # Inherit PREFIX declarations from the editor document and configuration
-          {% include "prefix_declarations" %}
-          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-          SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
-            {
-              # Inner query: scan all triples and rank predicates by usage frequency
-              SELECT ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {
-                ?s ?qlue_ls_entity ?o .
-                {% if search_term_uncompressed %}
-                # User typed a prefixed IRI (e.g. rdf:type) — match against the expanded IRI string
-                FILTER(STRSTARTS(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
-                {% elif search_term %}
-                # User typed a plain text term — match against the predicate's label;
-                # accept English labels and untagged literals so language-free graphs still work
-                ?qlue_ls_entity rdfs:label ?searchLabel .
-                FILTER(LANG(?searchLabel) = "en" || LANG(?searchLabel) = "")
-                FILTER(REGEX(STR(?searchLabel), "^{{ search_term }}", "i"))
-                {% endif %}
-              }
-              GROUP BY ?qlue_ls_entity
-              ORDER BY DESC(?qlue_ls_count)
-              LIMIT {{ limit }}
-              OFFSET {{ offset }}
-            }
-            # Fetch human-readable label for display; prefer English, allow untagged fallback
-            OPTIONAL {
-              ?qlue_ls_entity rdfs:label ?qlue_ls_label .
-              FILTER(LANG(?qlue_ls_label) = "en" || LANG(?qlue_ls_label) = "")
-            }
-            # Fetch description for the completion item detail line
-            OPTIONAL {
-              ?qlue_ls_entity rdfs:comment ?qlue_ls_alias .
-              FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
-            }
-          }
-    objectCompletionContextSensitive: |-
+    predicate_completion_context_insensitive: "# Inherit PREFIX declarations from\
+      \ the editor document and configuration\n    {% include \"prefix_declarations\"\
+      \ %}\n    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n    SELECT ?qlue_ls_entity\
+      \ ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {\n      {\n        # Inner\
+      \ query: scan all triples and rank predicates by usage frequency\n        SELECT\
+      \ ?qlue_ls_entity (COUNT(*) AS ?qlue_ls_count) WHERE {\n          ?s ?qlue_ls_entity\
+      \ ?o .\n          {% if search_term_uncompressed %}\n          # User typed\
+      \ a prefixed IRI (e.g. rdf:type) — match against the expanded IRI string\n \
+      \         FILTER(STRSTARTS(STR(?qlue_ls_entity), \"^{{ search_term_uncompressed\
+      \ }}\"))\n          {% elif search_term %}\n          # User typed a plain text\
+      \ term — match against the predicate's label;\n          # accept English labels\
+      \ and untagged literals so language-free graphs still work\n          FILTER(REGEX(STR(?qlue_ls_entity),\
+      \ \"^{{ search_term }}\", \"i\"))\n          {% endif %}\n        }\n      \
+      \  GROUP BY ?qlue_ls_entity\n        ORDER BY DESC(?qlue_ls_count)\n       \
+      \ LIMIT {{ limit }}\n        OFFSET {{ offset }}\n      }\n  \n    }"
+    object_completion_context_sensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -747,7 +660,7 @@ eval:
             )
             {% endif %}
           }
-    objectCompletionContextInsensitive: |-
+    object_completion_context_insensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -786,7 +699,7 @@ eval:
             )
             {% endif %}
           }
-    valuesCompletionContextSensitive: |-
+    values_completion_context_sensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -825,7 +738,7 @@ eval:
             )
             {% endif %}
           }
-    valuesCompletionContextInsensitive: |-
+    values_completion_context_insensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -885,34 +798,33 @@ eval:
           LIMIT 1
 B1:
   name: Formular 1
-  url: http://localhost:7020
-  default: false
-  sortKey: B1
+  url: http://localhost:7020/
   engine: QLever
-  mapViewUrl: https://qlever.dev/petrimaps/
-  prefixMap:
+  default: false
+  sort_key: B1
+  prefix_map:
     f1: http://f1kg.example.org/ontology/
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
     owl: http://www.w3.org/2002/07/owl#
     xsd: http://www.w3.org/2001/XMLSchema#
-  queryTemplates:
-    subjectCompletion: ''
-    predicateCompletionContextSensitive: ''
-    predicateCompletionContextInsensitive: ''
-    objectCompletionContextSensitive: ''
-    objectCompletionContextInsensitive: ''
-    valuesCompletionContextSensitive: ''
-    valuesCompletionContextInsensitive: ''
+  map_view_url: https://qlever.dev/petrimaps/
+  query_templates:
+    subject_completion: ''
+    predicate_completion_context_sensitive: ''
+    predicate_completion_context_insensitive: ''
+    object_completion_context_sensitive: ''
+    object_completion_context_insensitive: ''
+    values_completion_context_sensitive: ''
+    values_completion_context_insensitive: ''
     hover: ''
 studybase:
   name: Study Base
-  url: http://localhost:7020
-  default: false
-  sortKey: B1
+  url: http://localhost:7020/
   engine: QLever
-  mapViewUrl: https://qlever.dev/petrimaps/
-  prefixMap:
+  default: false
+  sort_key: B1
+  prefix_map:
     owl: http://www.w3.org/2002/07/owl#
     rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
     rdfs: http://www.w3.org/2000/01/rdf-schema#
@@ -922,8 +834,9 @@ studybase:
     foaf: http://xmlns.com/foaf/0.1/
     sbo: http://localhost:1313/ontology/
     sbc: http://localhost:1313/ir/concepts/
-  queryTemplates:
-    subjectCompletion: |-
+  map_view_url: https://qlever.dev/petrimaps/
+  query_templates:
+    subject_completion: |-
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
           SELECT ?qlue_ls_entity ?qlue_ls_label ?qlue_ls_alias ?qlue_ls_count WHERE {
             {
@@ -949,7 +862,7 @@ studybase:
               FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
             }
           }
-    predicateCompletionContextSensitive: |-
+    predicate_completion_context_sensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -987,7 +900,7 @@ studybase:
               FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
             }
           }
-    predicateCompletionContextInsensitive: |-
+    predicate_completion_context_insensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -1023,7 +936,7 @@ studybase:
               FILTER(LANG(?qlue_ls_alias) = "en" || LANG(?qlue_ls_alias) = "")
             }
           }
-    objectCompletionContextSensitive: |-
+    object_completion_context_sensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -1062,7 +975,7 @@ studybase:
             )
             {% endif %}
           }
-    objectCompletionContextInsensitive: |-
+    object_completion_context_insensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -1101,7 +1014,7 @@ studybase:
             )
             {% endif %}
           }
-    valuesCompletionContextSensitive: |-
+    values_completion_context_sensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -1140,7 +1053,7 @@ studybase:
             )
             {% endif %}
           }
-    valuesCompletionContextInsensitive: |-
+    values_completion_context_insensitive: |-
       # Inherit PREFIX declarations from the editor document and configuration
           {% include "prefix_declarations" %}
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -1201,15 +1114,15 @@ studybase:
 imdb:
   name: IMDb
   url: https://qlever.dev/api/imdb
-  default: false
-  sortKey: B4
   engine: QLever
-  mapViewUrl: https://qlever.dev/petrimaps/
-  prefixMap:
+  default: false
+  sort_key: B4
+  prefix_map:
     imdb: https://www.imdb.com/
     xsd: http://www.w3.org/2001/XMLSchema#
-  queryTemplates:
-    subjectCompletion: |-
+  map_view_url: https://qlever.dev/petrimaps/
+  query_templates:
+    subject_completion: |-
       {% include "prefix_declarations" %}
       {% if not search_term %}
       PREFIX imdb: <https://www.imdb.com/>
@@ -1246,7 +1159,7 @@ imdb:
       ORDER BY DESC(?qlue_ls_count)
       {% endif %}
       LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextSensitive: |-
+    predicate_completion_context_sensitive: |-
       {% include "prefix_declarations" %}
       {% if subject is not variable %}
       SELECT ?qlue_ls_entity
@@ -1327,7 +1240,7 @@ imdb:
       } GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)
       {% endif %}
       LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextInsensitive: |-
+    predicate_completion_context_insensitive: |-
       {% include "prefix_declarations" %}
       SELECT ?qlue_ls_entity WHERE {
         {{local_context}}
@@ -1335,7 +1248,7 @@ imdb:
       GROUP BY ?qlue_ls_entity
       LIMIT {{ limit }}
       OFFSET {{ offset }}
-    objectCompletionContextSensitive: |-
+    object_completion_context_sensitive: |-
       {% include "prefix_declarations" %}
       SELECT ?qlue_ls_entity
                     (SAMPLE(?_qlue_ls_entity) AS ?qlue_ls_label)
@@ -1384,7 +1297,7 @@ imdb:
       GROUP BY ?qlue_ls_entity
       ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextInsensitive: |-
+    object_completion_context_insensitive: |-
       {% include "prefix_declarations" %}
       SELECT ?qlue_ls_entity WHERE {
         {{local_context}}
@@ -1395,17 +1308,16 @@ imdb:
         {% endif %}
       } GROUP BY ?qlue_ls_entity ORDER BY DESC(COUNT(?qlue_ls_entity))
       LIMIT {{ limit }} OFFSET {{ offset }}
-    valuesCompletionContextSensitive: ''
-    valuesCompletionContextInsensitive: ''
+    values_completion_context_sensitive: ''
+    values_completion_context_insensitive: ''
     hover: ''
 wikidata-qlever:
   name: Wikidata QLever
   url: https://qlever.dev/api/wikidata-qlever
-  default: false
-  sortKey: C0
   engine: QLever
-  mapViewUrl: https://qlever.dev/petrimaps/
-  prefixMap:
+  default: false
+  sort_key: C0
+  prefix_map:
     cc: http://creativecommons.org/ns#
     data: https://www.wikidata.org/wiki/Special:EntityData/
     dct: http://purl.org/dc/terms/
@@ -1442,105 +1354,55 @@ wikidata-qlever:
     wdtn: http://www.wikidata.org/prop/direct-normalized/
     wikibase: http://wikiba.se/ontology#
     xsd: http://www.w3.org/2001/XMLSchema#
-  queryTemplates:
-    subjectCompletion: |-
-      # subject completion
-      {% for prefix in prefixes %}
-      PREFIX {{prefix.0}}: <{{prefix.1}}>
-      {% endfor %}
-      {% if search_term %}
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX wikibase: <http://wikiba.se/ontology#>
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      PREFIX schema: <http://schema.org/>
-      SELECT ?qlue_ls_entity (SAMPLE(?name) AS ?qlue_ls_label) (SAMPLE(?alias) AS ?qlue_ls_detail) (SAMPLE(?sitelinks) AS ?qlue_ls_count) WHERE {
-        {
-          SELECT ?qlue_ls_entity ?name ?alias WHERE {
-            ?qlue_ls_entity @en@rdfs:label ?name .
-            ?qlue_ls_entity @en@skos:altLabel ?alias .
-            {% if search_term_uncompressed %}
-            FILTER (REGEX(STR(?qlue_ls_entity), "^{{ search_term_uncompressed }}"))
-            {% elif search_term %}
-            FILTER (REGEX(STR(?name), "^{{ search_term }}") || REGEX(STR(?alias), "^{{ search_term }}")) 
-            {% endif %}
-          }
-        }
-        ?qlue_ls_entity ^schema:about ?m .
-        ?m wikibase:sitelinks ?sitelinks
-      } GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)
-      {% endif %}
-      LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextSensitive: |-
-      # predicate completion sensitive
-      {% for prefix in prefixes %}
-      PREFIX {{prefix.0}}: <{{prefix.1}}>
-      {% endfor %}
-      {% if subject is not variable %}
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      SELECT ?qlue_ls_entity (SAMPLE(?name) as ?qlue_ls_label) (SAMPLE(?count) as ?qlue_ls_count) WHERE {
-        {
-          SELECT ?qlue_ls_entity (COUNT(?qlue_ls_entity) AS ?count) WHERE {
-            {{ local_context }}
-          }
-          GROUP BY ?qlue_ls_entity 
-        }
-        {% if not search_term %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        BIND (?name AS ?alias)
-        {% elif search_term_uncompressed %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        FILTER REGEX(STR(?qlue_ls_entity), "{{ search_term_uncompressed }}", "i")
-        {% else %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        OPTIONAL { ?qui_tmp_1 @en@skos:altLabel ?alias }
-        FILTER (REGEX(STR(?name), "{{ search_term }}", "i") || REGEX(STR(?alias), "{{ search_term }}", "i"))
-        {% endif %}
-      }
-      GROUP BY ?qlue_ls_entity
-      ORDER BY DESC(?qlue_ls_count)
-      {% else %}
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      SELECT ?qlue_ls_entity (SAMPLE(?name) as ?qlue_ls_label) (SAMPLE(?count) as ?qlue_ls_count) WHERE {
-        {% if not context %}
-        {
-          SELECT ?qlue_ls_entity (COUNT(?qlue_ls_entity) AS ?count) WHERE {
-           {{ local_context }}
-          }
-          GROUP BY ?qlue_ls_entity
-        }
-        {% else %}
-        {
-          SELECT ?qlue_ls_entity (COUNT(DISTINCT {{ subject }}) AS ?count) WHERE {
-           {{ context }} {{ local_context }}
-          }
-          GROUP BY ?qlue_ls_entity
-        }
-        {% endif %}
-        {% if not search_term %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        BIND (?name AS ?alias)
-        {% elif search_term_uncompressed %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        FILTER REGEX(STR(?qlue_ls_entity), "{{ search_term_uncompressed }}", "i")
-        {% else %}
-        ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .
-        ?qui_tmp_1 @en@rdfs:label ?name .
-        OPTIONAL { ?qui_tmp_1 @en@skos:altLabel ?alias }
-        FILTER (REGEX(STR(?name), "{{ search_term }}", "i") || REGEX(STR(?alias), "{{ search_term }}", "i"))
-        {% endif %}
-      }
-      GROUP BY ?qlue_ls_entity
-      ORDER BY DESC(?qlue_ls_count)
-      {% endif %}
-      LIMIT {{ limit }} OFFSET {{ offset }}
-    predicateCompletionContextInsensitive: |-
+  map_view_url: https://qlever.dev/petrimaps/
+  query_templates:
+    subject_completion: "# subject completion\n{% for prefix in prefixes %}\nPREFIX\
+      \ {{prefix.0}}: <{{prefix.1}}>\n{% endfor %}\n{% if search_term %}\nPREFIX rdfs:\
+      \ <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX wikibase: <http://wikiba.se/ontology#>\n\
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nPREFIX schema: <http://schema.org/>\n\
+      SELECT ?qlue_ls_entity (SAMPLE(?name) AS ?qlue_ls_label) (SAMPLE(?alias) AS\
+      \ ?qlue_ls_detail) (SAMPLE(?sitelinks) AS ?qlue_ls_count) WHERE {\n  {\n   \
+      \ SELECT ?qlue_ls_entity ?name ?alias WHERE {\n      ?qlue_ls_entity @en@rdfs:label\
+      \ ?name .\n      ?qlue_ls_entity @en@skos:altLabel ?alias .\n      {% if search_term_uncompressed\
+      \ %}\n      FILTER (REGEX(STR(?qlue_ls_entity), \"^{{ search_term_uncompressed\
+      \ }}\"))\n      {% elif search_term %}\n      FILTER (REGEX(STR(?name), \"^{{\
+      \ search_term }}\") || REGEX(STR(?alias), \"^{{ search_term }}\")) \n      {%\
+      \ endif %}\n    }\n  }\n  ?qlue_ls_entity ^schema:about ?m .\n  ?m wikibase:sitelinks\
+      \ ?sitelinks\n} GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)\n{% endif\
+      \ %}\nLIMIT {{ limit }} OFFSET {{ offset }}"
+    predicate_completion_context_sensitive: "# predicate completion sensitive\n{%\
+      \ for prefix in prefixes %}\nPREFIX {{prefix.0}}: <{{prefix.1}}>\n{% endfor\
+      \ %}\n{% if subject is not variable %}\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nSELECT ?qlue_ls_entity\
+      \ (SAMPLE(?name) as ?qlue_ls_label) (SAMPLE(?count) as ?qlue_ls_count) WHERE\
+      \ {\n  {\n    SELECT ?qlue_ls_entity (COUNT(?qlue_ls_entity) AS ?count) WHERE\
+      \ {\n      {{ local_context }}\n    }\n    GROUP BY ?qlue_ls_entity \n  }\n\
+      \  {% if not search_term %}\n  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1\
+      \ @en@rdfs:label ?name .\n  BIND (?name AS ?alias)\n  {% elif search_term_uncompressed\
+      \ %}\n  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1 @en@rdfs:label\
+      \ ?name .\n  FILTER REGEX(STR(?qlue_ls_entity), \"{{ search_term_uncompressed\
+      \ }}\", \"i\")\n  {% else %}\n  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1\
+      \ @en@rdfs:label ?name .\n  OPTIONAL { ?qui_tmp_1 @en@skos:altLabel ?alias }\n\
+      \  FILTER (REGEX(STR(?name), \"{{ search_term }}\", \"i\") || REGEX(STR(?alias),\
+      \ \"{{ search_term }}\", \"i\"))\n  {% endif %}\n}\nGROUP BY ?qlue_ls_entity\n\
+      ORDER BY DESC(?qlue_ls_count)\n{% else %}\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\
+      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nSELECT ?qlue_ls_entity\
+      \ (SAMPLE(?name) as ?qlue_ls_label) (SAMPLE(?count) as ?qlue_ls_count) WHERE\
+      \ {\n  {% if not context %}\n  {\n    SELECT ?qlue_ls_entity (COUNT(?qlue_ls_entity)\
+      \ AS ?count) WHERE {\n     {{ local_context }}\n    }\n    GROUP BY ?qlue_ls_entity\n\
+      \  }\n  {% else %}\n  {\n    SELECT ?qlue_ls_entity (COUNT(DISTINCT {{ subject\
+      \ }}) AS ?count) WHERE {\n     {{ context }} {{ local_context }}\n    }\n  \
+      \  GROUP BY ?qlue_ls_entity\n  }\n  {% endif %}\n  {% if not search_term %}\n\
+      \  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1 @en@rdfs:label ?name\
+      \ .\n  BIND (?name AS ?alias)\n  {% elif search_term_uncompressed %}\n  ?qui_tmp_1\
+      \ ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1 @en@rdfs:label ?name .\n  FILTER\
+      \ REGEX(STR(?qlue_ls_entity), \"{{ search_term_uncompressed }}\", \"i\")\n \
+      \ {% else %}\n  ?qui_tmp_1 ?qui_tmp_2 ?qlue_ls_entity .\n  ?qui_tmp_1 @en@rdfs:label\
+      \ ?name .\n  OPTIONAL { ?qui_tmp_1 @en@skos:altLabel ?alias }\n  FILTER (REGEX(STR(?name),\
+      \ \"{{ search_term }}\", \"i\") || REGEX(STR(?alias), \"{{ search_term }}\"\
+      , \"i\"))\n  {% endif %}\n}\nGROUP BY ?qlue_ls_entity\nORDER BY DESC(?qlue_ls_count)\n\
+      {% endif %}\nLIMIT {{ limit }} OFFSET {{ offset }}"
+    predicate_completion_context_insensitive: |-
       # predicate completion insensitive
       {% for prefix in prefixes %}
       PREFIX {{prefix.0}}: <{{prefix.1}}>
@@ -1569,7 +1431,7 @@ wikidata-qlever:
         {% endif %}
       } GROUP BY ?qlue_ls_entity ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextSensitive: |-
+    object_completion_context_sensitive: |-
       # object completion sensitive
       {% for prefix in prefixes %}
       PREFIX {{prefix.0}}: <{{prefix.1}}>
@@ -1597,7 +1459,7 @@ wikidata-qlever:
       GROUP BY ?qlue_ls_entity
       ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    objectCompletionContextInsensitive: |-
+    object_completion_context_insensitive: |-
       # object completion insensitive
       {% for prefix in prefixes %}
       PREFIX {{prefix.0}}: <{{prefix.1}}>
@@ -1623,6 +1485,6 @@ wikidata-qlever:
       GROUP BY ?qlue_ls_entity
       ORDER BY DESC(?qlue_ls_count)
       LIMIT {{ limit }} OFFSET {{ offset }}
-    valuesCompletionContextSensitive: ''
-    valuesCompletionContextInsensitive: ''
+    values_completion_context_sensitive: ''
+    values_completion_context_insensitive: ''
     hover: ''
