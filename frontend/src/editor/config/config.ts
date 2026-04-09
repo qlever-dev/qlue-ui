@@ -4,12 +4,10 @@
 // │ Licensed under the MIT license. │ \\
 // └─────────────────────────────────┘ \\
 
-import { useWorkerFactory, type WorkerLoader } from 'monaco-languageclient/workerFactory';
+import { useWorkerFactory, Worker as WorkerDescriptor, type WorkerLoader } from 'monaco-languageclient/workerFactory';
 import { type EditorAppConfig } from 'monaco-languageclient/editorApp';
 import { type MonacoVscodeApiConfig } from 'monaco-languageclient/vscodeApiWrapper';
 import { type LanguageClientConfig } from 'monaco-languageclient/lcwrapper';
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import TextMateWorker from '@codingame/monaco-vscode-textmate-service-override/worker?worker';
 import languageServerWorker from './languageServer.worker?worker';
 import sparqlTextmateGrammar from './sparql.tmLanguage.json?raw';
 import sparqlLanguageConfig from './sparql.configuration.json?raw';
@@ -34,8 +32,14 @@ export async function buildWrapperConfig(initial: string) {
   });
 
   const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-    TextEditorWorker: () => new editorWorker(),
-    TextMateWorker: () => new TextMateWorker(),
+    TextEditorWorker: () => new WorkerDescriptor(
+      new URL('@codingame/monaco-vscode-editor-api/esm/vs/editor/editor.worker.js', import.meta.url),
+      { type: 'module' }
+    ),
+    TextMateWorker: () => new WorkerDescriptor(
+      new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url),
+      { type: 'module' }
+    ),
   };
   const extensionFilesOrContents = new Map<string, string | URL>();
   extensionFilesOrContents.set('/sparql-configuration.json', sparqlLanguageConfig);

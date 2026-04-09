@@ -21,14 +21,13 @@
     "vite-plugin-wasm": "^3.4.1"
   },
   "dependencies": {
-    "@codingame/monaco-vscode-textmate-service-override": "^22.0.1",
+    "@codingame/monaco-vscode-textmate-service-override": "25.1.2",
     "@tailwindcss/vite": "^4.1.14",
     "d3": "^7.9.0",
-    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@21.3.4",
-    "monaco-languageclient": "^10.1.0",
-    "monaco-vim": "^0.4.2",
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@25.1.2",
+    "monaco-languageclient": "10.7.0",
     "qlue-ls": "^2.5.4",
     "tailwindcss": "^4.1.14",
-    "vscode": "npm:@codingame/monaco-vscode-extension-api@21.3.4"
+    "vscode": "npm:@codingame/monaco-vscode-extension-api@25.1.2"
   }
 }
