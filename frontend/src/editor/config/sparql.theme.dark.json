@@ -14,84 +14,15 @@
     "editorIndentGuide.activeBackground": "#444c56",
     "editor.selectionHighlightBorder": "#30363d"
   },
-  "tokenColors": [
-    {
-      "scope": "keyword",
-      "settings": {
-        "foreground": "#0d9488",
-        "fontStyle": "bold"
-      }
-    },
-    {
-      "scope": "keyword.operator",
-      "settings": {
-        "foreground": "#e07a5f"
-      }
-    },
-    {
-      "scope": "keyword.operator.function",
-      "settings": {
-        "foreground": "#f87171",
-        "fontStyle": "bold"
-      }
-    },
-    {
-      "scope": "variable",
-      "settings": {
-        "foreground": "#7dd3fc"
-      }
-    },
-    {
-      "scope": "variable.prefix.sparql",
-      "settings": {
-        "foreground": "#93e1d8",
-        "fontStyle": "italic"
-      }
-    },
-    {
-      "scope": "variable.reference.sparql",
-      "settings": {
-        "foreground": "#a5b4fc"
-      }
-    },
-    {
-      "scope": "constant.numeric",
-      "settings": {
-        "foreground": "#fca5a5"
-      }
-    },
-    {
-      "scope": "string",
-      "settings": {
-        "foreground": "#a3e635"
-      }
-    },
-    {
-      "scope": "constant.other.iri.sparql",
-      "settings": {
-        "foreground": "#fbbf24",
-        "fontStyle": "italic"
-      }
-    },
-    {
-      "scope": "keyword.symbol",
-      "settings": {
-        "foreground": "#ffb86c",
-        "fontStyle": "bold"
-      }
-    },
-    {
-      "scope": "comment",
-      "settings": {
-        "foreground": "#6b7280",
-        "fontStyle": "italic"
-      }
-    },
-    {
-      "scope": "punctuation",
-      "settings": {
-        "foreground": "#cbd5e1"
-      }
-    }
-  ]
+  "semanticHighlighting": true,
+  "semanticTokenColors": {
+    "keyword": { "foreground": "#0d9488", "bold": true },
+    "function": { "foreground": "#f87171", "bold": true },
+    "variable": "#7dd3fc",
+    "string": "#a3e635",
+    "number": "#fca5a5",
+    "comment": { "foreground": "#6b7280", "italic": true },
+    "operator": "#e07a5f",
+    "namespace": { "foreground": "#93e1d8", "italic": true }
+  }
 }

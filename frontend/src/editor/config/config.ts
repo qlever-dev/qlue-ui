@@ -8,8 +8,8 @@ import { useWorkerFactory, Worker as WorkerDescriptor, type WorkerLoader } from 
 import { type EditorAppConfig } from 'monaco-languageclient/editorApp';
 import { type MonacoVscodeApiConfig } from 'monaco-languageclient/vscodeApiWrapper';
 import { type LanguageClientConfig } from 'monaco-languageclient/lcwrapper';
+import editorWorkerUrl from 'monaco-editor/esm/vs/editor/editor.worker?worker&url';
 import languageServerWorker from './languageServer.worker?worker';
-import sparqlTextmateGrammar from './sparql.tmLanguage.json?raw';
 import sparqlLanguageConfig from './sparql.configuration.json?raw';
 import sparqlThemeLight from './sparql.theme.light.json?raw';
 import sparqlThemeDark from './sparql.theme.dark.json?raw';
@@ -32,18 +32,10 @@ export async function buildWrapperConfig(initial: string) {
   });
 
   const workerLoaders: Partial<Record<string, WorkerLoader>> = {
-    TextEditorWorker: () => new WorkerDescriptor(
-      new URL('@codingame/monaco-vscode-editor-api/esm/vs/editor/editor.worker.js', import.meta.url),
-      { type: 'module' }
-    ),
-    TextMateWorker: () => new WorkerDescriptor(
-      new URL('@codingame/monaco-vscode-textmate-service-override/worker', import.meta.url),
-      { type: 'module' }
-    ),
+    editorWorkerService: () => new WorkerDescriptor(editorWorkerUrl, { type: 'module' }),
   };
   const extensionFilesOrContents = new Map<string, string | URL>();
   extensionFilesOrContents.set('/sparql-configuration.json', sparqlLanguageConfig);
-  extensionFilesOrContents.set('/sparql-grammar.json', sparqlTextmateGrammar);
   extensionFilesOrContents.set('/sparql-theme-light.json', sparqlThemeLight);
   extensionFilesOrContents.set('/sparql-theme-dark.json', sparqlThemeDark);
 
@@ -56,6 +48,7 @@ export async function buildWrapperConfig(initial: string) {
     userConfiguration: {
       json: JSON.stringify({
         'workbench.colorTheme': 'QleverUiThemeDark',
+        'editor.semanticHighlighting.enabled': true,
         'editor.tabSize': 2,
         'files.eol': '\n',
       }),
@@ -93,13 +86,6 @@ export async function buildWrapperConfig(initial: string) {
                 label: 'Qlever-UI Custom Theme Dark',
                 uiTheme: 'vs-dark',
                 path: './sparql-theme-dark.json',
-              },
-            ],
-            grammars: [
-              {
-                language: 'sparql',
-                scopeName: 'source.sparql',
-                path: '/sparql-grammar.json',
               },
             ],
           },
