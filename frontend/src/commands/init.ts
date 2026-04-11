@@ -38,7 +38,6 @@ export function setupCommands(editor: Editor) {
   registerCommand('clearCache', clearCache, 'Clear the language server cache');
   registerCommand('toggleWideMode', toggleWideMode, 'Toggle wide editor layout');
   registerCommand('version', displayVersion, 'Show the build version');
-  registerCommand('admin', () => window.open('/admin/', '_blank'), 'Open Django admin panel');
 
   const commandPrompt = document.getElementById('commandPrompt')! as HTMLInputElement;
 
