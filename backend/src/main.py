@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -25,8 +26,9 @@ logger = logging.getLogger("uvicorn.error")
 
 CONFIG_PATH = Path(os.getenv("CONFIG_FILE", "config.yaml")).resolve()
 EXAMPLES_DIR = Path(os.getenv("EXAMPLES_DIR", "examples")).resolve()
-DB_PATH = Path(os.getenv("DB_FILE", "data.db")).resolve()
+DB_PATH = Path(os.getenv("DB_FILE", "shared-queries.db")).resolve()
 FRONTEND_DIR = Path(os.getenv("FRONTEND_DIR", "frontend_dist"))
+BANNER_PATH = Path(__file__).resolve().parent / "banner.txt"
 MAX_QUERY_LENGTH = 100_000  # bytes — reject unreasonably large shared queries
 API_KEY = os.getenv("API_KEY")
 
@@ -49,7 +51,7 @@ def require_api_key(x_api_key: str | None = Header(default=None)):
 
 
 # ── Stores ─────────────────────────────────────────────────────────────────
-store = ConfigStore(CONFIG_PATH)
+config_store = ConfigStore(CONFIG_PATH)
 db = connect(DB_PATH)
 query_store = QueryStore(db)
 
@@ -57,11 +59,24 @@ query_store = QueryStore(db)
 # ── Lifespan (startup / shutdown) ───────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Config file: %s", CONFIG_PATH)
-    logger.info("Examples dir: %s", EXAMPLES_DIR)
-    logger.info("Database: %s", DB_PATH)
-    logger.info("API key: %s", "set" if API_KEY else "not set")
-    await store.load()
+    if BANNER_PATH.is_file():
+        lines = BANNER_PATH.read_text().splitlines()
+        tagline = "SPARQL web editor"
+        width = shutil.get_terminal_size(fallback=(80, 24)).columns
+        # cyan banner, yellow tagline
+        centered = "\n".join(line.center(width) for line in lines)
+        print(f"\n\033[36m{centered}\033[0m")
+        print(f"\033[33m{tagline.center(width)}\033[0m\n")
+    logger.info("Config file:           %s", CONFIG_PATH)
+    logger.info("Examples dir:          %s", EXAMPLES_DIR)
+    logger.info("Shared Query Database: %s", DB_PATH)
+    logger.info("API key:               %s", "set" if API_KEY else "not set")
+    config_count = await config_store.load()
+    query_count = query_store.count()
+    logger.info(
+        f"Loaded {config_count} endpoint config{'s' if config_count > 0 else ''}."
+    )
+    logger.info(f"Loaded {query_count} shared querie{'s' if query_count > 0 else ''}.")
     yield
     db.close()
     logger.info("Database connection closed")
@@ -95,14 +110,14 @@ async def health():
 @router.get("/endpoints/", response_model_exclude_none=True)
 async def list_endpoints() -> dict[str, SparqlEndpointConfiguration]:
     """Retrieve all public endpoint configurations (hidden endpoints are excluded)."""
-    data = await store.get_all()
+    data = await config_store.get_all()
     return data
 
 
 @router.get("/endpoints/{slug}/", response_model_exclude_none=True)
 async def get_endpoint(slug: str) -> SparqlEndpointConfiguration:
     """Retrieve a single SPARQL endpoint configuration by its slug."""
-    data = await store.get_all()
+    data = await config_store.get_all()
     if slug not in data:
         raise HTTPException(
             status_code=404, detail=f'endpoint with slug "{slug}" not found'
@@ -123,7 +138,7 @@ async def patch_endpoint(slug: str, patch: SparqlEndpointPatch):
         return updated.model_dump(mode="json", exclude_none=True)
 
     try:
-        return await store.patch(slug, apply)
+        return await config_store.patch(slug, apply)
     except KeyError:
         raise HTTPException(
             status_code=404, detail=f'endpoint with slug "{slug}" not found'

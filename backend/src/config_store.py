@@ -31,21 +31,18 @@ class ConfigStore:
         self._file_hash: str = ""
         self._file_path = filepath
 
-    async def load(self) -> None:
+    async def load(self) -> int:
         async with self._lock:
             if self._file_path.exists():
                 raw = self._file_path.read_bytes()
                 self._file_hash = hashlib.sha256(raw).hexdigest()
                 parsed_data = yaml.safe_load(raw) or {}
                 self._data = validate_config(parsed_data)
-                logger.info(
-                    "Loaded %d endpoint config(s) from %s",
-                    len(self._data),
-                    self._file_path,
-                )
+                return len(self._data)
             else:
                 self._data = {}
                 self._file_hash = ""
+                return 0
 
     async def get_all(self) -> dict[str, Any]:
         """Return the live internal state. DO NOT mutate the result."""

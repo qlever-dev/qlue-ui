@@ -1,9 +1,12 @@
 import hashlib
+import logging
 import secrets
 import sqlite3
 import string
 import threading
 from datetime import date
+
+logger = logging.getLogger("uvicorn.error")
 
 SHORT_ID_LENGTH = 6
 SHORT_ID_ALPHABET = string.ascii_letters + string.digits
@@ -76,3 +79,16 @@ class QueryStore:
                 self._conn.commit()
                 return row[0], date.fromisoformat(row[1])
             return None
+
+    def count(self) -> int:
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT COUNT(*) as count FROM shared_query"
+            ).fetchone()
+            if row:
+                return row[0]
+            else:
+                logger.error(
+                    "Counting the rows in the shared_query table failed, returning 0."
+                )
+                return 0
