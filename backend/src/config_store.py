@@ -53,6 +53,10 @@ class ConfigStore:
         async with self._lock:
             if slug in self._data:
                 raise ValueError(f"config with slug {slug} already exists.")
+            # NOTE: Make sure only one config is the "default" endpoint.
+            if config["default"]:
+                for config_slug in self._data:
+                    self._data[config_slug]["default"] = False
             self._data[slug] = config
             self._persist()
 

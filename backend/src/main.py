@@ -17,6 +17,7 @@ from database import connect
 from models import (
     ExampleQuery,
     SharedQuery,
+    Slug,
     SparqlEndpointConfiguration,
     SparqlEndpointPatch,
 )
@@ -115,7 +116,7 @@ async def list_endpoints() -> dict[str, SparqlEndpointConfiguration]:
 
 
 @router.get("/endpoints/{slug}/", response_model_exclude_none=True)
-async def get_endpoint(slug: str) -> SparqlEndpointConfiguration:
+async def get_endpoint(slug: Slug) -> SparqlEndpointConfiguration:
     """Retrieve a single SPARQL endpoint configuration by its slug."""
     data = await config_store.get_all()
     if slug not in data:
@@ -126,7 +127,7 @@ async def get_endpoint(slug: str) -> SparqlEndpointConfiguration:
 
 
 @router.patch("/endpoints/{slug}/", dependencies=[Depends(require_api_key)])
-async def patch_endpoint(slug: str, patch: SparqlEndpointPatch):
+async def patch_endpoint(slug: Slug, patch: SparqlEndpointPatch):
     """Partially update an endpoint configuration. Only provided top-level fields
     are changed. Nested objects like `queryTemplates` are replaced in full — send
     the complete object, not individual sub-fields."""
@@ -145,16 +146,23 @@ async def patch_endpoint(slug: str, patch: SparqlEndpointPatch):
         )
 
 
-@router.post("/endpoints/{slug}/", dependencies=[Depends(require_api_key)])
-async def create_endpoint(slug: str, endpoint: SparqlEndpointConfiguration):
+@router.post(
+    "/endpoints/{slug}/",
+    dependencies=[Depends(require_api_key)],
+    status_code=201,
+)
+async def create_endpoint(
+    slug: Slug, endpoint: SparqlEndpointConfiguration
+) -> SparqlEndpointConfiguration:
     """Create a new endpoint configuration."""
     try:
-        await config_store.create(
+        created_endpoint = await config_store.create(
             slug, endpoint.model_dump(mode="json", exclude_none=True)
         )
         logger.info(f'Created new SPARQL endpoint config "{slug}".')
+        return created_endpoint
     except ValueError:
-        logger.error(
+        logger.warning(
             f'A SPARQL endpoint with slug "{slug}" already exists, operation aborted.'
         )
         raise HTTPException(
@@ -164,7 +172,7 @@ async def create_endpoint(slug: str, endpoint: SparqlEndpointConfiguration):
 
 
 @router.get("/endpoints/{slug}/examples/")
-async def list_examples(slug: str) -> list[ExampleQuery]:
+async def list_examples(slug: Slug) -> list[ExampleQuery]:
     """Retrieve all example queries for an endpoint. Returns an empty list if none exist."""
     slug_dir = (EXAMPLES_DIR / slug).resolve()
     if not slug_dir.is_relative_to(EXAMPLES_DIR):
@@ -178,7 +186,7 @@ async def list_examples(slug: str) -> list[ExampleQuery]:
 
 
 @router.put("/endpoints/{slug}/examples/", dependencies=[Depends(require_api_key)])
-async def update_example(slug: str, example: ExampleQuery):
+async def update_example(slug: Slug, example: ExampleQuery):
     """Overwrite the content of an existing example query file."""
     slug_dir = (EXAMPLES_DIR / slug).resolve()
     if not slug_dir.is_relative_to(EXAMPLES_DIR):
@@ -198,7 +206,7 @@ async def update_example(slug: str, example: ExampleQuery):
     dependencies=[Depends(require_api_key)],
     status_code=201,
 )
-async def create_example(slug: str, example: ExampleQuery):
+async def create_example(slug: Slug, example: ExampleQuery):
     """Create a new example query file. Returns 409 if it already exists."""
     slug_dir = (EXAMPLES_DIR / slug).resolve()
     if not slug_dir.is_relative_to(EXAMPLES_DIR):
@@ -219,7 +227,7 @@ async def create_example(slug: str, example: ExampleQuery):
     dependencies=[Depends(require_api_key)],
     status_code=204,
 )
-async def delete_example(slug: str, name: str = Body(embed=True)):
+async def delete_example(slug: Slug, name: str = Body(embed=True)):
     """Delete an existing example query file."""
     slug_dir = (EXAMPLES_DIR / slug).resolve()
     if not slug_dir.is_relative_to(EXAMPLES_DIR):

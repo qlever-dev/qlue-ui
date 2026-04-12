@@ -1,7 +1,12 @@
 from datetime import date
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
+from fastapi import Path as PathParam
 from pydantic import AnyUrl, BaseModel, ConfigDict, HttpUrl, RootModel, ValidationError
 from pydantic.alias_generators import to_camel
+
+
+SLUG_PATTERN = r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+Slug = Annotated[str, PathParam(pattern=SLUG_PATTERN)]
 
 
 class CamelModel(BaseModel):
