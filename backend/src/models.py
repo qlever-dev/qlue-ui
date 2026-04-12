@@ -26,7 +26,7 @@ class SparqlEndpointConfiguration(CamelModel):
     name: str
     url: HttpUrl
     engine: Optional[str] = None
-    default: bool
+    default: bool = False
     sort_key: Optional[str] = None
     prefix_map: Optional[dict[str, AnyUrl]] = None
     map_view_url: Optional[str] = None

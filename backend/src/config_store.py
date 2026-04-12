@@ -49,6 +49,13 @@ class ConfigStore:
         async with self._lock:
             return self._data
 
+    async def create(self, slug: str, config: dict[str, Any]):
+        async with self._lock:
+            if slug in self._data:
+                raise ValueError(f"config with slug {slug} already exists.")
+            self._data[slug] = config
+            self._persist()
+
     async def patch(
         self, slug: str, apply: Callable[[dict[str, Any]], dict[str, Any]]
     ) -> dict[str, Any]:

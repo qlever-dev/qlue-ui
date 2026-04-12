@@ -145,6 +145,24 @@ async def patch_endpoint(slug: str, patch: SparqlEndpointPatch):
         )
 
 
+@router.post("/endpoints/{slug}/", dependencies=[Depends(require_api_key)])
+async def create_endpoint(slug: str, endpoint: SparqlEndpointConfiguration):
+    """Create a new endpoint configuration."""
+    try:
+        await config_store.create(
+            slug, endpoint.model_dump(mode="json", exclude_none=True)
+        )
+        logger.info(f'Created new SPARQL endpoint config "{slug}".')
+    except ValueError:
+        logger.error(
+            f'A SPARQL endpoint with slug "{slug}" already exists, operation aborted.'
+        )
+        raise HTTPException(
+            status_code=409,
+            detail=f'A SPARQL endpoint with slug "{slug}" already exists.',
+        )
+
+
 @router.get("/endpoints/{slug}/examples/")
 async def list_examples(slug: str) -> list[ExampleQuery]:
     """Retrieve all example queries for an endpoint. Returns an empty list if none exist."""
