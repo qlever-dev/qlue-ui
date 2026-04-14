@@ -25,10 +25,12 @@ ENV UV_COMPILE_BYTECODE=1 \
 
 WORKDIR /app
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=backend/pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=backend/uv.lock,target=uv.lock \
-    uv sync --locked --no-install-project --no-dev
+# RUN --mount=type=cache,target=/root/.cache/uv \
+#     --mount=type=bind,source=backend/pyproject.toml,target=pyproject.toml \
+#     --mount=type=bind,source=backend/uv.lock,target=uv.lock \
+#     uv sync --locked --no-install-project --no-dev
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --locked --no-install-project --no-dev
 
 # ---- Stage 3: Final image ----
 FROM python:3.14-slim
