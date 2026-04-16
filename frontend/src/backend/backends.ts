@@ -75,17 +75,20 @@ export async function configureBackends(editor: Editor) {
     if (defaultEndpointSlug) {
       await addService(editor.languageClient, defaultEndpointSlug, endpointConfigs[defaultEndpointSlug], true);
       backendSelector.value = defaultEndpointSlug;
+      activeEndpointSlug = defaultEndpointSlug;
     } else {
       let firstConfig = Object.entries(endpointConfigs)[0];
       if (firstConfig) {
+
         // NOTE: the path did not match any service and there is no default service.
         await addService(editor.languageClient, firstConfig[0], firstConfig[1], true);
         backendSelector.value = firstConfig[0];
+        activeEndpointSlug = firstConfig[0];
       } else {
         document.dispatchEvent(
           new CustomEvent('toast', {
             detail: {
-              type: 'warning',
+              type: 'error',
               message: 'No SPARQL endpoint configuration found.',
             },
           })
@@ -93,7 +96,6 @@ export async function configureBackends(editor: Editor) {
       }
     }
   }
-
   document.dispatchEvent(new CustomEvent('backend-selected', { detail: activeEndpointSlug }));
 
   backendSelector.addEventListener('change', () => {
