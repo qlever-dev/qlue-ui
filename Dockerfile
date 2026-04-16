@@ -21,7 +21,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.11.6 /uv /uvx /bin/
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=0 \
-    DB_FILE=data/data.db
+    DB_FILE=data/shared-queries.db
 
 WORKDIR /app
 
@@ -42,7 +42,7 @@ RUN useradd -m -r -u 1000 appuser && \
 WORKDIR /app
 
 COPY --from=builder /app/.venv .venv/
-COPY --chown=appuser:appuser backend/src api/src/
+COPY --chown=appuser:appuser backend/src/api api/
 COPY --chown=appuser:appuser backend/examples examples/
 COPY --from=frontend /app/dist frontend_dist/
 COPY --chown=appuser:appuser config.default.yaml config.yaml
@@ -56,4 +56,4 @@ USER appuser
 
 EXPOSE 7000
 
-CMD ["uvicorn", "main:app", "--app-dir", "api/src", "--host", "0.0.0.0", "--port", "7000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "7000", "--proxy-headers", "--forwarded-allow-ips", "*"]

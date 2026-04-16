@@ -34,5 +34,5 @@ FastAPI service that serves SPARQL endpoint configurations and shared queries.
 ## Running
 
 ```
-uv run fastapi dev src/main.py
+uv run fastapi dev src/api/main.py
 ```

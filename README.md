@@ -154,7 +154,7 @@ The backend uses **uv** as the package manager.
 ```bash
 cd backend
 uv sync                                                      # Install dependencies
-uv run fastapi dev src/main.py                               # Start server on port 8000
+uv run fastapi dev src/api/main.py                           # Start server on port 8000
 ```
 
 ### Frontend Setup

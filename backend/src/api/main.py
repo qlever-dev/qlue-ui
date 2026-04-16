@@ -12,16 +12,16 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import Response
 from starlette.types import Scope
 
-from config_store import ConfigStore
-from database import connect
-from models import (
+from .config_store import ConfigStore
+from .database import connect
+from .models import (
     ExampleQuery,
     SharedQuery,
     Slug,
     SparqlEndpointConfiguration,
     SparqlEndpointPatch,
 )
-from query_store import QueryStore
+from .query_store import QueryStore
 
 logger = logging.getLogger("uvicorn.error")
 

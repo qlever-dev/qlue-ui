@@ -4,7 +4,7 @@ import asyncio
 import logging
 from pathlib import Path
 from typing import Any, Callable
-from models import validate_config
+from .models import validate_config
 
 logger = logging.getLogger("uvicorn.error")
 
