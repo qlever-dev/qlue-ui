@@ -78,7 +78,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: 'cd ../backend/ && uv run uvicorn main:app --app-dir src/ --port 8000',
+      command: 'cd ../backend/ && uv run uvicorn api.main:app --app-dir src/ --port 8000',
       url: 'http://127.0.0.1:8000/ui-api/health',
       reuseExistingServer: !process.env.CI,
     },
