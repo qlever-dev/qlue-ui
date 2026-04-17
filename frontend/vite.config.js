@@ -20,9 +20,6 @@ export default defineConfig({
   build: {
     assetsInlineLimit: 0,
   },
-  optimizeDeps: {
-    include: ['vscode-textmate', 'vscode-oniguruma'],
-  },
   server: {
     allowedHosts: true,
     fs: {
