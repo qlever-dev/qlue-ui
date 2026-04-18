@@ -2,7 +2,7 @@ name: Build Docker Images
 
 on:
   push:
-    branches: [ main ]
+    branches: [ containerVersions, main ]
     tags: [ 'v*' ]
 
 jobs:
