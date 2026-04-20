@@ -3,7 +3,7 @@ name: Build Docker Images
 on:
   push:
     branches: [ main ]
-  pull_request:
+    tags: [ 'v*' ]
 
 jobs:
   build:
@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+            fetch-tags: true
+            fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -32,6 +35,16 @@ jobs:
       - name: Generate image metadata
         id: meta
         uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            # tags 1.2.3, 1.2 and 1 (only if the leading group is not zero).
+            type=semver,pattern={{version}} # automatically adds a latest tag
+            type=semver,pattern={{major}}.{{minor}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.0.') }}
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+            type=edge
 
       # ---------- BUILD IMAGE ----------
       - name: Build image
@@ -39,8 +52,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/qlue-ui:latest
+          tags: ${{ steps.meta.outputs.tags }}
           annotations: ${{ steps.meta.outputs.annotations }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
