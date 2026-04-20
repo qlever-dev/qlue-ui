@@ -62,7 +62,7 @@ export function getCookie(name: string): string | null {
 /** Logs the build-time git commit hash to the console and shows it via toast on demand. */
 export function showCommitHash() {
   if (__GIT_COMMIT__) {
-    console.log(`qlue-ui commit: ${__GIT_COMMIT__}`);
+    console.log(`qlever-ui commit: ${__GIT_COMMIT__}`);
   }
 }
 

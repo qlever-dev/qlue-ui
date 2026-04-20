@@ -1,8 +1,8 @@
 <h1 align="center">
-    Qlue-UI
+    Qlever-UI
 </h1>
 
-**Qlue-UI** is a modern WebUI for **SPARQL**, driven by [Qlue-ls](https://github.com/IoannisNezis/Qlue-ls).
+**Qlever-UI** is a modern WebUI for **SPARQL**, driven by [Qlue-ls](https://github.com/IoannisNezis/Qlue-ls).
 It does not target a single, but **many** SPARQL engines.  
 It’s small, shiny, and ready to help you explore your RDF data effortlessly.  
 
@@ -63,7 +63,7 @@ It’s small, shiny, and ready to help you explore your RDF data effortlessly.
 
 ## Quick Start
 
-Follow these steps to get Qlue-UI up and running:
+Follow these steps to get Qlever-UI up and running:
 
 ### 1. Build and run with Docker
 
@@ -72,7 +72,7 @@ docker compose build
 docker compose up
 ```
 
-Qlue-UI is now available under <http://localhost:7000>
+Qlever-UI is now available under <http://localhost:7000>
 
 ### 2. Configuration
 
