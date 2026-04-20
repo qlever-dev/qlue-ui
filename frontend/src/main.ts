@@ -14,7 +14,6 @@ import { setupQueryExecutionTree } from './query_execution_tree/init';
 import { setupShare } from './share';
 import { removeLoadingScreen, showCommitHash } from './utils';
 import { handleRequestParameter, setupUrlSync } from './request_params';
-// import { setupQueryBenchmark } from './benchmark/init';
 import { setupButtons } from './buttons/init';
 import { setupResults } from './results/init';
 import { setupSettings } from './settings/init';
@@ -42,7 +41,6 @@ setupEditor('editor').then(async (editor) => {
   setupParseTree(editor);
   setupTemplatesEditor(editor);
   await configureBackends(editor);
-  // setupQueryBenchmark(editor);
   setupUrlSync(editor);
   handleRequestParameter(editor);
   removeLoadingScreen();
