@@ -30,7 +30,6 @@ CONFIG_PATH = Path(os.getenv("CONFIG_FILE", "config.yaml")).resolve()
 EXAMPLES_DIR = Path(os.getenv("EXAMPLES_DIR", "examples")).resolve()
 DB_PATH = Path(os.getenv("DB_FILE", "shared-queries.db")).resolve()
 FRONTEND_DIR = Path(os.getenv("FRONTEND_DIR", "frontend_dist"))
-BANNER = files(__package__).joinpath("banner.txt")
 MAX_QUERY_LENGTH = 100_000  # bytes — reject unreasonably large shared queries
 API_KEY = os.getenv("API_KEY")
 
@@ -60,9 +59,10 @@ query_store = QueryStore(db)
 
 # ── Lifespan (startup / shutdown) ───────────────────────────────────────────
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    if BANNER.is_file():
-        lines = BANNER.read_text().splitlines()
+async def lifespan(_: FastAPI):
+    banner = files(__package__).joinpath("banner.txt")
+    if banner.is_file():
+        lines = banner.read_text().splitlines()
         tagline = "SPARQL web editor"
         width = shutil.get_terminal_size(fallback=(80, 24)).columns
         # cyan banner, yellow tagline
