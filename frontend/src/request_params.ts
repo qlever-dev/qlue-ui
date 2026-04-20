@@ -25,9 +25,7 @@ export async function handleRequestParameter(editor: Editor) {
   if (segments.length == 2) {
     const shareId = segments[1];
     const savedQuery = await getSharedQuery(shareId);
-    if (savedQuery !== editor.getContent()) {
-      await openOrCreateTab(editor, shareId, savedQuery);
-    }
+    await openOrCreateTab(editor, shareId, savedQuery);
   }
   const exec = params.get('exec');
   if (exec) {

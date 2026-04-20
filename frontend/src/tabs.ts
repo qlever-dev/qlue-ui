@@ -372,7 +372,7 @@ export async function openOrCreateTab(
   name: string,
   content: string
 ): Promise<void> {
-  const existing = state.tabs.find((t) => t.name === name && t.content === content);
+  const existing = state.tabs.find((t) => t.content === content);
   if (existing) {
     await switchTab(editor, existing.id);
   } else {
