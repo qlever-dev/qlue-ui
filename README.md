@@ -6,6 +6,16 @@
 It does not target a single, but **many** SPARQL engines.  
 It’s small, shiny, and ready to help you explore your RDF data effortlessly.  
 
+> [!WARNING]
+> **Work in progress — expect breaking changes.**
+>
+> This project is the next generation of **Qlever-UI**, but the migration from
+> the legacy version is still ongoing. The API, configuration format, and
+> internal structure may change significantly between releases.
+>
+> The project will be considered stable and final once it reaches **version 1.0**.
+> Until then, use at your own risk.
+
 ---
 
 ## Features
