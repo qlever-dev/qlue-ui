@@ -369,7 +369,7 @@ function startRename(editor: Editor, tab: TabState, nameSpan: HTMLSpanElement): 
 
 export async function openOrCreateTab(
   editor: Editor,
-  name: string,
+  name: string | undefined,
   content: string
 ): Promise<void> {
   const existing = state.tabs.find((t) => t.content === content);

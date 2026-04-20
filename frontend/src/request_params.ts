@@ -16,16 +16,17 @@ import { getPathParameters } from './utils';
  */
 export async function handleRequestParameter(editor: Editor) {
   const params = new URLSearchParams(window.location.search);
-  const query = params.get('query');
-  if (query) {
-    editor.setContent(query);
-  }
   // NOTE: if there is a saved-query id fetch and show the query in a new tab
   const segments = window.location.pathname.split('/').filter(Boolean);
   if (segments.length == 2) {
     const shareId = segments[1];
     const savedQuery = await getSharedQuery(shareId);
     await openOrCreateTab(editor, shareId, savedQuery);
+  } else {
+    const query = params.get('query');
+    if (query) {
+      await openOrCreateTab(editor, undefined, query);
+    }
   }
   const exec = params.get('exec');
   if (exec) {
