@@ -1,7 +1,7 @@
 import { apiFetch, clearApiKey, getApiKey } from '../api';
 import type { Editor } from '../editor/init';
 import { reloadExample } from '../examples/utils';
-import { getActiveTabExampleOrigin, getActiveTabName } from '../tabs';
+import { getActiveTabExampleOrigin, getActiveTabName } from '../tabs/init';
 
 function toast(type: 'success' | 'error', message: string) {
   document.dispatchEvent(
