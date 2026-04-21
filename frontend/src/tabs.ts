@@ -152,24 +152,34 @@ async function switchTab(editor: Editor, tabId: string): Promise<void> {
 }
 
 async function createTab(editor: Editor, name?: string, content?: string): Promise<void> {
-  // Save current tab content first.
-  activeTab().content = editor.getContent();
+  // NOTE: If the current tab is empty -> reuse it
+  const old_content = editor.getContent();
+  const tab = activeTab();
+  if (old_content.trim() === "" && content != undefined) {
+    tab.content = content;
+    editor.editorApp.updateCodeResources({
+      modified: { uri: tab.uri, text: tab.content },
+    });
+  }
+  else {
+    // Save current tab content first.
+    activeTab().content = old_content;
 
-  const id = makeTabId(state.nextId);
-  const tab: TabState = {
-    id,
-    name: name ?? nextQueryName(),
-    uri: makeTabUri(id),
-    content: content ?? '',
-  };
-  state.nextId++;
-  state.tabs.push(tab);
-  state.activeTabId = id;
+    const id = makeTabId(state.nextId);
+    const tab: TabState = {
+      id,
+      name: name ?? nextQueryName(),
+      uri: makeTabUri(id),
+      content: content ?? '',
+    };
+    state.nextId++;
+    state.tabs.push(tab);
+    state.activeTabId = id;
 
-  await editor.editorApp.updateCodeResources({
-    modified: { uri: tab.uri, text: tab.content },
-  });
-
+    await editor.editorApp.updateCodeResources({
+      modified: { uri: tab.uri, text: tab.content },
+    });
+  }
   saveState();
   renderTabBar(editor);
   editor.focus();
