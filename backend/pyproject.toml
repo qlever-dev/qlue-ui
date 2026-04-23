@@ -5,7 +5,7 @@ description = "Backend API for Qlever-UI"
 requires-python = ">3.10"
 dependencies = [
     "fastapi[standard]==0.135.3",
-    "uvicorn[standard]==0.42.0",
+    "uvicorn[standard]==0.46.0",
     "pydantic==2.12.5",
     "pyyaml==6.0.3",
     "watchdog==6.0.0",
