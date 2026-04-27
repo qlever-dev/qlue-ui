@@ -1,9 +1,24 @@
+export interface ExecuteUpdateResult {
+  operations: ExecuteUpdateResultEntry[],
+  time: ExecuteUpdateGlobalTimeStats
+}
 export interface ExecuteUpdateResultEntry {
   deltaTriples: DeltaTriples;
   status: 'OK' | 'ERROR';
   time: TimeInfo;
   update: string;
   warnings: string[];
+}
+
+export interface ExecuteUpdateGlobalTimeStats {
+  total: number,
+  parsing: number,
+  waitingForUpdateThread: number,
+  acquiringDeltaTriplesWriteLock: number,
+  operations: number,
+  metadataUpdateForSnapshot: number,
+  diskWriteback: number,
+  snapshotCreation: number,
 }
 
 export interface TimeInfo {

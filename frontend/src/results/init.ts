@@ -20,7 +20,7 @@ import { settings } from '../settings/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import type { ExecuteOperationResult, Head, PartialResult } from '../types/lsp_messages';
 import type { QueryExecutionTree } from '../types/query_execution_tree';
-import type { ExecuteUpdateResultEntry } from '../types/update';
+import type { ExecuteUpdateResult } from '../types/update';
 import { renderTableHeader, renderTableRows } from './table';
 import {
   clearQueryStats,
@@ -228,20 +228,21 @@ async function executeQuery(
       });
       throw new Error('Query processing error');
     })) as ExecuteOperationResult;
+
   if ('queryResult' in response) {
     return response.queryResult.timeMs;
   } else {
     renderUpdateResult(response.updateResult);
-    return response.updateResult.reduce((acc, op) => acc + op.time.total, 0);
+    return response.updateResult.time.total;
   }
 }
 
-function renderUpdateResult(result: ExecuteUpdateResultEntry[]) {
+function renderUpdateResult(result: ExecuteUpdateResult) {
   let head = { vars: ['insertions', 'deletions'] };
   renderTableHeader(head);
   renderTableRows(
     head,
-    result.map((operation) => {
+    result.operations.map((operation) => {
       return {
         insertions: {
           type: 'literal',
