@@ -2,6 +2,7 @@ export interface ExecuteUpdateResult {
   operations: ExecuteUpdateResultEntry[],
   time: ExecuteUpdateGlobalTimeStats
 }
+
 export interface ExecuteUpdateResultEntry {
   deltaTriples: DeltaTriples;
   status: 'OK' | 'ERROR';
