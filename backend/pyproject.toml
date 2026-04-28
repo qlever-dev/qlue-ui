@@ -1,6 +1,6 @@
 [project]
 name = "qlever-ui-backend"
-version = "0.2.3"
+version = "0.2.4"
 description = "Backend API for Qlever-UI"
 requires-python = ">3.10"
 dependencies = [
