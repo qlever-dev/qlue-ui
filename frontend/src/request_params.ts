@@ -1,7 +1,7 @@
 import type { Editor } from './editor/init';
 import { openParseTree } from './parse_tree/init';
 import { getShareLinkId, getSharedQuery } from './share';
-import { openOrCreateTab } from './tabs';
+import { openOrCreateTab } from './tabs/init';
 import type { QlueLsServiceConfig } from './types/backend';
 import { getPathParameters } from './utils';
 
@@ -16,17 +16,16 @@ import { getPathParameters } from './utils';
  */
 export async function handleRequestParameter(editor: Editor) {
   const params = new URLSearchParams(window.location.search);
-  const query = params.get('query');
-  if (query) {
-    editor.setContent(query);
-  }
   // NOTE: if there is a saved-query id fetch and show the query in a new tab
   const segments = window.location.pathname.split('/').filter(Boolean);
   if (segments.length == 2) {
     const shareId = segments[1];
     const savedQuery = await getSharedQuery(shareId);
-    if (savedQuery !== editor.getContent()) {
-      await openOrCreateTab(editor, shareId, savedQuery);
+    await openOrCreateTab(editor, shareId, savedQuery);
+  } else {
+    const query = params.get('query');
+    if (query) {
+      await openOrCreateTab(editor, undefined, query);
     }
   }
   const exec = params.get('exec');

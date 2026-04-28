@@ -21,7 +21,7 @@ import { setupKeybindings } from './keybindings';
 import { setupCommands } from './commands/init';
 import { setupParseTree } from './parse_tree/init';
 import { setupTemplatesEditor } from './templates/init';
-import { setupTabs } from './tabs';
+import { setupTabs } from './tabs/init';
 
 showCommitHash();
 setupThemeSwitcher();
