@@ -162,8 +162,8 @@ function updateTree(
 
       return line([
         [px, py + boxHeight / 2 + 2],
-        [px, py + boxHeight / 2 + boxMargin / 2],
-        [cx, cy - boxHeight / 2 - boxMargin],
+        [px, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
+        [cx, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
         [cx, cy - boxHeight / 2 - 2],
       ])!;
     });
@@ -195,8 +195,8 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
 
       return line([
         [px, py + boxHeight / 2],
-        [px, py + boxHeight / 2 + boxMargin / 2],
-        [cx, cy - boxHeight / 2 - boxMargin],
+        [px, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
+        [cx, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
         [cx, cy - boxHeight / 2],
       ])!;
     });

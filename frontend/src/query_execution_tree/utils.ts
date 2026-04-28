@@ -37,7 +37,8 @@ export const line = d3
   .line()
   .x((d) => d[0])
   .y((d) => d[1])
-  .curve(d3.curveBasis);
+  .curve(d3.curveBundle.beta(1))
+  ;
 
 export function setupWebSocket(urlStr: string, queryId: string): WebSocket {
   const url = new URL(urlStr);
