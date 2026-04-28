@@ -131,7 +131,7 @@ function updateTree(
   highlightNodeSelection
     .selectAll('rect')
     .data((d) => [d])
-    .attr('class', 'stroke-2')
+    .attr('class', 'stroke')
     .attr('stroke', 'url(#glowGradientRect)')
     .attr('filter', 'url(#glow)');
 
@@ -139,7 +139,7 @@ function updateTree(
     .exit()
     .selectAll('rect')
     .data((d) => [d])
-    .attr('class', 'stroke-neutral-400 dark:stroke-neutral-500 stroke-2')
+    .attr('class', 'stroke-black dark:stroke-white stroke')
     .attr('stroke', '')
     .attr('filter', '');
 
@@ -188,7 +188,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGPathElement, d3.HierarchyNode<QueryExecutionTree>>('path.link')
     .data(nodesWithParents, (d) => d.data.id!)
     .join('path')
-    .attr('class', 'link stroke-neutral-400 dark:stroke-neutral-500 stroke-2 fill-none')
+    .attr('class', 'link stroke-black dark:stroke-white stroke fill-none')
     .attr('d', (d) => {
       const [px, py] = [d.parent!.x!, d.parent!.y!];
       const [cx, cy] = [d.x!, d.y!];
@@ -224,7 +224,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('ry', 3)
     .attr('width', boxWidth)
     .attr('height', boxHeight)
-    .attr('class', 'stroke-2 stroke-neutral-400 dark:stroke-neutral-500')
+    .attr('class', 'stroke stroke-black dark:stroke-white')
     .attr('fill', (d) =>
       darkMode ? colorScaleDark(d.data.operation_time) : colorScaleLight(d.data.operation_time)
     );
@@ -234,19 +234,19 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.title')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'title fill-neutral-500 dark:fill-neutral-300 font-bold text-xs')
+    .attr('class', 'title fill-black dark:fill-neutral-300 font-bold')
     .attr('x', -boxWidth / 2 + 10)
     .attr('y', -boxHeight / 2 + boxPadding)
     .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
-    .text((d) => truncateText(replaceIRIs(d.data.description), 40));
+    .text((d) => truncateText(replaceIRIs(d.data.description), 34));
 
   // NOTE:Columns
   node_selection
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.cols-label')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'cols-label fill-neutral-700 dark:fill-neutral-300 text-xs')
+    .attr('class', 'cols-label fill-neutral-900 dark:fill-neutral-300 text-xs')
     .attr('x', -boxWidth / 2 + 10)
     .attr('y', -boxHeight / 2 + boxPadding + 25)
     .attr('text-anchor', 'start')
@@ -256,7 +256,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.cols')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'cols fill-neutral-700 dark:fill-neutral-300 text-xs')
+    .attr('class', 'cols fill-neutral-900 dark:fill-neutral-300 text-xs')
     .attr('x', -boxWidth / 2 + 45)
     .attr('y', -boxHeight / 2 + boxPadding + 25)
     .attr('text-anchor', 'start')
@@ -268,7 +268,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.size-label')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'size-label fill-neutral-700 dark:fill-neutral-300 text-xs')
+    .attr('class', 'size-label fill-neutral-900 dark:fill-neutral-300 text-xs')
     .attr('x', -boxWidth / 2 + 10)
     .attr('y', -boxHeight / 2 + boxPadding + 40)
     .attr('text-anchor', 'start')
@@ -278,7 +278,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.size')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'size fill-neutral-700 dark:fill-neutral-300 text-xs')
+    .attr('class', 'size fill-neutral-900 dark:fill-neutral-300 text-xs')
     .attr('x', -boxWidth / 2 + 45)
     .attr('y', -boxHeight / 2 + boxPadding + 40)
     .attr('text-anchor', 'start')
@@ -290,7 +290,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.time-label')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'time-label fill-neutral-700 dark:fill-neutral-300 text-xs')
+    .attr('class', 'time-label fill-neutral-900 dark:fill-neutral-300 text-xs')
     .attr('x', -boxWidth / 2 + 10)
     .attr('y', -boxHeight / 2 + boxPadding + 55)
     .attr('text-anchor', 'start')
@@ -300,7 +300,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.time')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'time fill-neutral-700 dark:fill-neutral-300 text-xs')
+    .attr('class', 'time fill-neutral-900 dark:fill-neutral-300 text-xs')
     .attr('x', -boxWidth / 2 + 45)
     .attr('y', -boxHeight / 2 + boxPadding + 55)
     .attr('text-anchor', 'start')
@@ -315,7 +315,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.status')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'status fill-neutral-700 dark:fill-neutral-300 text-xs')
+    .attr('class', 'status fill-neutral-900 dark:fill-neutral-300 text-xs')
     .attr('x', -boxWidth / 2 + 10)
     .attr('y', -boxHeight / 2 + boxPadding + 70)
     .attr('text-anchor', 'start')

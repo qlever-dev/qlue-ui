@@ -26,7 +26,7 @@ export function animateGradients() {
   feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
 
   // Gradient
-  const color = 'oklch(66.7% 0.295 322.15)';
+  const color = 'oklch(54.6% 0.245 262.881)';
   const rectGradient = defs.append('linearGradient').attr('id', 'glowGradientRect');
   rectGradient
     .append('stop')
