@@ -111,14 +111,14 @@ function updateTree(
   updateNodeSelection
     .selectAll('text.size')
     .data((d) => [d])
-    .text((d) => `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols}`);
+    .text((d) => `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols} [~ ${d.data.estimated_size.toLocaleString('en-US')}]`);
 
   updateNodeSelection
     .selectAll('text.time')
     .data((d) => [d])
     .text(
       (d) =>
-        `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms (${d.data.original_operation_time})`
+        `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms [~ ${d.data.estimated_operation_cost.toLocaleString('en-US')}]`
     );
 
   const formatStatus = (d: d3.HierarchyNode<QueryExecutionNode>) => `Status: ${d.data.status}`;
@@ -235,9 +235,9 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .data((d) => [d])
     .join('text')
     .attr('class', 'title fill-neutral-500 dark:fill-neutral-300 font-bold text-xs')
-    .attr('x', 0)
+    .attr('x', -boxWidth / 2 + 10)
     .attr('y', -boxHeight / 2 + boxPadding)
-    .attr('text-anchor', 'middle')
+    .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
     .text((d) => truncateText(replaceIRIs(d.data.description), 40));
 
@@ -283,7 +283,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('y', -boxHeight / 2 + boxPadding + 40)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .text((d) => `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols}`);
+    .text((d) => `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols} [~ ${d.data.estimated_size.toLocaleString('en-US')}]`);
 
   // NOTE: Time
   node_selection
@@ -307,7 +307,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('dominant-baseline', 'middle')
     .text(
       (d) =>
-        `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms (${d.data.original_operation_time})`
+        `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms [~ ${d.data.estimated_operation_cost.toLocaleString('en-US')}]`
     );
 
   // NOTE: Status
