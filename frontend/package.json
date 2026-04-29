@@ -14,7 +14,7 @@
   "description": "",
   "devDependencies": {
     "@types/d3": "7.4.3",
-    "prettier": "3.5.3",
+    "prettier": "3.8.3",
     "typescript": "5.8.3",
     "vite": "8.0.8",
     "vite-plugin-checker": "0.12.0",
