@@ -27,18 +27,16 @@ let queryRunning = false;
 let activeSocket: WebSocket | null = null;
 
 /**
- * Initializes the query execution tree (QET) analysis modal.
+ * Sets up the query execution tree (QET) view: the D3 SVG canvas with
+ * zoom/pan, the animated gradients, the node details panel and the modal
+ * open/close handling.
  *
- * Sets up the D3 SVG canvas with zoom/pan, connects to the QLever websocket
- * during query execution to receive live runtime information, and renders
- * the tree visualization with animated gradients. Only available for the
- * QLever engine.
+ * This part is independent of the editor and the backend, so the dev rig
+ * (`qet.html`) can drive the same view with simulated data.
  */
-export function setupQueryExecutionTree(editor: Editor) {
+export function setupQetView() {
   const queryTreeModal = document.getElementById('queryExecutionTreeModal')!;
-  const analysisButton = document.getElementById('analysisButton')!;
   const closeButton = document.getElementById('queryExecutionTreeModalCloseButton')!;
-  const rerunButton = document.getElementById('rerunQueryButton')!;
 
   setupAutozoom();
   setupNodeDetailsPanel(() => deselectNode());
@@ -61,13 +59,6 @@ export function setupQueryExecutionTree(editor: Editor) {
   queryTreeModal.addEventListener('pointerup', () => {
     queryTreeModal.classList.remove('cursor-grabbing');
     queryTreeModal.classList.add('cursor-grab');
-  });
-
-  rerunButton.addEventListener('click', () => {
-    if (!queryRunning) {
-      clearCache(editor);
-      window.dispatchEvent(new Event('execute-start-request'));
-    }
   });
 
   const width = window.innerWidth;
@@ -118,6 +109,45 @@ export function setupQueryExecutionTree(editor: Editor) {
       .call(zoom.transform, targetTransform);
   }
 
+  closeButton.addEventListener('click', () => {
+    closeModal();
+  });
+
+  function openModal() {
+    queryTreeModal.classList.remove('hidden');
+    visible = true;
+    // @ts-expect-error
+    svg.call(zoom.translateTo, 0, 0);
+    document.body.classList.add('overflow-y-hidden');
+  }
+
+  function renderTree(tree: QueryExecutionTree) {
+    renderQueryExecutionTree(tree, zoom_to);
+  }
+
+  return { openModal, renderTree };
+}
+
+/**
+ * Initializes the query execution tree (QET) analysis modal.
+ *
+ * Connects to the QLever websocket during query execution to receive live
+ * runtime information and renders it into the view. Only available for the
+ * QLever engine.
+ */
+export function setupQueryExecutionTree(editor: Editor) {
+  const rerunButton = document.getElementById('rerunQueryButton')!;
+  const analysisButton = document.getElementById('analysisButton')!;
+
+  const { openModal, renderTree } = setupQetView();
+
+  rerunButton.addEventListener('click', () => {
+    if (!queryRunning) {
+      clearCache(editor);
+      window.dispatchEvent(new Event('execute-start-request'));
+    }
+  });
+
   analysisButton.addEventListener('click', async () => {
     const service = (await editor.languageClient.sendRequest(
       'qlueLs/getBackend',
@@ -136,15 +166,7 @@ export function setupQueryExecutionTree(editor: Editor) {
       );
       return;
     }
-    queryTreeModal.classList.remove('hidden');
-    visible = true;
-    // @ts-expect-error
-    svg.call(zoom.translateTo, 0, 0);
-    document.body.classList.add('overflow-y-hidden');
-  });
-
-  closeButton.addEventListener('click', () => {
-    closeModal();
+    openModal();
   });
 
   window.addEventListener('execute-query', async (event) => {
@@ -185,7 +207,7 @@ export function setupQueryExecutionTree(editor: Editor) {
       if (socket !== activeSocket) return;
       renderedCount = messageCount;
       const queryExecutionTree = JSON.parse(latestMessage!) as QueryExecutionTree;
-      renderQueryExecutionTree(queryExecutionTree, zoom_to);
+      renderTree(queryExecutionTree);
       if (queryRunning) {
         window.dispatchEvent(
           new CustomEvent('query-result-size', {

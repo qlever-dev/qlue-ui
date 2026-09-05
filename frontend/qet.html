@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <base href="/" />
+    <link rel="icon" type="image/svg+xml" href="src/assets/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QET dev rig</title>
+    <script
+      type="module"
+      src="/src/query_execution_tree/dev/main.ts"
+      defer
+    ></script>
+  </head>
+  <body
+    class="bg-slate-300 dark:bg-neutral-900 text-sm text-gray-700 dark:text-gray-100"
+  >
+    <!-- The query execution tree modal is injected here from index.html -->
+    <div
+      class="fixed z-40 bottom-0 left-0 w-full flex items-center gap-3 px-4 py-2 bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm border-t border-neutral-300 dark:border-neutral-700"
+    >
+      <button
+        type="button"
+        id="devPlayButton"
+        class="w-20 border border-neutral-400 dark:border-neutral-600 rounded px-2 py-1 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700"
+      >
+        Play
+      </button>
+      <button
+        type="button"
+        id="devRestartButton"
+        class="border border-neutral-400 dark:border-neutral-600 rounded px-2 py-1 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700"
+      >
+        Restart
+      </button>
+      <input
+        id="devTimeline"
+        name="devTimeline"
+        type="range"
+        min="0"
+        max="1000"
+        step="1"
+        value="0"
+        class="flex-1 cursor-pointer"
+      />
+      <span id="devClock" class="w-32 text-right tabular-nums"></span>
+      <label class="flex items-center gap-1">
+        speed
+        <select
+          id="devSpeed"
+          name="devSpeed"
+          class="border border-neutral-400 dark:border-neutral-600 rounded px-1 py-1 bg-transparent cursor-pointer"
+        >
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="4">4×</option>
+        </select>
+      </label>
+    </div>
+  </body>
+</html>
