@@ -1,7 +1,78 @@
 import * as d3 from 'd3';
-import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
+import type {
+  NodeStatus,
+  QueryExecutionNode,
+  QueryExecutionTree,
+} from '../types/query_execution_tree';
 import { getSelectedId, hideNodeDetails, refreshSelectedNode, showNodeDetails } from './details';
-import { activeSubTree, findActiveNode, fitText, line, replaceIRIs } from './utils';
+import {
+  activeSubTree,
+  findActiveNode,
+  fitText,
+  line,
+  measureTextWidth,
+  replaceIRIs,
+  splitDescription,
+} from './utils';
+
+const statusBadgeHeight = 18;
+const statusBadgePaddingX = 8;
+
+function statusBadgeLabel(status: NodeStatus): string {
+  if (status.includes('completed')) return 'DONE';
+  if (status === 'lazily materialized in progress') return 'LAZY';
+  if (status === 'fully materialized in progress') return 'RUNNING';
+  if (status === 'failed' || status === 'failed because child failed') return 'FAILED';
+  if (status === 'cancelled') return 'CANCELLED';
+  if (status === 'optimized out') return 'SKIPPED';
+  return 'PENDING';
+}
+
+function statusBadgeColor(status: NodeStatus): { bg: string; text: string } {
+  if (status.includes('completed')) {
+    return {
+      bg: 'fill-green-100 dark:fill-green-900/40',
+      text: 'fill-green-800 dark:fill-green-300',
+    };
+  }
+  if (status.includes('in progress')) {
+    return {
+      bg: 'fill-amber-100 dark:fill-amber-900/40',
+      text: 'fill-amber-800 dark:fill-amber-300',
+    };
+  }
+  if (status === 'failed' || status === 'failed because child failed') {
+    return { bg: 'fill-red-100 dark:fill-red-900/40', text: 'fill-red-800 dark:fill-red-300' };
+  }
+  if (status === 'cancelled' || status === 'optimized out') {
+    return { bg: 'fill-gray-200 dark:fill-gray-800', text: 'fill-gray-700 dark:fill-neutral-400' };
+  }
+  return { bg: 'fill-gray-100 dark:fill-gray-800', text: 'fill-gray-800 dark:fill-neutral-300' };
+}
+
+// NOTE: sizes and positions a status pill (rect + text) to the top-right corner of the box,
+// with width fit to the label so it always reads as a pill rather than a fixed-width chip.
+function renderStatusBadge(group: SVGGElement, status: NodeStatus) {
+  const rect = group.querySelector('rect')!;
+  const text = group.querySelector('text')!;
+
+  const label = statusBadgeLabel(status);
+  const colors = statusBadgeColor(status);
+
+  text.textContent = label;
+  text.setAttribute(
+    'class',
+    `status-badge-text text-[10px] font-semibold uppercase tracking-wide cursor-text select-text ${colors.text}`
+  );
+  const labelWidth = measureTextWidth(text, label);
+  const pillWidth = labelWidth + statusBadgePaddingX * 2;
+  const pillRight = boxWidth / 2 - 12;
+
+  text.setAttribute('x', String(pillRight - statusBadgePaddingX));
+  rect.setAttribute('x', String(pillRight - pillWidth));
+  rect.setAttribute('width', String(pillWidth));
+  rect.setAttribute('class', `status-badge-bg ${colors.bg}`);
+}
 
 const colorScaleDark = d3
   .scaleSymlog<string, string>()
@@ -18,9 +89,10 @@ const colorScaleLight = d3
   .clamp(true);
 
 const boxWidth = 300;
-const boxHeight = 105;
+const boxHeight = 130;
 const boxMargin = 30;
 const boxPadding = 20;
+const boxRadius = 8;
 
 // NOTE: When the user zooms, auto zoom is disabled for 5 seconds
 let autoZoom = true;
@@ -106,7 +178,7 @@ function updateTree(
     .data(nodesToUpdate, (d) => d.data.id!);
 
   updateNodeSelection
-    .selectAll('rect.body')
+    .selectAll('rect.body-left-border')
     .data((d) => [d])
     .style('--body-fill-light', (d) => colorScaleLight(d.data.operation_time))
     .style('--body-fill-dark', (d) => colorScaleDark(d.data.operation_time));
@@ -114,22 +186,22 @@ function updateTree(
   updateNodeSelection
     .selectAll('text.size')
     .data((d) => [d])
-    .text(
-      (d) =>
-        `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols} [~ ${d.data.estimated_size.toLocaleString('en-US')}]`
-    );
+    .text((d) => `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols}`);
 
   updateNodeSelection
     .selectAll('text.time')
     .data((d) => [d])
     .text(
       (d) =>
-        `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms [~ ${d.data.estimated_operation_cost.toLocaleString('en-US')}]`
+        `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms`
     );
 
-  const formatStatus = (d: d3.HierarchyNode<QueryExecutionNode>) => `Status: ${d.data.status}`;
-  const statusTexts = updateNodeSelection.selectAll('text.status').data((d) => [d]);
-  statusTexts.text(formatStatus);
+  updateNodeSelection
+    .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('g.status-badge')
+    .data((d) => [d])
+    .each(function(d) {
+      renderStatusBadge(this, d.data.status);
+    });
 
   const activeIds = new Set(activeNodes.map((n) => n.data.id));
   container
@@ -156,6 +228,7 @@ function updateTree(
       return line([
         [px, py + boxHeight / 2 + 2],
         [px, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
+        [px + (cx - px) / 2, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
         [cx, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
         [cx, cy - boxHeight / 2 - 2],
       ])!;
@@ -180,6 +253,22 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .append('g')
     .attr('id', 'treeContainer');
 
+  // NOTE: shared clip path so the left-border accent follows the body's rounded corners
+  const svg = d3.select<SVGSVGElement, unknown>('#queryExecutionTreeSvg');
+  if (svg.select('#bodyClip').empty()) {
+    svg
+      .append('defs')
+      .append('clipPath')
+      .attr('id', 'bodyClip')
+      .append('rect')
+      .attr('x', -boxWidth / 2)
+      .attr('y', -boxHeight / 2)
+      .attr('width', boxWidth)
+      .attr('height', boxHeight)
+      .attr('rx', boxRadius)
+      .attr('ry', boxRadius);
+  }
+
   treeLayout(root);
 
   // NOTE: draw links between nodes
@@ -188,7 +277,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGPathElement, d3.HierarchyNode<QueryExecutionTree>>('path.link')
     .data(nodesWithParents, (d) => d.data.id!)
     .join('path')
-    .attr('class', 'link stroke-black dark:stroke-white stroke fill-none')
+    .attr('class', 'link stroke-neutral-400 dark:stroke-neutral-600 stroke fill-none')
     .attr('d', (d) => {
       const [px, py] = [d.parent!.x!, d.parent!.y!];
       const [cx, cy] = [d.x!, d.y!];
@@ -196,6 +285,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
       return line([
         [px, py + boxHeight / 2],
         [px, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
+        [px + (cx - px) / 2, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
         [cx, py + boxHeight / 2 + boxMargin / 2 + boxPadding / 2],
         [cx, cy - boxHeight / 2],
       ])!;
@@ -219,14 +309,30 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .join('rect')
     .attr('x', -boxWidth / 2)
     .attr('y', -boxHeight / 2)
-    .attr('rx', 3)
-    .attr('ry', 3)
+    .attr('rx', boxRadius)
+    .attr('ry', boxRadius)
     .attr('width', boxWidth)
     .attr('height', boxHeight)
     .attr(
       'class',
-      'body stroke stroke-black dark:stroke-white fill-[var(--body-fill-light)] dark:fill-[var(--body-fill-dark)]'
+      'body stroke-0.5 stroke-neutral-200 dark:stroke-neutral-700 fill-white dark:fill-zinc-800'
+    );
+
+  // NOTE: left border accent, clipped to the body's rounded-rect shape so its corners match.
+  // Encodes operation_time (previously encoded by the body fill).
+  node_selection
+    .selectAll<SVGRectElement, unknown>('rect.body-left-border')
+    .data((d) => [d])
+    .join('rect')
+    .attr(
+      'class',
+      'body-left-border fill-[var(--body-fill-light)] dark:fill-[var(--body-fill-dark)]'
     )
+    .attr('x', -boxWidth / 2)
+    .attr('y', -boxHeight / 2)
+    .attr('width', 5)
+    .attr('height', boxHeight)
+    .attr('clip-path', 'url(#bodyClip)')
     .style('--body-fill-light', (d) => colorScaleLight(d.data.operation_time))
     .style('--body-fill-dark', (d) => colorScaleDark(d.data.operation_time));
 
@@ -278,114 +384,141 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .data((d) => [d])
     .join('text')
     .attr('class', 'title fill-black dark:fill-neutral-300 font-bold cursor-text select-text')
-    .attr('x', -boxWidth / 2 + 10)
+    .attr('x', -boxWidth / 2 + 20)
     .attr('y', -boxHeight / 2 + boxPadding)
     .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
-    .each(function (d) {
-      fitText(this, replaceIRIs(d.data.description), boxWidth - 20);
+    .each(function(d) {
+      // NOTE: reserve room on the right so long titles don't run under the status badge
+      fitText(this, replaceIRIs(splitDescription(d.data.description).title), boxWidth - 20 - 90);
     });
 
-  // NOTE:Columns
+  // NOTE: subtitle (operation detail, e.g. a filter expression), muted, no background
   node_selection
-    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.cols-label')
+    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.subtitle')
     .data((d) => [d])
     .join('text')
     .attr(
       'class',
-      'cols-label fill-neutral-900 dark:fill-neutral-300 text-xs cursor-text select-text'
+      'subtitle fill-neutral-500 dark:fill-neutral-500 text-xs cursor-text select-text'
     )
-    .attr('x', -boxWidth / 2 + 10)
-    .attr('y', -boxHeight / 2 + boxPadding + 25)
-    .attr('text-anchor', 'start')
+    .attr('x', -boxWidth / 2 + 20)
+    .attr('y', -boxHeight / 2 + boxPadding + 16)
+    .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
-    .text('Cols:');
+    .each(function(d) {
+      const { subtitle } = splitDescription(d.data.description);
+      fitText(this, subtitle ? replaceIRIs(subtitle) : '', boxWidth - 20);
+    });
+
+  // NOTE: separator between title and body
+  node_selection
+    .selectAll<SVGLineElement, unknown>('line.title-separator')
+    .data((d) => [d])
+    .join('line')
+    .attr('class', 'title-separator stroke-neutral-300 dark:stroke-neutral-700')
+    .attr('x1', -boxWidth / 2 + 20)
+    .attr('x2', boxWidth / 2 - 15)
+    .attr('y1', -boxHeight / 2 + boxPadding + 30)
+    .attr('y2', -boxHeight / 2 + boxPadding + 30);
+
+  // NOTE:Columns
   node_selection
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.cols')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'cols fill-neutral-900 dark:fill-neutral-300 text-xs cursor-text select-text')
-    .attr('x', -boxWidth / 2 + 45)
-    .attr('y', -boxHeight / 2 + boxPadding + 25)
+    .attr('class', 'cols fill-neutral-400 cursor-text select-text')
+    .attr('x', -boxWidth / 2 + 20)
+    .attr('y', -boxHeight / 2 + boxHeight * 0.5)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .each(function (d) {
+    .each(function(d) {
       fitText(this, d.data.column_names.join(', '), boxWidth - 55);
     });
 
   // NOTE: Size
-  node_selection
-    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.size-label')
-    .data((d) => [d])
-    .join('text')
-    .attr(
-      'class',
-      'size-label fill-neutral-900 dark:fill-neutral-300 text-xs cursor-text select-text'
-    )
-    .attr('x', -boxWidth / 2 + 10)
-    .attr('y', -boxHeight / 2 + boxPadding + 40)
-    .attr('text-anchor', 'start')
-    .attr('dominant-baseline', 'middle')
-    .text('Size:');
   node_selection
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.size')
     .data((d) => [d])
     .join('text')
     .attr(
       'class',
-      'size fill-neutral-900 dark:fill-neutral-300 text-xs tabular-nums cursor-text select-text'
+      'size fill-neutral-900 dark:fill-white text-md tabular-nums cursor-text select-text'
     )
-    .attr('x', -boxWidth / 2 + 45)
-    .attr('y', -boxHeight / 2 + boxPadding + 40)
+    .attr('x', -boxWidth / 2 + 20)
+    .attr('y', -boxHeight / 2 + boxHeight * 0.7)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .text(
-      (d) =>
-        `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols} [~ ${d.data.estimated_size.toLocaleString('en-US')}]`
-    );
-
-  // NOTE: Time
+    .text((d) => `${d.data.result_rows.toLocaleString('en-US')} x ${d.data.result_cols}`);
   node_selection
-    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.time-label')
+    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.size-estimate')
     .data((d) => [d])
     .join('text')
     .attr(
       'class',
-      'time-label fill-neutral-900 dark:fill-neutral-300 text-xs cursor-text select-text'
+      'size-estimate fill-neutral-500 dark:fill-neutral-400 text-xs tabular-nums cursor-text select-text'
     )
-    .attr('x', -boxWidth / 2 + 10)
-    .attr('y', -boxHeight / 2 + boxPadding + 55)
+    .attr('x', -boxWidth / 2 + 20)
+    .attr('y', -boxHeight / 2 + boxHeight * 0.7 + 20)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .text('Time:');
+    .text((d) => `~ ${d.data.estimated_size.toLocaleString('en-US')}`);
+
+  // NOTE: Time
   node_selection
     .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.time')
     .data((d) => [d])
     .join('text')
-    .attr(
-      'class',
-      'time fill-neutral-900 dark:fill-neutral-300 text-xs tabular-nums cursor-text select-text'
-    )
-    .attr('x', -boxWidth / 2 + 45)
-    .attr('y', -boxHeight / 2 + boxPadding + 55)
+    .attr('class', 'time fill-black dark:fill-white tabular-nums cursor-text select-text')
+    .attr('x', 0)
+    .attr('y', -boxHeight / 2 + boxHeight * 0.7)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
     .text(
       (d) =>
-        `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms [~ ${d.data.estimated_operation_cost.toLocaleString('en-US')}]`
+        `${Math.max(d.data.operation_time, d.data.original_operation_time).toLocaleString('en-US')}ms`
     );
-
-  // NOTE: Status
   node_selection
-    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.status')
+    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.time-estimate')
     .data((d) => [d])
     .join('text')
-    .attr('class', 'status fill-neutral-900 dark:fill-neutral-300 text-xs cursor-text select-text')
-    .attr('x', -boxWidth / 2 + 10)
-    .attr('y', -boxHeight / 2 + boxPadding + 70)
+    .attr(
+      'class',
+      'time-estimate text-xs  fill-neutral-500 dark:fill-neutral-400 tabular-nums cursor-text select-text'
+    )
+    .attr('x', 0)
+    .attr('y', -boxHeight / 2 + boxHeight * 0.7 + 20)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .text((d) => `Status: ${d.data.status}`);
+    .text((d) => `~ ${d.data.estimated_operation_cost.toLocaleString('en-US')}`);
+
+  // NOTE: status badge, top-right corner
+  const statusBadgeGroups = node_selection
+    .selectAll<SVGGElement, unknown>('g.status-badge')
+    .data((d) => [d])
+    .join('g')
+    .attr('class', 'status-badge');
+
+  statusBadgeGroups
+    .selectAll<SVGRectElement, unknown>('rect')
+    .data((d) => [d])
+    .join('rect')
+    .attr('y', -boxHeight / 2 + 10)
+    .attr('height', statusBadgeHeight)
+    .attr('rx', statusBadgeHeight / 2)
+    .attr('ry', statusBadgeHeight / 2);
+
+  statusBadgeGroups
+    .selectAll<SVGTextElement, unknown>('text')
+    .data((d) => [d])
+    .join('text')
+    .attr('y', -boxHeight / 2 + 10 + statusBadgeHeight / 2)
+    .attr('text-anchor', 'end')
+    .attr('dominant-baseline', 'middle');
+
+  statusBadgeGroups.each(function(d) {
+    renderStatusBadge(this, d.data.status);
+  });
 }
 
 function treeLayout(root: d3.HierarchyNode<QueryExecutionTree>) {

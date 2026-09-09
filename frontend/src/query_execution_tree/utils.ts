@@ -30,9 +30,18 @@ function shortenIRI(iri: string): string {
 const measurementCanvas = document.createElement('canvas');
 const measurementCtx = measurementCanvas.getContext('2d')!;
 
-export function fitText(node: SVGTextElement, text: string, maxWidth: number) {
+function setMeasurementFont(node: SVGTextElement) {
   const style = window.getComputedStyle(node);
   measurementCtx.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+}
+
+export function measureTextWidth(node: SVGTextElement, text: string): number {
+  setMeasurementFont(node);
+  return measurementCtx.measureText(text).width;
+}
+
+export function fitText(node: SVGTextElement, text: string, maxWidth: number) {
+  setMeasurementFont(node);
 
   if (measurementCtx.measureText(text).width <= maxWidth) {
     node.textContent = text;
@@ -50,6 +59,63 @@ export function fitText(node: SVGTextElement, text: string, maxWidth: number) {
     }
   }
   node.textContent = `${text.substring(0, lo)}…`;
+}
+
+// NOTE: QLever's description strings come in two shapes: "OpName (detail)" for
+// expression-bearing ops (Filter, Bind, ...) and "OpName on/for args" for structural
+// ops (Join, Index Scan, ...) with no parens. Known multi-word op names are listed
+// here (longest first) so they aren't cut short by a naive first-space split.
+const KNOWN_OPERATION_PREFIXES = [
+  'CARTESIAN PRODUCT JOIN',
+  'COUNT AVAILABLE PREDICATES',
+  'HAS PREDICATE SCAN',
+  'INDEXSCAN POS',
+  'INDEXSCAN PSO',
+  'INDEXSCAN SPO',
+  'INDEXSCAN SOP',
+  'INDEXSCAN OPS',
+  'INDEXSCAN OSP',
+  'MULTI COLUMN JOIN',
+  'PATTERN TRICK',
+  'SORT / ORDER BY',
+  'SPATIAL JOIN',
+  'TEXT LIMIT',
+  'TRANSITIVE PATH',
+  'GROUP BY',
+  'DESCRIBE',
+  'DISTINCT',
+  'FILTER',
+  'MINUS',
+  'OPTIONAL',
+  'SERVICE',
+  'UNION',
+  'VALUES',
+  'LIMIT',
+  'EXISTS',
+  'BIND',
+  'JOIN',
+].sort((a, b) => b.length - a.length);
+
+export function splitDescription(description: string): {
+  title: string;
+  subtitle: string | null;
+} {
+  const parenIndex = description.indexOf('(');
+  if (parenIndex !== -1) {
+    return {
+      title: description.slice(0, parenIndex).trim(),
+      subtitle: description.slice(parenIndex).trim(),
+    };
+  }
+
+  const descriptionUpper = description.toUpperCase();
+  const prefix = KNOWN_OPERATION_PREFIXES.find((p) => descriptionUpper.startsWith(p));
+  if (prefix) {
+    const rest = description.slice(prefix.length).trim();
+    return { title: description.slice(0, prefix.length), subtitle: rest.length > 0 ? rest : null };
+  }
+
+  return { title: description, subtitle: null };
 }
 
 export const line = d3
