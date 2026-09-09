@@ -15,13 +15,14 @@ import { type CompletionState, type RenderContent, type RenderItem, VALUE_KIND }
 
 const MAX_HEIGHT = '15rem';
 
-/** Width of the list column; the detail column sits beside it at its own. */
 const LIST_WIDTH = '22rem';
-const DETAIL_WIDTH = '19rem';
+/** Floor and cap on the detail box's width; between them it sizes to its content. */
+const DETAIL_MIN_WIDTH = '12rem';
+const DETAIL_MAX_WIDTH = '19rem';
 
 const PANEL_CLASSES = [
   'flex',
-  'items-stretch',
+  'flex-col',
   'rounded',
   'border',
   'border-neutral-300',
@@ -31,7 +32,6 @@ const PANEL_CLASSES = [
   'text-neutral-900',
   'dark:text-neutral-100',
   'shadow-lg',
-  'overflow-hidden',
   'text-sm',
 ];
 
@@ -104,12 +104,13 @@ function createSpinner(...extra: string[]): HTMLElement {
 /**
  * The completion popup.
  *
- * One surface split in two columns: a list of one-line rows on the left, and a
- * panel on the right holding everything about the selected row that is not the
- * text it matched on. A row therefore never grows a second line, and the facts
- * one consults *after* finding the row — its canonical name, score, type,
+ * Two boxes side by side: a list of one-line rows on the left, and a box on
+ * the right holding everything about the selected row that is not the text it
+ * matched on. A row therefore never grows a second line, and the facts one
+ * consults *after* finding the row — its canonical name, score, type,
  * documentation — are read in one place instead of being crammed into all of
- * them.
+ * them. The detail box is separate from the list so its height follows its
+ * own content rather than being stretched to match the list's.
  *
  * Rendered as a Monaco content widget so it inherits Monaco's anchoring and
  * above/below flipping. Monaco caches the widget's measured size and only
@@ -150,18 +151,18 @@ export class CompletionWidget implements monaco.editor.IContentWidget {
   ) {
     // NOTE: Monaco writes `display: block` inline on a content widget's dom
     // node, which would override a `flex` class on it. The layout therefore
-    // lives on an inner panel that Monaco does not touch.
+    // lives on an inner container that Monaco does not touch.
     this.domNode = document.createElement('div');
     this.domNode.dataset.testid = 'completion-widget';
 
-    this.panel = document.createElement('div');
-    this.panel.classList.add(...PANEL_CLASSES);
-    this.panel.style.maxWidth = 'calc(100vw - 32px)';
-    this.panel.style.maxHeight = MAX_HEIGHT;
+    const container = document.createElement('div');
+    container.classList.add('flex', 'items-start', 'gap-2');
+    container.style.maxWidth = 'calc(100vw - 32px)';
 
-    const list = document.createElement('div');
-    list.classList.add('flex', 'flex-col', 'min-w-0', 'shrink-0');
-    list.style.width = LIST_WIDTH;
+    this.panel = document.createElement('div');
+    this.panel.classList.add(...PANEL_CLASSES, 'overflow-hidden', 'min-w-0', 'shrink-0');
+    this.panel.style.width = LIST_WIDTH;
+    this.panel.style.maxHeight = MAX_HEIGHT;
 
     this.header = document.createElement('div');
     this.header.classList.add(...BAR_CLASSES, 'border-b', 'border-neutral-200');
@@ -205,26 +206,23 @@ export class CompletionWidget implements monaco.editor.IContentWidget {
     this.detail = document.createElement('div');
     this.detail.dataset.testid = 'completion-detail';
     this.detail.classList.add(
-      'flex',
-      'flex-col',
+      ...PANEL_CLASSES,
       'gap-2',
       'shrink-0',
       'min-w-0',
       'px-3',
       'py-2',
       'overflow-y-auto',
-      'border-l',
-      'border-neutral-200',
-      'dark:border-neutral-700',
-      'bg-neutral-50',
-      'dark:bg-neutral-800/40'
+      'overflow-x-hidden'
     );
-    this.detail.style.width = DETAIL_WIDTH;
+    this.detail.style.minWidth = DETAIL_MIN_WIDTH;
+    this.detail.style.maxWidth = DETAIL_MAX_WIDTH;
+    this.detail.style.maxHeight = MAX_HEIGHT;
     this.detail.hidden = true;
 
-    list.append(this.header, this.body);
-    this.panel.append(list, this.detail);
-    this.domNode.append(this.panel);
+    this.panel.append(this.header, this.body);
+    container.append(this.panel, this.detail);
+    this.domNode.append(container);
     editor.addContentWidget(this);
   }
 
