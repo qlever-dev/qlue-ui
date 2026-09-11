@@ -132,6 +132,18 @@ function foldLabel(node: d3.HierarchyNode<QueryExecutionTree>): string {
   return collapsedIds.has(node.data.id!) ? '▾' : '▴';
 }
 
+// NOTE: zoom targets must be visible: a hidden node resolves to the folded ancestor
+// that stands in for it
+function visibleStandIn(
+  node: d3.HierarchyNode<QueryExecutionTree>
+): d3.HierarchyNode<QueryExecutionTree> {
+  const foldedAncestor = node
+    .ancestors()
+    .reverse()
+    .find((ancestor) => collapsedIds.has(ancestor.data.id!));
+  return foldedAncestor ?? node;
+}
+
 function isHidden(node: d3.HierarchyNode<QueryExecutionTree>): boolean {
   return node
     .ancestors()
@@ -191,7 +203,8 @@ function updateTree(
   const topNode = findActiveNode(root);
   if (topNode === undefined) return;
   if (autoZoom && zoomTimeout == null) {
-    zoomTo(topNode.x!, topNode.y! + height / 4 - boxHeight - boxMargin, 500);
+    const zoomTarget = visibleStandIn(topNode);
+    zoomTo(zoomTarget.x!, zoomTarget.y! + height / 4 - boxHeight - boxMargin, 500);
   }
   const [activeNodes, inactiveNodes] = activeSubTree(topNode);
   const changedInactiveNodes = inactiveNodes.filter((node) => {
@@ -228,7 +241,7 @@ function updateTree(
   updateNodeSelection
     .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('g.status-badge')
     .data((d) => [d])
-    .each(function(d) {
+    .each(function (d) {
       renderStatusBadge(this, d.data.status);
     });
 
@@ -462,7 +475,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('y', -boxHeight / 2 + boxPadding)
     .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
-    .each(function(d) {
+    .each(function (d) {
       // NOTE: reserve room on the right so long titles don't run under the status badge
       fitText(this, replaceIRIs(splitDescription(d.data.description).title), boxWidth - 20 - 90);
     });
@@ -480,7 +493,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('y', -boxHeight / 2 + boxPadding + 16)
     .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
-    .each(function(d) {
+    .each(function (d) {
       const { subtitle } = splitDescription(d.data.description);
       fitText(this, subtitle ? replaceIRIs(subtitle) : '', boxWidth - 20);
     });
@@ -506,7 +519,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('y', -boxHeight / 2 + boxHeight * 0.5)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .each(function(d) {
+    .each(function (d) {
       fitText(this, d.data.column_names.join(', '), boxWidth - 55);
     });
 
@@ -590,7 +603,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('text-anchor', 'end')
     .attr('dominant-baseline', 'middle');
 
-  statusBadgeGroups.each(function(d) {
+  statusBadgeGroups.each(function (d) {
     renderStatusBadge(this, d.data.status);
   });
 }
