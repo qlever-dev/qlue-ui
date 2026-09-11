@@ -124,6 +124,35 @@ export function setupAutozoom() {
   });
 }
 
+// NOTE: ids of nodes whose subtree is folded away
+const collapsedIds = new Set<number>();
+
+// NOTE: chevron points the way a click moves the subtree: down to unfold, up to fold
+function foldLabel(node: d3.HierarchyNode<QueryExecutionTree>): string {
+  return collapsedIds.has(node.data.id!) ? '▾' : '▴';
+}
+
+function isHidden(node: d3.HierarchyNode<QueryExecutionTree>): boolean {
+  return node
+    .ancestors()
+    .slice(1)
+    .some((ancestor) => collapsedIds.has(ancestor.data.id!));
+}
+
+// NOTE: nodes and the links/glows pointing at them are hidden when any ancestor is folded
+function applyFoldVisibility() {
+  const container = d3.select('#treeContainer');
+  container
+    .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('.node')
+    .attr('display', (d) => (isHidden(d) ? 'none' : null));
+  container
+    .selectAll<SVGPathElement, d3.HierarchyNode<QueryExecutionTree>>('path.link, path.glow')
+    .attr('display', (d) => (isHidden(d) ? 'none' : null));
+  container
+    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.fold-count')
+    .text(foldLabel);
+}
+
 let root: d3.HierarchyNode<QueryExecutionNode> | null = null;
 
 export function renderQueryExecutionTree(
@@ -233,6 +262,8 @@ function updateTree(
         [cx, cy - boxHeight / 2 - 2],
       ])!;
     });
+
+  applyFoldVisibility();
 
   const selectedId = getSelectedId();
   if (selectedId != null && nodesToUpdate.some((n) => n.data.id === selectedId)) {
@@ -369,6 +400,49 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('height', boxHeight + 8)
     .attr('stroke-width', 3)
     .attr('opacity', 0);
+
+  // NOTE: Each node with children has a fold badge in the bottom center
+  const nodesWithChildren = node_selection.filter((d) => !!d.children && d.children.length > 0);
+
+  nodesWithChildren
+    .selectAll<SVGRectElement, d3.HierarchyNode<QueryExecutionTree>>('rect.fold')
+    .data((d) => [d])
+    .join('rect')
+    .attr('x', -15)
+    .attr('y', boxHeight / 2 - 8)
+    .attr('rx', 10)
+    .attr('ry', 10)
+    .attr('width', 30)
+    .attr('height', 20)
+    .attr(
+      'class',
+      'fold stroke-0.5 stroke-neutral-200 dark:stroke-neutral-500 fill-white dark:fill-zinc-800'
+    );
+
+  nodesWithChildren
+    .selectAll<SVGTextElement, d3.HierarchyNode<QueryExecutionTree>>('text.fold-count')
+    .data((d) => [d])
+    .join('text')
+    .attr('class', 'fold-count fill-black dark:fill-neutral-300 text-xs ')
+    .attr('x', 0)
+    .attr('y', boxHeight / 2 + 4)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'middle')
+    .text(foldLabel);
+
+  // NOTE: clicking the fold badge folds/unfolds the subtree
+  nodesWithChildren
+    .selectAll<SVGElement, d3.HierarchyNode<QueryExecutionTree>>('rect.fold, text.fold-count')
+    .on('click', (event: MouseEvent, d) => {
+      event.stopPropagation();
+      const id = d.data.id!;
+      if (collapsedIds.has(id)) {
+        collapsedIds.delete(id);
+      } else {
+        collapsedIds.add(id);
+      }
+      applyFoldVisibility();
+    });
 
   // NOTE: click selects the node and shows details panel
   node_selection.on('click', (event, d) => {
@@ -587,6 +661,7 @@ function mergeLayout(layoutLeft: Layout, layoutRight: Layout): Layout {
 
 export function clearQueryExecutionTree() {
   root = null;
+  collapsedIds.clear();
   hideNodeDetails();
   d3.select('#treeContainer').remove();
 }
