@@ -232,3 +232,6 @@ AGENTS.md
 # on first run)
 backend/config.yaml
 backend/examples/
+
+# Local process-compose overlay (e.g. a linked qlue-ls checkout)
+process-compose.override.yaml
