@@ -1078,9 +1078,7 @@ wikidata-qlever:
   query_templates:
     subject_completion: |-
       # subject completion
-      {% for prefix in prefixes %}
-      PREFIX {{prefix.0}}: <{{prefix.1}}>
-      {% endfor %}
+      {% include "prefix_declarations" %}
       {% if search_term %}
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX wikibase: <http://wikiba.se/ontology#>
@@ -1105,9 +1103,7 @@ wikidata-qlever:
       LIMIT {{ limit }} OFFSET {{ offset }}
     predicate_completion_context_sensitive: |-
       # predicate completion sensitive
-      {% for prefix in prefixes %}
-      PREFIX {{prefix.0}}: <{{prefix.1}}>
-      {% endfor %}
+      {% include "prefix_declarations" %}
       {% if subject is not variable %}
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -1175,13 +1171,11 @@ wikidata-qlever:
       LIMIT {{ limit }} OFFSET {{ offset }}
     predicate_completion_context_insensitive: |-
       # predicate completion insensitive
-      {% for prefix in prefixes %}
-      PREFIX {{prefix.0}}: <{{prefix.1}}>
-      {% endfor %}
+      {% include "prefix_declarations" %}
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
       SELECT ?qls_entity (SAMPLE(?name) as ?qls_label) (SAMPLE(?count) as ?qls_count) WHERE {
-        { SELECT ?qls_entity (COUNT({% if local_context is containing("?qls_inner") %}DISTINCT ?qls_inner{%else%}?qls_entity{% endif %}) as ?count)
+        { SELECT ?qls_entity (COUNT(?qls_entity) as ?count)
           WHERE {
             {{local_context}}
           }
@@ -1204,9 +1198,7 @@ wikidata-qlever:
       LIMIT {{ limit }} OFFSET {{ offset }}
     object_completion_context_sensitive: |-
       # object completion sensitive
-      {% for prefix in prefixes %}
-      PREFIX {{prefix.0}}: <{{prefix.1}}>
-      {% endfor %}
+      {% include "prefix_declarations" %}
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
       SELECT ?qls_entity (SAMPLE(?name) as ?qls_label) (SAMPLE(?count) as ?qls_count) WHERE {
@@ -1232,9 +1224,7 @@ wikidata-qlever:
       LIMIT {{ limit }} OFFSET {{ offset }}
     object_completion_context_insensitive: |-
       # object completion insensitive
-      {% for prefix in prefixes %}
-      PREFIX {{prefix.0}}: <{{prefix.1}}>
-      {% endfor %}
+      {% include "prefix_declarations" %}
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
       SELECT ?qls_entity (SAMPLE(?name) as ?qls_label) (SAMPLE(?alias) as ?qls_alias) (SAMPLE(?count) as ?qls_count) WHERE {
