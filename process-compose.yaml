@@ -1,0 +1,28 @@
+processes:
+  web:
+    command: npm run dev
+    working_dir: frontend
+    readiness_probe:
+      http_get:
+        host: localhost
+        scheme: http
+        path: "/"
+        port: 5173
+      initial_delay_seconds: 1
+    depends_on:
+      api:
+        condition: process_healthy
+  api:
+    # --reload-include adds *.yaml to the watched patterns (*.py is watched by default),
+    # so editing backend/config.yaml restarts the app and re-reads it.
+    command: uv run uvicorn --app-dir src api.main:app --port 8000 --reload --reload-include '*.yaml'
+    working_dir: backend
+    environment:
+      - "API_KEY=1234"
+    readiness_probe:
+      http_get:
+        host: localhost
+        scheme: http
+        path: "/ui-api/health"
+        port: 8000
+      initial_delay_seconds: 1
