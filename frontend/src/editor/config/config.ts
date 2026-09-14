@@ -111,6 +111,12 @@ export async function buildWrapperConfig(initial: string) {
         uri: Uri.parse('file:/'),
       },
       progressOnInitialization: true,
+      // NOTE: starve Monaco's suggest widget even if something still triggers
+      //       it. This only wraps the provider path; the custom widget's own
+      //       `sendRequest` is unaffected.
+      middleware: {
+        provideCompletionItem: () => null,
+      },
       diagnosticPullOptions: {
         onChange: true,
         onSave: false,
@@ -138,10 +144,17 @@ export async function buildWrapperConfig(initial: string) {
       },
     },
     editorOptions: {
-      tabCompletion: 'on',
+      // NOTE: Monaco's suggest widget is fully replaced by the custom
+      //       completion widget (see `editor/completion/`), so every path that
+      //       could open it is disabled here.
+      tabCompletion: 'off',
+      quickSuggestions: false,
+      suggestOnTriggerCharacters: false,
+      acceptSuggestionOnEnter: 'off',
+      acceptSuggestionOnCommitCharacter: false,
+      snippetSuggestions: 'none',
+      inlineSuggest: { enabled: false },
       formatOnType: true,
-      suggestOnTriggerCharacters: true,
-      quickSuggestionsDelay: 100,
       fontSize: 14,
       fontFamily: 'Source Code Pro',
       detectIndentation: false,
@@ -166,13 +179,6 @@ export async function buildWrapperConfig(initial: string) {
       folding: true,
       foldingImportsByDefault: false,
       wordBasedSuggestions: 'off',
-      snippetSuggestions: 'bottom',
-      suggest: {
-        filterGraceful: false,
-        localityBonus: false,
-        shareSuggestSelections: false,
-        showWords: false,
-      },
       autoIndent: 'none',
       guides: {
         bracketPairsHorizontal: 'active',
