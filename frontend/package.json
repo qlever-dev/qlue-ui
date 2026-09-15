@@ -28,6 +28,6 @@
     "qlue-ls": "^3.9.0",
     "sparql-results": "0.2.0",
     "tailwindcss": "4.3.3",
-    "vscode": "npm:@codingame/monaco-vscode-extension-api@25.1.2"
+    "vscode": "npm:@codingame/monaco-vscode-extension-api@36.2.7"
   }
 }
