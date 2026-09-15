@@ -23,7 +23,7 @@
   "dependencies": {
     "@tailwindcss/vite": "4.3.3",
     "d3": "7.9.0",
-    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@25.1.2",
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@36.2.7",
     "monaco-languageclient": "10.7.0",
     "qlue-ls": "^3.9.0",
     "sparql-results": "0.2.0",
