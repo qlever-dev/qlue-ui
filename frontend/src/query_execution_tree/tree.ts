@@ -493,13 +493,13 @@ export function rerenderQueryExecutionTree(
   }
 }
 
-const totalBoxHeight = 75;
+const totalBoxHeight = 95;
 
 /**
- * Draw the box `TOTAL` above the root of the tree, with the time of the query
- * and the time of its planning. It is drawn only for the final state of the
- * tree, when the query is done. Clicking it shows the details of the query
- * planning in the details panel.
+ * Draw the box `Summary` above the root of the tree, with the time of the query
+ * planning, of the execution of the query execution tree, and their sum. It is
+ * drawn only for the final state of the tree, when the query is done. Clicking
+ * it shows the details of the query planning in the details panel.
  */
 function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
   if (!root) return;
@@ -528,23 +528,67 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
     .attr('width', boxWidth)
     .attr('height', totalBoxHeight)
     .attr('class', 'stroke stroke-black dark:stroke-white fill-white dark:fill-neutral-800');
-  const detail = 'fill-neutral-900 dark:fill-neutral-300 text-xs';
-  const lines: [string, string][] = [
-    ['TOTAL', 'fill-black dark:fill-neutral-300 font-bold'],
-    [`Query: ${queryExecutionTree.total_time.toLocaleString('en-US')}ms`, detail],
+
+  const top = -totalBoxHeight / 2;
+  const left = -boxWidth / 2 + 10;
+  box
+    .append('text')
+    .attr('class', 'fill-black dark:fill-neutral-300 font-bold cursor-text select-text')
+    .attr('x', left)
+    .attr('y', top + boxPadding)
+    .attr('dominant-baseline', 'middle')
+    .text('Summary');
+
+  // NOTE: one row per time: the label left-aligned, the number right-aligned
+  // at a fixed column (with tabular digits, so that the digits line up), and
+  // the unit left-aligned right after that column.
+  const planning = queryExecutionTree.meta?.time_query_planning;
+  const execution = queryExecutionTree.total_time;
+  const rows: [string, number | undefined, boolean][] = [
+    ['Planning', planning, false],
+    ['Execution', execution, false],
+    ['Total', planning === undefined ? undefined : planning + execution, true],
   ];
-  if (queryExecutionTree.meta) {
-    const planningTime = queryExecutionTree.meta.time_query_planning;
-    lines.push([`Planning: ${planningTime.toLocaleString('en-US')}ms`, detail]);
-  }
-  lines.forEach(([content, classes], i) => {
-    box
+  const numberColumn = left + 130;
+  rows.forEach(([label, value, isSum], i) => {
+    const rowY = top + boxPadding + 22 + i * 16 + (isSum ? 4 : 0);
+    const classes = `fill-neutral-900 dark:fill-neutral-300 text-xs cursor-text select-text${isSum ? ' font-bold' : ''}`;
+    const row = box.append('g');
+    row
       .append('text')
-      .attr('class', `${classes} cursor-text select-text`)
-      .attr('x', -boxWidth / 2 + 10)
-      .attr('y', -totalBoxHeight / 2 + boxPadding + i * 18)
+      .attr('class', classes)
+      .attr('x', left)
+      .attr('y', rowY)
       .attr('dominant-baseline', 'middle')
-      .text(content);
+      .text(`${label}:`);
+    row
+      .append('text')
+      .attr('class', `${classes} tabular-nums`)
+      .attr('x', numberColumn)
+      .attr('y', rowY)
+      .attr('text-anchor', 'end')
+      .attr('dominant-baseline', 'middle')
+      .text(value === undefined ? 'n/a' : value.toLocaleString('en-US'));
+    if (value !== undefined) {
+      row
+        .append('text')
+        .attr('class', classes)
+        .attr('x', numberColumn + 4)
+        .attr('y', rowY)
+        .attr('dominant-baseline', 'middle')
+        .text('ms');
+    }
+    if (isSum) {
+      // A thin rule above the sum, as in a written addition.
+      box
+        .append('line')
+        .attr('class', 'stroke-neutral-500 dark:stroke-neutral-400')
+        .attr('x1', left)
+        .attr('x2', numberColumn + 22)
+        .attr('y1', rowY - 10)
+        .attr('y2', rowY - 10)
+        .attr('stroke-width', 0.75);
+    }
   });
 }
 
