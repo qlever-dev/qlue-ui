@@ -34,6 +34,49 @@ export function showNodeDetails(node: QueryExecutionNode) {
   contentEl.scrollTop = 0;
 }
 
+/**
+ * Show the details of the query as a whole in the panel: the time of the query
+ * and of its planning, and how each connected component was planned.
+ */
+export function showQueryDetails(tree: QueryExecutionTree) {
+  if (!panelEl || !contentEl) return;
+  // NOTE: no node is selected, so that `refreshSelectedNode` leaves this alone.
+  selectedId = null;
+  const meta = tree.meta;
+  const sections: HTMLElement[] = [
+    keyValueSection('Total', [
+      ['Query', text(`${tree.total_time.toLocaleString('en-US')} ms`)],
+      ...(meta
+        ? ([['Planning', text(`${meta.time_query_planning.toLocaleString('en-US')} ms`)]] as [
+            string,
+            HTMLElement,
+          ][])
+        : []),
+    ]),
+  ];
+  (meta?.query_planning ?? []).forEach((component, i, all) => {
+    sections.push(
+      keyValueSection(all.length > 1 ? `Planning, component ${i + 1}` : 'Planning', [
+        ['Algorithm', text(component.algorithm)],
+        ['Nodes', text(component.num_nodes.toLocaleString('en-US'))],
+        [
+          'Subgraphs',
+          text(
+            component.num_connected_subgraphs > component.budget
+              ? `> ${component.budget.toLocaleString('en-US')} (budget)`
+              : `${component.num_connected_subgraphs.toLocaleString('en-US')} of budget ${component.budget.toLocaleString('en-US')}`
+          ),
+        ],
+        ['Candidate plans', text(component.num_candidate_plans.toLocaleString('en-US'))],
+      ])
+    );
+  });
+  contentEl.replaceChildren(...sections);
+  panelEl.classList.remove('hidden');
+  panelEl.classList.add('flex');
+  contentEl.scrollTop = 0;
+}
+
 export function hideNodeDetails() {
   if (!panelEl) return;
   selectedId = null;

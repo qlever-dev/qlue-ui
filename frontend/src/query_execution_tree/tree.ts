@@ -1,6 +1,12 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
-import { getSelectedId, hideNodeDetails, refreshSelectedNode, showNodeDetails } from './details';
+import {
+  getSelectedId,
+  hideNodeDetails,
+  refreshSelectedNode,
+  showNodeDetails,
+  showQueryDetails,
+} from './details';
 import { activeSubTree, findActiveNode, fitText, line, replaceIRIs } from './utils';
 
 const colorScaleDark = d3
@@ -478,12 +484,68 @@ export function rerenderQueryExecutionTree(
   root = null;
   d3.select('#treeContainer').remove();
   renderQueryExecutionTree(queryExecutionTree, zoomTo);
+  drawTotalBox(queryExecutionTree);
   // The ids of the nodes are their positions in the tree, so the selection
   // refers to the same node as before as long as the shape did not change.
   if (selectedId != null) {
     selectNode(selectedId);
     refreshSelectedNode(queryExecutionTree);
   }
+}
+
+const totalBoxHeight = 75;
+
+/**
+ * Draw the box `TOTAL` above the root of the tree, with the time of the query
+ * and the time of its planning. It is drawn only for the final state of the
+ * tree, when the query is done. Clicking it shows the details of the query
+ * planning in the details panel.
+ */
+function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
+  if (!root) return;
+  const [x, y] = [root.x!, root.y! - boxHeight / 2 - boxMargin - totalBoxHeight / 2];
+  const container = d3.select('#treeContainer');
+  container
+    .append('path')
+    .attr('class', 'link stroke-black dark:stroke-white stroke fill-none')
+    .attr('d', line([[x, y + totalBoxHeight / 2], [x, root.y! - boxHeight / 2]])!);
+  const box = container
+    .append('g')
+    .attr('class', 'total cursor-pointer')
+    .attr('transform', `translate(${x},${y})`)
+    .on('click', (event) => {
+      if (event.target instanceof SVGTextElement) return;
+      event.stopPropagation();
+      selectNode(null);
+      showQueryDetails(queryExecutionTree);
+    });
+  box
+    .append('rect')
+    .attr('x', -boxWidth / 2)
+    .attr('y', -totalBoxHeight / 2)
+    .attr('rx', 3)
+    .attr('ry', 3)
+    .attr('width', boxWidth)
+    .attr('height', totalBoxHeight)
+    .attr('class', 'stroke stroke-black dark:stroke-white fill-white dark:fill-neutral-800');
+  const detail = 'fill-neutral-900 dark:fill-neutral-300 text-xs';
+  const lines: [string, string][] = [
+    ['TOTAL', 'fill-black dark:fill-neutral-300 font-bold'],
+    [`Query: ${queryExecutionTree.total_time.toLocaleString('en-US')}ms`, detail],
+  ];
+  if (queryExecutionTree.meta) {
+    const planningTime = queryExecutionTree.meta.time_query_planning;
+    lines.push([`Planning: ${planningTime.toLocaleString('en-US')}ms`, detail]);
+  }
+  lines.forEach(([content, classes], i) => {
+    box
+      .append('text')
+      .attr('class', `${classes} cursor-text select-text`)
+      .attr('x', -boxWidth / 2 + 10)
+      .attr('y', -totalBoxHeight / 2 + boxPadding + i * 18)
+      .attr('dominant-baseline', 'middle')
+      .text(content);
+  });
 }
 
 export function selectNode(id: number | null) {
