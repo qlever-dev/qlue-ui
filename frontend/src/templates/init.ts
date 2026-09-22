@@ -7,6 +7,7 @@ import { applyPanelWidth, toggleWideMode } from '../buttons/wide_mode';
 import type { Editor } from '../editor/init';
 import { openOrCreateTab } from '../tabs/operations';
 import type { QlueLsServiceConfig } from '../types/backend';
+import { escapeHtml } from '../utils';
 import { type CompletionRun, clearRuns, getRuns } from './runs';
 
 const DEBOUNCE_MS = 300;
@@ -582,7 +583,7 @@ function applyTemplate(editor: Editor) {
   currentConfig.queries[activeKey] = templateEditor.getValue();
 
   editor.languageClient
-    .sendNotification('qlueLs/addBackend', currentConfig)
+    .sendRequest('qlueLs/addBackend', currentConfig)
     .then(() => {
       appliedAt = Date.now();
       refreshAges();
@@ -590,7 +591,11 @@ function applyTemplate(editor: Editor) {
     .catch((err) => {
       document.dispatchEvent(
         new CustomEvent('toast', {
-          detail: { type: 'error', message: `Failed to apply template: ${err}`, duration: 3000 },
+          detail: {
+            type: 'error',
+            message: `Failed to apply template:<pre class="mt-1 text-xs whitespace-pre-wrap">${escapeHtml(err.message)}</pre>`,
+            duration: 3000,
+          },
         })
       );
     });

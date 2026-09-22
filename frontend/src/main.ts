@@ -52,6 +52,7 @@ setupEditor('editor').then(async (editor) => {
   setupUrlSync(editor);
   handleRequestParameter(editor);
   initStep('handle request parameters');
+
   await removeLoadingScreen();
   initDone();
 });
