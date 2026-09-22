@@ -458,6 +458,34 @@ export function clearQueryExecutionTree() {
   d3.select('#treeContainer').remove();
 }
 
+/**
+ * Render the tree from scratch for the given (final) runtime information and
+ * keep the details panel of the selected node, if any, in sync with it.
+ *
+ * NOTE: `updateTree` refreshes only the nodes of the active subtree and the
+ * nodes whose status changed since the previous render, and it rebuilds the
+ * whole tree whenever the number of nodes changes (QLever's tree grows and
+ * shrinks while a query is planned and executed). Both can leave nodes behind
+ * with the values of an intermediate message; a node then shows `0ms` and
+ * `in progress` although the query is long done, and no details. A rebuild
+ * from the final message is therefore made when the query ends.
+ */
+export function rerenderQueryExecutionTree(
+  queryExecutionTree: QueryExecutionTree,
+  zoomTo: (x: number, y: number, duration: number) => void
+) {
+  const selectedId = getSelectedId();
+  root = null;
+  d3.select('#treeContainer').remove();
+  renderQueryExecutionTree(queryExecutionTree, zoomTo);
+  // The ids of the nodes are their positions in the tree, so the selection
+  // refers to the same node as before as long as the shape did not change.
+  if (selectedId != null) {
+    selectNode(selectedId);
+    refreshSelectedNode(queryExecutionTree);
+  }
+}
+
 export function selectNode(id: number | null) {
   d3.selectAll<SVGRectElement, d3.HierarchyNode<QueryExecutionNode>>('rect.selection-outline').attr(
     'opacity',

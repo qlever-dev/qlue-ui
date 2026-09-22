@@ -16,6 +16,7 @@ import {
   clearQueryExecutionTree,
   deselectNode,
   renderQueryExecutionTree,
+  rerenderQueryExecutionTree,
   setupAutozoom,
 } from './tree';
 import { setupWebSocket } from './utils';
@@ -33,6 +34,11 @@ const socketConnectTimeoutMs = 2000;
 
 // Set by `setupQueryExecutionTree`, see `watchQueryExecution`.
 let watchQuery: ((queryId: string) => Promise<void>) | null = null;
+
+// Renders the tree of the current query from its latest runtime information
+// from scratch, see `rerenderQueryExecutionTree`. Set for each query by the
+// implementation of `watchQueryExecution`, called when the query has ended.
+let renderFinalState: (() => void) | null = null;
 
 /**
  * Connect the websocket over which QLever sends the runtime information of the
@@ -253,6 +259,15 @@ export function setupQueryExecutionTree(editor: Editor) {
       }
     });
 
+    // The final state of the tree is rendered from scratch, both when the
+    // query has ended and when QLever closes the websocket (which it does
+    // once the query is finished, possibly after the result has arrived).
+    renderFinalState = () => {
+      if (socket !== activeSocket || latestMessage == null) return;
+      rerenderQueryExecutionTree(JSON.parse(latestMessage) as QueryExecutionTree, zoom_to);
+    };
+    socket.addEventListener('close', () => renderFinalState?.());
+
     await connected;
   };
 
@@ -266,6 +281,7 @@ export function setupQueryExecutionTree(editor: Editor) {
 
   window.addEventListener('execute-ended', () => {
     queryRunning = false;
+    renderFinalState?.();
   });
 }
 
