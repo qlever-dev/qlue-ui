@@ -12,7 +12,7 @@ import type {
   QlueLsServiceConfig,
   SparqlEndpointConfiguration,
 } from '../types/backend';
-import { BASE_PATH, getPathParameters } from '../utils';
+import { BASE_PATH, escapeHtml, getPathParameters } from '../utils';
 
 const BACKEND_STORAGE_KEY = 'QLeverUI backend';
 
@@ -185,7 +185,14 @@ async function addService(
     },
   };
 
-  await languageClient.sendNotification('qlueLs/addBackend', serviceConfig).catch((err) => {
-    console.error(err);
+  await languageClient.sendRequest('qlueLs/addBackend', serviceConfig).catch((err) => {
+    document.dispatchEvent(
+      new CustomEvent('toast', {
+        detail: {
+          type: 'error',
+          message: `Configuring Service "${serviceConfig.name}" failed:<pre class="mt-1 text-xs whitespace-pre-wrap">${escapeHtml(err.message)}</pre>`,
+        },
+      })
+    );
   });
 }

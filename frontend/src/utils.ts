@@ -77,3 +77,13 @@ export function displayVersion() {
     })
   );
 }
+
+/**
+ * Escapes `text` for interpolation into a toast message, which is assigned as
+ * raw HTML.
+ */
+export function escapeHtml(text: string): string {
+  const element = document.createElement('span');
+  element.textContent = text;
+  return element.innerHTML;
+}
