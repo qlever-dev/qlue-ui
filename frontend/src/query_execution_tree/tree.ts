@@ -510,7 +510,7 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
     .attr('class', 'link stroke-black dark:stroke-white stroke fill-none')
     .attr('d', line([[x, y + boxHeight / 2], [x, root.y! - boxHeight / 2]])!);
   // NOTE: unlike for the other boxes, a click on the text also opens the
-  // details, because the box says so.
+  // details, because the box has no selectable text of interest.
   const box = container
     .append('g')
     .attr('class', 'total cursor-pointer')
@@ -557,7 +557,8 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
   const numberColumn = left + 130;
   const rowClasses = 'fill-neutral-900 dark:fill-neutral-300 text-xs';
   rows.forEach(([label, value, isSum], i) => {
-    const rowY = top + boxPadding + 25 + i * 15;
+    // NOTE: the total is set off from the two summands by some extra space.
+    const rowY = top + boxPadding + 27 + i * 15 + (isSum ? 5 : 0);
     const classes = `${rowClasses}${isSum ? ' font-bold' : ''}`;
     box
       .append('text')
@@ -584,13 +585,6 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
         .text('ms');
     }
   });
-  box
-    .append('text')
-    .attr('class', `${rowClasses} italic opacity-70`)
-    .attr('x', left)
-    .attr('y', top + boxPadding + 25 + rows.length * 15)
-    .attr('dominant-baseline', 'middle')
-    .text('Click for details of the query planning');
 }
 
 export function selectNode(id: number | null) {
