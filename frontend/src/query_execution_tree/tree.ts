@@ -493,28 +493,29 @@ export function rerenderQueryExecutionTree(
   }
 }
 
-const totalBoxHeight = 95;
-
 /**
- * Draw the box `Summary` above the root of the tree, with the time of the query
- * planning, of the execution of the query execution tree, and their sum. It is
- * drawn only for the final state of the tree, when the query is done. Clicking
- * it shows the details of the query planning in the details panel.
+ * Draw the box `Summary` above the root of the tree, with the time of the
+ * query planning, of the execution of the query execution tree, and their sum.
+ * It has the size of the other boxes and the same distance to the root as a
+ * child has to its parent. It is drawn only for the final state of the tree,
+ * when the query is done. Clicking it shows the details of the query planning
+ * in the details panel.
  */
 function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
   if (!root) return;
-  const [x, y] = [root.x!, root.y! - boxHeight / 2 - boxMargin - totalBoxHeight / 2];
+  const [x, y] = [root.x!, root.y! - boxHeight - boxMargin * 2];
   const container = d3.select('#treeContainer');
   container
     .append('path')
     .attr('class', 'link stroke-black dark:stroke-white stroke fill-none')
-    .attr('d', line([[x, y + totalBoxHeight / 2], [x, root.y! - boxHeight / 2]])!);
+    .attr('d', line([[x, y + boxHeight / 2], [x, root.y! - boxHeight / 2]])!);
+  // NOTE: unlike for the other boxes, a click on the text also opens the
+  // details, because the box says so.
   const box = container
     .append('g')
     .attr('class', 'total cursor-pointer')
     .attr('transform', `translate(${x},${y})`)
     .on('click', (event) => {
-      if (event.target instanceof SVGTextElement) return;
       event.stopPropagation();
       selectNode(null);
       showQueryDetails(queryExecutionTree);
@@ -522,22 +523,26 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
   box
     .append('rect')
     .attr('x', -boxWidth / 2)
-    .attr('y', -totalBoxHeight / 2)
+    .attr('y', -boxHeight / 2)
     .attr('rx', 3)
     .attr('ry', 3)
     .attr('width', boxWidth)
-    .attr('height', totalBoxHeight)
+    .attr('height', boxHeight)
     .attr('class', 'stroke stroke-black dark:stroke-white fill-white dark:fill-neutral-800');
 
-  const top = -totalBoxHeight / 2;
+  // NOTE: the title and the rows are placed exactly like in the other boxes.
+  const top = -boxHeight / 2;
   const left = -boxWidth / 2 + 10;
   box
     .append('text')
-    .attr('class', 'fill-black dark:fill-neutral-300 font-bold cursor-text select-text')
+    .attr('class', 'title fill-black dark:fill-neutral-300 font-bold')
     .attr('x', left)
     .attr('y', top + boxPadding)
+    .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
-    .text('Summary');
+    .each(function () {
+      fitText(this, 'Summary', boxWidth - 20);
+    });
 
   // NOTE: one row per time: the label left-aligned, the number right-aligned
   // at a fixed column (with tabular digits, so that the digits line up), and
@@ -550,18 +555,18 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
     ['Total', planning === undefined ? undefined : planning + execution, true],
   ];
   const numberColumn = left + 130;
+  const rowClasses = 'fill-neutral-900 dark:fill-neutral-300 text-xs';
   rows.forEach(([label, value, isSum], i) => {
-    const rowY = top + boxPadding + 22 + i * 16 + (isSum ? 4 : 0);
-    const classes = `fill-neutral-900 dark:fill-neutral-300 text-xs cursor-text select-text${isSum ? ' font-bold' : ''}`;
-    const row = box.append('g');
-    row
+    const rowY = top + boxPadding + 25 + i * 15;
+    const classes = `${rowClasses}${isSum ? ' font-bold' : ''}`;
+    box
       .append('text')
       .attr('class', classes)
       .attr('x', left)
       .attr('y', rowY)
       .attr('dominant-baseline', 'middle')
       .text(`${label}:`);
-    row
+    box
       .append('text')
       .attr('class', `${classes} tabular-nums`)
       .attr('x', numberColumn)
@@ -570,7 +575,7 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
       .attr('dominant-baseline', 'middle')
       .text(value === undefined ? 'n/a' : value.toLocaleString('en-US'));
     if (value !== undefined) {
-      row
+      box
         .append('text')
         .attr('class', classes)
         .attr('x', numberColumn + 4)
@@ -578,18 +583,14 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
         .attr('dominant-baseline', 'middle')
         .text('ms');
     }
-    if (isSum) {
-      // A thin rule above the sum, as in a written addition.
-      box
-        .append('line')
-        .attr('class', 'stroke-neutral-500 dark:stroke-neutral-400')
-        .attr('x1', left)
-        .attr('x2', numberColumn + 22)
-        .attr('y1', rowY - 10)
-        .attr('y2', rowY - 10)
-        .attr('stroke-width', 0.75);
-    }
   });
+  box
+    .append('text')
+    .attr('class', `${rowClasses} italic opacity-70`)
+    .attr('x', left)
+    .attr('y', top + boxPadding + 25 + rows.length * 15)
+    .attr('dominant-baseline', 'middle')
+    .text('Click for details of the query planning');
 }
 
 export function selectNode(id: number | null) {
