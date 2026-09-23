@@ -51,6 +51,10 @@ export function showQueryDetails(tree: QueryExecutionTree) {
         ['Total', ms(meta.time_query_planning + tree.total_time)],
       ]
     : [['Execution', ms(tree.total_time)]];
+  times.push([
+    'Result size',
+    text(`${tree.result_rows.toLocaleString('en-US')} x ${tree.result_cols}`),
+  ]);
   const sections: HTMLElement[] = [keyValueSection('Summary', times)];
   (meta?.query_planning ?? []).forEach((component, i, all) => {
     sections.push(

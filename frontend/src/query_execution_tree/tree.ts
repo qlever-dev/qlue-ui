@@ -556,42 +556,52 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
   // the unit left-aligned right after that column.
   const planning = queryExecutionTree.meta?.time_query_planning;
   const execution = queryExecutionTree.total_time;
-  const rows: [string, number | undefined, boolean][] = [
-    ['Planning', planning, false],
-    ['Execution', execution, false],
-    ['Total', planning === undefined ? undefined : planning + execution, true],
+  const total = planning === undefined ? undefined : planning + execution;
+  const fmt = (value: number | undefined) =>
+    value === undefined ? 'n/a' : value.toLocaleString('en-US');
+  // NOTE: each row is a label, a number that is right-aligned at a fixed column
+  // (with tabular digits, so that the digits line up), and a unit that is
+  // left-aligned right after that column. For the result size, the number of
+  // rows takes the place of the number and "x <columns>" that of the unit. The
+  // offsets are the positions of the rows relative to the title; the total and
+  // the result size are set off by a little extra space, and are emphasized by
+  // a thin outline in the color of the text. That is about half as heavy as
+  // bold, and it works with every font, while `font-semibold` falls back to
+  // bold for fonts that have no weight between regular and bold.
+  const rows: [string, string, string, number, boolean][] = [
+    ['Planning', fmt(planning), planning === undefined ? '' : 'ms', 23.5, false],
+    ['Execution', fmt(execution), 'ms', 37.5, false],
+    ['Total', fmt(total), total === undefined ? '' : 'ms', 53.5, true],
+    [
+      'Result size',
+      fmt(queryExecutionTree.result_rows),
+      `x ${queryExecutionTree.result_cols}`,
+      69.5,
+      true,
+    ],
   ];
   const numberColumn = left + 130;
   const rowClasses = 'fill-neutral-900 dark:fill-neutral-300 text-xs';
-  rows.forEach(([label, value, isSum], i) => {
-    // NOTE: the total is set off from the two summands by some extra space.
-    const rowY = top + boxPadding + 27 + i * 15 + (isSum ? 5 : 0);
-    const classes = `${rowClasses}${isSum ? ' font-bold' : ''}`;
-    box
-      .append('text')
-      .attr('class', classes)
-      .attr('x', left)
-      .attr('y', rowY)
-      .attr('dominant-baseline', 'middle')
-      .text(`${label}:`);
-    box
-      .append('text')
-      .attr('class', `${classes} tabular-nums`)
-      .attr('x', numberColumn)
-      .attr('y', rowY)
-      .attr('text-anchor', 'end')
-      .attr('dominant-baseline', 'middle')
-      .text(value === undefined ? 'n/a' : value.toLocaleString('en-US'));
-    if (value !== undefined) {
+  for (const [label, number, unit, offset, isEmphasized] of rows) {
+    const rowY = top + boxPadding + offset;
+    const classes = `${rowClasses}${
+      isEmphasized ? ' stroke-neutral-900 dark:stroke-neutral-300 [stroke-width:0.4px]' : ''
+    }`;
+    const addText = (content: string, x: number, anchor: string, extraClasses = '') =>
       box
         .append('text')
-        .attr('class', classes)
-        .attr('x', numberColumn + 4)
+        .attr('class', `${classes}${extraClasses}`)
+        .attr('x', x)
         .attr('y', rowY)
+        .attr('text-anchor', anchor)
         .attr('dominant-baseline', 'middle')
-        .text('ms');
+        .text(content);
+    addText(`${label}:`, left, 'start');
+    addText(number, numberColumn, 'end', ' tabular-nums');
+    if (unit !== '') {
+      addText(unit, numberColumn + 4, 'start');
     }
-  });
+  }
 }
 
 export function selectNode(id: number | null) {
