@@ -494,7 +494,7 @@ export function rerenderQueryExecutionTree(
 }
 
 /**
- * Draw the box `Summary` above the root of the tree, with the time of the
+ * Draw the box `SUMMARY` above the root of the tree, with the time of the
  * query planning, of the execution of the query execution tree, and their sum.
  * It has the size of the other boxes and the same distance to the root as a
  * child has to its parent. It is drawn only for the final state of the tree,
@@ -548,7 +548,7 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
     .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
     .each(function () {
-      fitText(this, 'Summary', boxWidth - 20);
+      fitText(this, 'SUMMARY', boxWidth - 20);
     });
 
   // NOTE: one row per time: the label left-aligned, the number right-aligned
