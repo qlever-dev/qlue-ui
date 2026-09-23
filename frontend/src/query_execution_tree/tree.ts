@@ -528,7 +528,14 @@ function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
     .attr('ry', 3)
     .attr('width', boxWidth)
     .attr('height', boxHeight)
-    .attr('class', 'stroke stroke-black dark:stroke-white fill-white dark:fill-neutral-800');
+    // NOTE: the fill of a box of an operation that took no time, so that the
+    // text looks the same as in the other boxes.
+    .attr(
+      'class',
+      'stroke stroke-black dark:stroke-white fill-[var(--body-fill-light)] dark:fill-[var(--body-fill-dark)]'
+    )
+    .style('--body-fill-light', colorScaleLight(0))
+    .style('--body-fill-dark', colorScaleDark(0));
 
   // NOTE: the title and the rows are placed exactly like in the other boxes.
   const top = -boxHeight / 2;
