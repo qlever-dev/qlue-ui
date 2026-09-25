@@ -12,6 +12,7 @@ import { LanguageClientWrapper } from 'monaco-languageclient/lcwrapper';
 import { MonacoVscodeApiWrapper } from 'monaco-languageclient/vscodeApiWrapper';
 import { initStep } from '../timing';
 import { setup_commands } from './commands';
+import { setupCompletion } from './completion';
 import { buildWrapperConfig } from './config/config';
 import { setup_key_bindings } from './keys';
 
@@ -78,6 +79,8 @@ export async function setupEditor(container_id: string): Promise<Editor> {
 
     setup_key_bindings(editor);
     setup_commands(editor);
+    // NOTE: after the keybindings, so the completion Tab rule wins over the jump rule.
+    const completion = setupCompletion(editor);
     setup_toggle_theme();
 
     // NOTE: Initially focus the editor.
@@ -102,7 +105,7 @@ export async function setupEditor(container_id: string): Promise<Editor> {
       'scroll',
       (e) => {
         if (editorContainer.contains(e.target as Node)) return;
-        monacoEditor.trigger('scroll', 'hideSuggestWidget', {});
+        completion.hide();
         monacoEditor.trigger('scroll', 'editor.action.hideHover', {});
       },
       { passive: true, capture: true }
