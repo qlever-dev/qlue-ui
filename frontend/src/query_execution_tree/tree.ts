@@ -1,6 +1,12 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
-import { getSelectedId, hideNodeDetails, refreshSelectedNode, showNodeDetails } from './details';
+import {
+  getSelectedId,
+  hideNodeDetails,
+  refreshSelectedNode,
+  showNodeDetails,
+  showQueryDetails,
+} from './details';
 import { activeSubTree, findActiveNode, fitText, line, replaceIRIs } from './utils';
 
 const colorScaleDark = d3
@@ -456,6 +462,146 @@ export function clearQueryExecutionTree() {
   root = null;
   hideNodeDetails();
   d3.select('#treeContainer').remove();
+}
+
+/**
+ * Render the tree from scratch for the given (final) runtime information and
+ * keep the details panel of the selected node, if any, in sync with it.
+ *
+ * NOTE: `updateTree` refreshes only the nodes of the active subtree and the
+ * nodes whose status changed since the previous render, and it rebuilds the
+ * whole tree whenever the number of nodes changes (QLever's tree grows and
+ * shrinks while a query is planned and executed). Both can leave nodes behind
+ * with the values of an intermediate message; a node then shows `0ms` and
+ * `in progress` although the query is long done, and no details. A rebuild
+ * from the final message is therefore made when the query ends.
+ */
+export function rerenderQueryExecutionTree(
+  queryExecutionTree: QueryExecutionTree,
+  zoomTo: (x: number, y: number, duration: number) => void
+) {
+  const selectedId = getSelectedId();
+  root = null;
+  d3.select('#treeContainer').remove();
+  renderQueryExecutionTree(queryExecutionTree, zoomTo);
+  drawTotalBox(queryExecutionTree);
+  // The ids of the nodes are their positions in the tree, so the selection
+  // refers to the same node as before as long as the shape did not change.
+  if (selectedId != null) {
+    selectNode(selectedId);
+    refreshSelectedNode(queryExecutionTree);
+  }
+}
+
+/**
+ * Draw the box `SUMMARY` above the root of the tree, with the time of the
+ * query planning, of the execution of the query execution tree, and their sum.
+ * It has the size of the other boxes and the same distance to the root as a
+ * child has to its parent. It is drawn only for the final state of the tree,
+ * when the query is done. Clicking it shows the details of the query planning
+ * in the details panel.
+ */
+function drawTotalBox(queryExecutionTree: QueryExecutionTree) {
+  if (!root) return;
+  const [x, y] = [root.x!, root.y! - boxHeight - boxMargin * 2];
+  const container = d3.select('#treeContainer');
+  container
+    .append('path')
+    .attr('class', 'link stroke-black dark:stroke-white stroke fill-none')
+    .attr('d', line([[x, y + boxHeight / 2], [x, root.y! - boxHeight / 2]])!);
+  // NOTE: unlike for the other boxes, a click on the text also opens the
+  // details, because the box has no selectable text of interest.
+  const box = container
+    .append('g')
+    .attr('class', 'total cursor-pointer')
+    .attr('transform', `translate(${x},${y})`)
+    .on('click', (event) => {
+      event.stopPropagation();
+      selectNode(null);
+      showQueryDetails(queryExecutionTree);
+    });
+  box
+    .append('rect')
+    .attr('x', -boxWidth / 2)
+    .attr('y', -boxHeight / 2)
+    .attr('rx', 3)
+    .attr('ry', 3)
+    .attr('width', boxWidth)
+    .attr('height', boxHeight)
+    // NOTE: the fill of a box of an operation that took no time, so that the
+    // text looks the same as in the other boxes.
+    .attr(
+      'class',
+      'stroke stroke-black dark:stroke-white fill-[var(--body-fill-light)] dark:fill-[var(--body-fill-dark)]'
+    )
+    .style('--body-fill-light', colorScaleLight(0))
+    .style('--body-fill-dark', colorScaleDark(0));
+
+  // NOTE: the title and the rows are placed exactly like in the other boxes.
+  const top = -boxHeight / 2;
+  const left = -boxWidth / 2 + 10;
+  box
+    .append('text')
+    .attr('class', 'title fill-black dark:fill-neutral-300 font-bold')
+    .attr('x', left)
+    .attr('y', top + boxPadding)
+    .attr('text-anchor', 'left')
+    .attr('dominant-baseline', 'middle')
+    .each(function () {
+      fitText(this, 'SUMMARY', boxWidth - 20);
+    });
+
+  // NOTE: one row per time: the label left-aligned, the number right-aligned
+  // at a fixed column (with tabular digits, so that the digits line up), and
+  // the unit left-aligned right after that column.
+  const planning = queryExecutionTree.meta?.time_query_planning;
+  const execution = queryExecutionTree.total_time;
+  const total = planning === undefined ? undefined : planning + execution;
+  const fmt = (value: number | undefined) =>
+    value === undefined ? 'n/a' : value.toLocaleString('en-US');
+  // NOTE: each row is a label, a number that is right-aligned at a fixed column
+  // (with tabular digits, so that the digits line up), and a unit that is
+  // left-aligned right after that column. For the result size, the number of
+  // rows takes the place of the number and "x <columns>" that of the unit. The
+  // offsets are the positions of the rows relative to the title; the total and
+  // the result size are set off by a little extra space, and are emphasized by
+  // a thin outline in the color of the text. That is about half as heavy as
+  // bold, and it works with every font, while `font-semibold` falls back to
+  // bold for fonts that have no weight between regular and bold.
+  const rows: [string, string, string, number, boolean][] = [
+    ['Planning', fmt(planning), planning === undefined ? '' : 'ms', 23.5, false],
+    ['Execution', fmt(execution), 'ms', 37.5, false],
+    ['Total', fmt(total), total === undefined ? '' : 'ms', 53.5, true],
+    [
+      'Result size',
+      fmt(queryExecutionTree.result_rows),
+      `x ${queryExecutionTree.result_cols}`,
+      69.5,
+      true,
+    ],
+  ];
+  const numberColumn = left + 130;
+  const rowClasses = 'fill-neutral-900 dark:fill-neutral-300 text-xs';
+  for (const [label, number, unit, offset, isEmphasized] of rows) {
+    const rowY = top + boxPadding + offset;
+    const classes = `${rowClasses}${
+      isEmphasized ? ' stroke-neutral-900 dark:stroke-neutral-300 [stroke-width:0.4px]' : ''
+    }`;
+    const addText = (content: string, x: number, anchor: string, extraClasses = '') =>
+      box
+        .append('text')
+        .attr('class', `${classes}${extraClasses}`)
+        .attr('x', x)
+        .attr('y', rowY)
+        .attr('text-anchor', anchor)
+        .attr('dominant-baseline', 'middle')
+        .text(content);
+    addText(`${label}:`, left, 'start');
+    addText(number, numberColumn, 'end', ' tabular-nums');
+    if (unit !== '') {
+      addText(unit, numberColumn + 4, 'start');
+    }
+  }
 }
 
 export function selectNode(id: number | null) {

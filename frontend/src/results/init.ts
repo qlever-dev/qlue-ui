@@ -17,6 +17,7 @@
 
 import { extractConfig, type RenderConfig } from 'sparql-results';
 import type { Editor } from '../editor/init';
+import { watchQueryExecution } from '../query_execution_tree/init';
 import { settings } from '../settings/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import {
@@ -195,6 +196,12 @@ async function executeQuery(
       },
     })
   );
+
+  // NOTE: The websocket that receives the runtime information has to be
+  // connected before the query is sent, otherwise a query that finishes
+  // quickly is already forgotten by QLever when the websocket arrives, and the
+  // analysis tree stays empty (see `watchQueryExecution`).
+  await watchQueryExecution(queryId);
 
   window.addEventListener('execute-cancle-request', () => {
     editor.languageClient
