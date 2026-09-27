@@ -113,6 +113,8 @@ export function setupTreeView() {
     closeModal();
   });
 
+  setupViewSwitch();
+
   function openModal() {
     queryAnalysisModal.classList.remove('hidden');
     visible = true;
@@ -272,6 +274,28 @@ export function setupQueryAnalysis(editor: Editor) {
   window.addEventListener('execute-ended', () => {
     queryRunning = false;
     stopClock();
+  });
+}
+
+/**
+ * Switches between the "tree" and the "profile" view of the analysis modal.
+ * The node details panel is shared and stays visible across both views.
+ */
+function setupViewSwitch() {
+  const viewSwitch = document.getElementById('queryAnalysisViewSwitch')!;
+  const treeView = document.getElementById('queryExecutionTreeSvg')!;
+  const profileView = document.getElementById('queryAnalysisProfileView')!;
+
+  viewSwitch.querySelectorAll<HTMLElement>('[data-view]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const view = button.dataset.view!;
+      viewSwitch.dataset.state = view;
+      // NOTE: the tree is made invisible rather than `hidden`, so it keeps its
+      // size and the zoom/autozoom keep working while it is not shown.
+      treeView.classList.toggle('invisible', view !== 'tree');
+      profileView.classList.toggle('hidden', view !== 'profile');
+      profileView.classList.toggle('flex', view === 'profile');
+    });
   });
 }
 
