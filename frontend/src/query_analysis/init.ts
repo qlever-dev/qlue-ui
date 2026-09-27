@@ -108,7 +108,7 @@ function setupTreeView() {
 
   const zoom = d3
     .zoom()
-    .scaleExtent([0.5, 5])
+    .scaleExtent([0.1, 5])
     .filter((event) => {
       if (event.type === 'wheel') return true;
       if (event.target instanceof SVGTextElement) return false;
