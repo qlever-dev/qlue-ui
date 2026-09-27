@@ -24,8 +24,8 @@ async function mountModalMarkup() {
   const html = await fetch('index.html').then((response) => response.text());
   const modal = new DOMParser()
     .parseFromString(html, 'text/html')
-    .getElementById('queryExecutionTreeModal');
-  if (!modal) throw new Error('index.html has no #queryExecutionTreeModal');
+    .getElementById('queryAnalysisModal');
+  if (!modal) throw new Error('index.html has no #queryAnalysisModal');
   document.body.appendChild(modal);
 }
 

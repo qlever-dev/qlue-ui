@@ -35,8 +35,8 @@ let activeSocket: WebSocket | null = null;
  * (`qet.html`) can drive the same view with simulated data.
  */
 export function setupQetView() {
-  const queryTreeModal = document.getElementById('queryExecutionTreeModal')!;
-  const closeButton = document.getElementById('queryExecutionTreeModalCloseButton')!;
+  const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
+  const closeButton = document.getElementById('queryAnalysisModalCloseButton')!;
 
   setupAutozoom();
   setupNodeDetailsPanel(() => deselectNode());
@@ -51,14 +51,14 @@ export function setupQetView() {
     }
   });
 
-  queryTreeModal.addEventListener('pointerdown', (e) => {
+  queryAnalysisModal.addEventListener('pointerdown', (e) => {
     if (e.target instanceof SVGTextElement) return;
-    queryTreeModal.classList.remove('cursor-grab');
-    queryTreeModal.classList.add('cursor-grabbing');
+    queryAnalysisModal.classList.remove('cursor-grab');
+    queryAnalysisModal.classList.add('cursor-grabbing');
   });
-  queryTreeModal.addEventListener('pointerup', () => {
-    queryTreeModal.classList.remove('cursor-grabbing');
-    queryTreeModal.classList.add('cursor-grab');
+  queryAnalysisModal.addEventListener('pointerup', () => {
+    queryAnalysisModal.classList.remove('cursor-grabbing');
+    queryAnalysisModal.classList.add('cursor-grab');
   });
 
   const width = window.innerWidth;
@@ -114,7 +114,7 @@ export function setupQetView() {
   });
 
   function openModal() {
-    queryTreeModal.classList.remove('hidden');
+    queryAnalysisModal.classList.remove('hidden');
     visible = true;
     // @ts-expect-error
     svg.call(zoom.translateTo, 0, 0);
@@ -257,8 +257,8 @@ function closeActiveSocket() {
 }
 
 function closeModal() {
-  const queryTreeModal = document.getElementById('queryExecutionTreeModal')!;
-  queryTreeModal.classList.add('hidden');
+  const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
+  queryAnalysisModal.classList.add('hidden');
   visible = false;
   deselectNode();
   document.body.classList.remove('overflow-y-hidden');
