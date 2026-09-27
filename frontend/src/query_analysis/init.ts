@@ -27,19 +27,19 @@ let queryRunning = false;
 let activeSocket: WebSocket | null = null;
 
 /**
- * Sets up the query execution tree (QET) view: the D3 SVG canvas with
- * zoom/pan, the animated gradients, the node details panel and the modal
- * open/close handling.
+ * Sets up the query analysis modal: the open/close handling, the node details
+ * panel (shared by all views) and the switch between the views.
  *
  * This part is independent of the editor and the backend, so the dev rig
- * (`qet.html`) can drive the same view with simulated data.
+ * (`qet.html`) can drive the same modal with simulated data.
  */
-export function setupTreeView() {
+export function setupQueryAnalysisModal() {
   const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
   const closeButton = document.getElementById('queryAnalysisModalCloseButton')!;
 
-  setupAutozoom();
+  const { renderTree, resetZoom } = setupTreeView();
   setupNodeDetailsPanel(() => deselectNode());
+  setupViewSwitch();
 
   window.addEventListener('keydown', (e) => {
     if (visible && e.key === 'Escape') {
@@ -50,6 +50,29 @@ export function setupTreeView() {
       }
     }
   });
+
+  closeButton.addEventListener('click', () => {
+    closeModal();
+  });
+
+  function openModal() {
+    queryAnalysisModal.classList.remove('hidden');
+    visible = true;
+    resetZoom();
+    document.body.classList.add('overflow-y-hidden');
+  }
+
+  return { openModal, renderTree, renderStats };
+}
+
+/**
+ * Sets up the query execution tree (QET) view: the D3 SVG canvas with
+ * zoom/pan, the animated gradients and the autozoom.
+ */
+function setupTreeView() {
+  const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
+
+  setupAutozoom();
 
   queryAnalysisModal.addEventListener('pointerdown', (e) => {
     if (e.target instanceof SVGTextElement) return;
@@ -109,25 +132,16 @@ export function setupTreeView() {
       .call(zoom.transform, targetTransform);
   }
 
-  closeButton.addEventListener('click', () => {
-    closeModal();
-  });
-
-  setupViewSwitch();
-
-  function openModal() {
-    queryAnalysisModal.classList.remove('hidden');
-    visible = true;
+  function resetZoom() {
     // @ts-expect-error
     svg.call(zoom.translateTo, 0, 0);
-    document.body.classList.add('overflow-y-hidden');
   }
 
   function renderTree(tree: QueryExecutionTree) {
     renderQueryExecutionTree(tree, zoom_to);
   }
 
-  return { openModal, renderTree, renderStats };
+  return { renderTree, resetZoom };
 }
 
 /**
@@ -141,7 +155,7 @@ export function setupQueryAnalysis(editor: Editor) {
   const rerunButton = document.getElementById('rerunQueryButton')!;
   const analysisButton = document.getElementById('analysisButton')!;
 
-  const { openModal, renderTree, renderStats } = setupTreeView();
+  const { openModal, renderTree, renderStats } = setupQueryAnalysisModal();
 
   // NOTE: QLever reports the root's total time only once a fully
   // materialized root is computed, so the measured time is a client-side

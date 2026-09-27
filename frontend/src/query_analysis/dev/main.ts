@@ -11,7 +11,7 @@
 // without waiting for the Monaco editor and the language server to load.
 
 import '../../style.css';
-import { setupTreeView } from '../init';
+import { setupQueryAnalysisModal } from '../init';
 import { clearQueryExecutionTree } from '../tree';
 import { DEFAULT_PLAN } from './plan';
 import { Simulation } from './simulate';
@@ -30,7 +30,7 @@ async function mountModalMarkup() {
 }
 
 mountModalMarkup().then(() => {
-  const { openModal, renderTree, renderStats } = setupTreeView();
+  const { openModal, renderTree, renderStats } = setupQueryAnalysisModal();
   openModal();
 
   const simulation = new Simulation(DEFAULT_PLAN);
