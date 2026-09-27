@@ -5,7 +5,7 @@ import { toggleWideMode } from '../buttons/wide_mode';
 import type { Editor } from '../editor/init';
 import { openExamples } from '../examples/utils';
 import { openParseTree } from '../parse_tree/init';
-import { openQueryExecutionTree } from '../query_execution_tree/init';
+import { openQueryExecutionTree } from '../query_analysis/init';
 import { openTemplatesEditor } from '../templates/init';
 import { displayVersion } from '../utils';
 import {

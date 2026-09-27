@@ -15,7 +15,7 @@ import { setupEditor } from './editor/init';
 import { setupExamples } from './examples/init';
 import { setupKeybindings } from './keybindings';
 import { setupParseTree } from './parse_tree/init';
-import { setupQueryExecutionTree } from './query_execution_tree/init';
+import { setupQueryExecutionTree } from './query_analysis/init';
 import { handleRequestParameter, setupUrlSync } from './request_params';
 import { setupResults } from './results/init';
 import { setupSettings } from './settings/init';
