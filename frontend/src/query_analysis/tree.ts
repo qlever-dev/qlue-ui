@@ -74,15 +74,15 @@ function renderStatusBadge(group: SVGGElement, status: NodeStatus) {
   rect.setAttribute('class', `status-badge-bg ${colors.bg}`);
 }
 
-const colorScaleDark = d3
+export const colorScaleDark = d3
   .scaleSymlog<string, string>()
-  .domain([1, 60000])
-  .range(['#404040', 'red'])
+  .domain([1, 15000, 30000])
+  .range(['#404040', '#facc15', 'red'])
   .constant(1000)
   .interpolate(d3.interpolateHsl)
   .clamp(true);
 
-const colorScaleLight = d3
+export const colorScaleLight = d3
   .scaleSymlog([1, 60_000], ['white', 'red'])
   .constant(1000)
   .interpolate(d3.interpolateHsl)
@@ -670,6 +670,15 @@ function mergeLayout(layoutLeft: Layout, layoutRight: Layout): Layout {
   }
 
   return mergedLayout;
+}
+
+// NOTE: the position to zoom to for a node: folded away nodes resolve to their
+// visible stand-in.
+export function nodePosition(id: number): { x: number; y: number } | null {
+  const node = root?.descendants().find((d) => d.data.id === id);
+  if (!node) return null;
+  const target = visibleStandIn(node);
+  return { x: target.x!, y: target.y! };
 }
 
 export function clearQueryExecutionTree() {

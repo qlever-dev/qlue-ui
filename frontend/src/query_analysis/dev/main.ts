@@ -12,6 +12,7 @@
 
 import '../../style.css';
 import { setupQueryAnalysisModal } from '../init';
+import { clearProfile } from '../profile';
 import { clearQueryExecutionTree } from '../tree';
 import { DEFAULT_PLAN } from './plan';
 import { Simulation } from './simulate';
@@ -30,7 +31,7 @@ async function mountModalMarkup() {
 }
 
 mountModalMarkup().then(() => {
-  const { openModal, renderTree, renderStats } = setupQueryAnalysisModal();
+  const { openModal, render, renderStats } = setupQueryAnalysisModal();
   openModal();
 
   const simulation = new Simulation(DEFAULT_PLAN);
@@ -48,7 +49,7 @@ mountModalMarkup().then(() => {
 
   function draw() {
     const frame = simulation.frameAt(time);
-    renderTree(frame);
+    render(frame);
     renderStats(frame, time);
     slider.value = String(time);
     clock.textContent = `${(time / 1000).toFixed(2)}s / ${(simulation.duration / 1000).toFixed(2)}s`;
@@ -85,6 +86,7 @@ mountModalMarkup().then(() => {
     // NOTE: the view keeps the rendered tree as state; drop it so the restart
     // rebuilds the layout exactly like a fresh query does.
     clearQueryExecutionTree();
+    clearProfile();
     time = 0;
     draw();
     play();

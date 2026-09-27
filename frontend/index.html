@@ -1569,7 +1569,9 @@
             <span class="font-bold">Query execution tree</span>
             <div class="ms-2 ps-2">
               <span class="text-xs text-gray-500"> query </span>
-              <span id="queryAnalysisName">Buildings by height in Freiburg</span>
+              <span id="queryAnalysisName"
+                >Buildings by height in Freiburg</span
+              >
             </div>
             <div class="ms-auto flex flex-row items-center">
               <div
@@ -1690,7 +1692,9 @@
             <div
               class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700"
             >
-              <h3 class="text-base font-bold text-gray-900 dark:text-neutral-200">
+              <h3
+                class="text-base font-bold text-gray-900 dark:text-neutral-200"
+              >
                 Node Details
               </h3>
               <div
@@ -1720,9 +1724,28 @@
           </aside>
           <div
             id="queryAnalysisProfileView"
-            class="hidden pointer-events-auto flex-1 min-w-0 items-center justify-center cursor-default dark:text-neutral-500"
+            class="hidden pointer-events-auto flex-1 min-w-0 cursor-default dark:text-neutral-500 flex-col"
           >
-            Profile view coming soon
+            <div class="flex flex-row">
+              <span class="font-bold text-black dark:text-white text-xs">
+                Time per operation
+              </span>
+              <span class="text-xs ms-2">
+                ordered by measured operation time — the same numbers as the
+                tree, ranked
+              </span>
+            </div>
+            <div class="flex-1 min-h-0 overflow-y-auto">
+              <div
+                class="grid grid-cols-[300px_1fr_120px_74px] gap-x-[18px] pt-2.5 pb-2 border-b border-gray-200 dark:border-white/8 text-[10px] tracking-[0.7px] uppercase text-gray-500 dark:text-gray-200/38"
+              >
+                <div>operation</div>
+                <div>share of measured time</div>
+                <div class="text-right">time</div>
+                <div class="text-right">share</div>
+              </div>
+              <div id="queryAnalysisProfileRows" class="relative"></div>
+            </div>
           </div>
         </div>
       </div>

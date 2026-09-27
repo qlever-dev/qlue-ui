@@ -13,9 +13,11 @@ import { SparqlEngine } from '../types/lsp_messages';
 import type { QueryExecutionTree } from '../types/query_execution_tree';
 import { isDetailsVisible, setupNodeDetailsPanel } from './details';
 import { animateGradients } from './gradients';
+import { clearProfile, renderProfile, setupProfileView } from './profile';
 import {
   clearQueryExecutionTree,
   deselectNode,
+  nodePosition,
   renderQueryExecutionTree,
   setupAutozoom,
 } from './tree';
@@ -38,9 +40,13 @@ export function setupQueryAnalysisModal() {
   const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
   const closeButton = document.getElementById('queryAnalysisModalCloseButton')!;
 
-  const { renderTree, resetZoom } = setupTreeView();
+  const { renderTree, resetZoom, focusNode } = setupTreeView();
   setupNodeDetailsPanel(() => deselectNode());
-  setupViewSwitch();
+  const { setProfileVisible } = setupProfileView((node) => {
+    switchView('tree');
+    focusNode(node.id!);
+  });
+  const { switchView } = setupViewSwitch(setProfileVisible);
 
   window.addEventListener('keydown', (e) => {
     if (visible && e.key === 'Escape') {
@@ -63,7 +69,13 @@ export function setupQueryAnalysisModal() {
     document.body.classList.add('overflow-y-hidden');
   }
 
-  return { openModal, renderTree, renderStats };
+  // NOTE: the tree assigns the node ids the profile relies on, so it renders first.
+  function render(tree: QueryExecutionTree) {
+    renderTree(tree);
+    renderProfile(tree);
+  }
+
+  return { openModal, render, renderStats };
 }
 
 /**
@@ -138,11 +150,20 @@ function setupTreeView() {
     svg.call(zoom.translateTo, 0, 0);
   }
 
+  function focusNode(id: number) {
+    const position = nodePosition(id);
+    if (!position) return;
+    // NOTE: pauses the autozoom like a zoom by the user does, so it doesn't pull
+    // the view away from the node right away.
+    window.dispatchEvent(new Event('zoom'));
+    zoom_to(position.x, position.y);
+  }
+
   function renderTree(tree: QueryExecutionTree) {
     renderQueryExecutionTree(tree, zoom_to);
   }
 
-  return { renderTree, resetZoom };
+  return { renderTree, resetZoom, focusNode };
 }
 
 /**
@@ -156,7 +177,7 @@ export function setupQueryAnalysis(editor: Editor) {
   const rerunButton = document.getElementById('rerunQueryButton')!;
   const analysisButton = document.getElementById('analysisButton')!;
 
-  const { openModal, renderTree, renderStats } = setupQueryAnalysisModal();
+  const { openModal, render, renderStats } = setupQueryAnalysisModal();
 
   // NOTE: QLever reports the root's total time only once a fully
   // materialized root is computed, so the measured time is a client-side
@@ -207,6 +228,7 @@ export function setupQueryAnalysis(editor: Editor) {
     // essential: otherwise its late runtime messages keep rendering into the
     // shared tree state and corrupt the new query's tree.
     clearQueryExecutionTree();
+    clearProfile();
     closeActiveSocket();
     clearInterval(clockTimer);
     queryStart = performance.now();
@@ -247,8 +269,9 @@ export function setupQueryAnalysis(editor: Editor) {
       renderedCount = messageCount;
       const queryExecutionTree = JSON.parse(latestMessage!) as QueryExecutionTree;
       latestTree = queryExecutionTree;
-      renderTree(queryExecutionTree);
+      render(queryExecutionTree);
       renderStats(queryExecutionTree, elapsed());
+
       if (queryRunning) {
         window.dispatchEvent(
           new CustomEvent('query-result-size', {
@@ -297,29 +320,30 @@ export function setupQueryAnalysis(editor: Editor) {
  * The node details panel is shared and stays visible across both views.
  * The selected view persists across reloads.
  */
-function setupViewSwitch() {
+function setupViewSwitch(setProfileVisible: (visible: boolean) => void) {
   const viewSwitch = document.getElementById('queryAnalysisViewSwitch')!;
   const treeView = document.getElementById('queryExecutionTreeSvg')!;
-  const profileView = document.getElementById('queryAnalysisProfileView')!;
 
   function showView(view: string) {
     viewSwitch.dataset.state = view;
     // NOTE: the tree is made invisible rather than `hidden`, so it keeps its
     // size and the zoom/autozoom keep working while it is not shown.
     treeView.classList.toggle('invisible', view !== 'tree');
-    profileView.classList.toggle('hidden', view !== 'profile');
-    profileView.classList.toggle('flex', view === 'profile');
+    setProfileVisible(view === 'profile');
+  }
+
+  function switchView(view: string) {
+    localStorage.setItem(VIEW_STORAGE_KEY, view);
+    showView(view);
   }
 
   showView(localStorage.getItem(VIEW_STORAGE_KEY) === 'profile' ? 'profile' : 'tree');
 
   viewSwitch.querySelectorAll<HTMLElement>('[data-view]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const view = button.dataset.view!;
-      localStorage.setItem(VIEW_STORAGE_KEY, view);
-      showView(view);
-    });
+    button.addEventListener('click', () => switchView(button.dataset.view!));
   });
+
+  return { switchView };
 }
 
 function closeActiveSocket() {
