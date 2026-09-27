@@ -11,7 +11,7 @@
 // without waiting for the Monaco editor and the language server to load.
 
 import '../../style.css';
-import { setupQetView } from '../init';
+import { setupTreeView } from '../init';
 import { clearQueryExecutionTree } from '../tree';
 import { DEFAULT_PLAN } from './plan';
 import { Simulation } from './simulate';
@@ -30,7 +30,7 @@ async function mountModalMarkup() {
 }
 
 mountModalMarkup().then(() => {
-  const { openModal, renderTree } = setupQetView();
+  const { openModal, renderTree, renderStats } = setupTreeView();
   openModal();
 
   const simulation = new Simulation(DEFAULT_PLAN);
@@ -47,7 +47,9 @@ mountModalMarkup().then(() => {
   let lastTick = 0;
 
   function draw() {
-    renderTree(simulation.frameAt(time));
+    const frame = simulation.frameAt(time);
+    renderTree(frame);
+    renderStats(frame);
     slider.value = String(time);
     clock.textContent = `${(time / 1000).toFixed(2)}s / ${(simulation.duration / 1000).toFixed(2)}s`;
   }

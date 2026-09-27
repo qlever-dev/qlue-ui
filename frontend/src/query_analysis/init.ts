@@ -34,7 +34,7 @@ let activeSocket: WebSocket | null = null;
  * This part is independent of the editor and the backend, so the dev rig
  * (`qet.html`) can drive the same view with simulated data.
  */
-export function setupQetView() {
+export function setupTreeView() {
   const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
   const closeButton = document.getElementById('queryAnalysisModalCloseButton')!;
 
@@ -125,7 +125,7 @@ export function setupQetView() {
     renderQueryExecutionTree(tree, zoom_to);
   }
 
-  return { openModal, renderTree };
+  return { openModal, renderTree, renderStats };
 }
 
 /**
@@ -139,7 +139,7 @@ export function setupQueryExecutionTree(editor: Editor) {
   const rerunButton = document.getElementById('rerunQueryButton')!;
   const analysisButton = document.getElementById('analysisButton')!;
 
-  const { openModal, renderTree } = setupQetView();
+  const { openModal, renderTree, renderStats } = setupTreeView();
 
   rerunButton.addEventListener('click', () => {
     if (!queryRunning) {
@@ -208,6 +208,7 @@ export function setupQueryExecutionTree(editor: Editor) {
       renderedCount = messageCount;
       const queryExecutionTree = JSON.parse(latestMessage!) as QueryExecutionTree;
       renderTree(queryExecutionTree);
+      renderStats(queryExecutionTree);
       if (queryRunning) {
         window.dispatchEvent(
           new CustomEvent('query-result-size', {
@@ -262,6 +263,32 @@ function closeModal() {
   visible = false;
   deselectNode();
   document.body.classList.remove('overflow-y-hidden');
+}
+
+/**
+ * Fills the stats in the analysis header: number of operations, how many are
+ * in progress / completed, and the measured time (total time of the root).
+ */
+function renderStats(tree: QueryExecutionTree) {
+  let operations = 0;
+  let inProgress = 0;
+  let completed = 0;
+  const stack = [tree];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    operations++;
+    if (node.status.endsWith('in progress')) inProgress++;
+    if (node.status.endsWith('completed')) completed++;
+    stack.push(...node.children);
+  }
+  document.getElementById('queryAnalysisStatsOperations')!.textContent =
+    operations.toLocaleString('en-US');
+  document.getElementById('queryAnalysisStatsInProgress')!.textContent =
+    inProgress.toLocaleString('en-US');
+  document.getElementById('queryAnalysisStatsCompleted')!.textContent =
+    completed.toLocaleString('en-US');
+  document.getElementById('queryAnalysisStatsTime')!.textContent =
+    `${tree.total_time.toLocaleString('en-US')} ms`;
 }
 
 /**

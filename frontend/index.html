@@ -1631,13 +1631,33 @@
             </div>
           </div>
         </div>
-        <div class="flex flex-row p-3 dark:text-gray-500 gap-3">
-          <span>operations <span class="text-white">9</span></span>
-          <div class="flex flex-row gap-3">
-            <span>in progress <span class="text-yellow-500">5</span></span>
-            <span>completed <span class="text-green-500">4</span></span>
-          </div>
-          <span>measured time <span class="text-white">59,671 ms</span></span>
+        <div class="flex flex-row items-center px-3 dark:text-gray-500 gap-3">
+          <span
+            >operations
+            <span id="queryAnalysisStatsOperations" class="text-white"
+              >0</span
+            ></span
+          >
+          <div class="flex flex-row border-l border-neutral-700 h-4"></div>
+          <span
+            >in progress
+            <span id="queryAnalysisStatsInProgress" class="text-yellow-500"
+              >0</span
+            ></span
+          >
+          <span
+            >completed
+            <span id="queryAnalysisStatsCompleted" class="text-green-500"
+              >0</span
+            ></span
+          >
+          <div class="flex flex-row border-l border-neutral-700 h-4"></div>
+          <span
+            >measured time
+            <span id="queryAnalysisStatsTime" class="text-white"
+              >0 ms</span
+            ></span
+          >
           <div
             class="ms-auto bg-neutral-900 border border-neutral-800 rounded-md flex flex-row gap-3 p-1 group text-xs"
             data-state="profile"
