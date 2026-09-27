@@ -95,9 +95,16 @@ function apply(scheduled: Scheduled, node: QueryExecutionNode, t: number): void 
   // NOTE: a lazy operation already produces rows while its inputs still run,
   // an eager one only once its inputs are done.
   const progress = clamp(plan.lazy ? (t - start) / (end - start) : (t - ownStart) / plan.duration);
-  node.operation_time = Math.round(progress * plan.duration);
   node.result_rows = Math.round(progress * plan.rows);
-  node.total_time = node.operation_time + childrenTime;
+  // NOTE: like QLever, only a lazy operation reports its times while it runs,
+  // an eager one reports them once it is computed.
+  if (running && !plan.lazy) {
+    node.operation_time = 0;
+    node.total_time = 0;
+  } else {
+    node.operation_time = Math.round(progress * plan.duration);
+    node.total_time = node.operation_time + childrenTime;
+  }
   if (plan.lazy) {
     node.status = running ? 'lazily materialized in progress' : 'lazily materialized completed';
   } else {

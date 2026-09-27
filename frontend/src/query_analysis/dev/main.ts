@@ -49,7 +49,7 @@ mountModalMarkup().then(() => {
   function draw() {
     const frame = simulation.frameAt(time);
     renderTree(frame);
-    renderStats(frame);
+    renderStats(frame, time);
     slider.value = String(time);
     clock.textContent = `${(time / 1000).toFixed(2)}s / ${(simulation.duration / 1000).toFixed(2)}s`;
   }

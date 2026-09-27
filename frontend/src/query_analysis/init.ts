@@ -141,6 +141,20 @@ export function setupQueryExecutionTree(editor: Editor) {
 
   const { openModal, renderTree, renderStats } = setupTreeView();
 
+  // NOTE: QLever reports the root's total time only once a fully
+  // materialized root is computed, so the measured time is a client-side
+  // clock until then.
+  let queryStart = 0;
+  let queryEnd: number | null = null;
+  let clockTimer: ReturnType<typeof setInterval> | undefined;
+  let latestTree: QueryExecutionTree | null = null;
+  const elapsed = () => (queryEnd ?? performance.now()) - queryStart;
+
+  function stopClock() {
+    queryEnd = performance.now();
+    clearInterval(clockTimer);
+  }
+
   rerunButton.addEventListener('click', () => {
     if (!queryRunning) {
       clearCache(editor);
@@ -177,6 +191,10 @@ export function setupQueryExecutionTree(editor: Editor) {
     // shared tree state and corrupt the new query's tree.
     clearQueryExecutionTree();
     closeActiveSocket();
+    clearInterval(clockTimer);
+    queryStart = performance.now();
+    queryEnd = null;
+    latestTree = null;
 
     const service = (await editor.languageClient.sendRequest(
       'qlueLs/getBackend',
@@ -188,6 +206,10 @@ export function setupQueryExecutionTree(editor: Editor) {
     }
 
     const { queryId } = (event as CustomEvent<ExecuteQueryEventDetails>).detail;
+
+    clockTimer = setInterval(() => {
+      if (latestTree != null) renderStats(latestTree, elapsed());
+    }, 100);
 
     const socket = setupWebSocket(service.url, queryId);
     activeSocket = socket;
@@ -207,8 +229,9 @@ export function setupQueryExecutionTree(editor: Editor) {
       if (socket !== activeSocket) return;
       renderedCount = messageCount;
       const queryExecutionTree = JSON.parse(latestMessage!) as QueryExecutionTree;
+      latestTree = queryExecutionTree;
       renderTree(queryExecutionTree);
-      renderStats(queryExecutionTree);
+      renderStats(queryExecutionTree, elapsed());
       if (queryRunning) {
         window.dispatchEvent(
           new CustomEvent('query-result-size', {
@@ -242,11 +265,13 @@ export function setupQueryExecutionTree(editor: Editor) {
   // the query (the socket sent `cancel_on_close` on open).
   window.addEventListener('execute-cancle-request', () => {
     queryRunning = false;
+    stopClock();
     closeActiveSocket();
   });
 
   window.addEventListener('execute-ended', () => {
     queryRunning = false;
+    stopClock();
   });
 }
 
@@ -267,9 +292,10 @@ function closeModal() {
 
 /**
  * Fills the stats in the analysis header: number of operations, how many are
- * in progress / completed, and the measured time (total time of the root).
+ * in progress / completed, and the measured time. The measured time is the
+ * root's total time once the root is completed, `elapsedMs` before that.
  */
-function renderStats(tree: QueryExecutionTree) {
+function renderStats(tree: QueryExecutionTree, elapsedMs: number) {
   let operations = 0;
   let inProgress = 0;
   let completed = 0;
@@ -287,8 +313,9 @@ function renderStats(tree: QueryExecutionTree) {
     inProgress.toLocaleString('en-US');
   document.getElementById('queryAnalysisStatsCompleted')!.textContent =
     completed.toLocaleString('en-US');
+  const time = tree.status.endsWith('completed') ? tree.total_time : Math.round(elapsedMs);
   document.getElementById('queryAnalysisStatsTime')!.textContent =
-    `${tree.total_time.toLocaleString('en-US')} ms`;
+    `${time.toLocaleString('en-US')} ms`;
 }
 
 /**
