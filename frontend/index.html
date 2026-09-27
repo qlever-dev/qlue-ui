@@ -1555,75 +1555,103 @@
         </div>
       </div>
     </footer>
-    <!-- The Query tree Modal -->
+    <!-- The Query Analysis Modal -->
     <div
-      id="queryExecutionTreeModal"
+      id="queryAnalysisModal"
       class="hidden fixed z-20 left-0 top-0 w-full h-full overflow-auto bg-white/20 dark:bg-black/10 backdrop-blur-md cursor-grab"
     >
       <div
-        class="fixed top-0 w-full text-center p-3 bg-white/30 dark:bg-gray-900/10 backdrop-blur-sm text-xl dark:text-neutral-300 font-bold flex justify-between items-center"
+        class="fixed top-0 w-full bg-white/30 dark:bg-gray-900/10 backdrop-blur-sm dark:text-neutral-300"
       >
-        <div></div>
-        <h2>Query execution tree</h2>
-        <div class="flex flex-row items-center">
-          <div
-            id="rerunQueryButton"
-            title="Rerun query"
-            class="mr-3 border rounded p-1 cursor-pointer hover:bg-gray-200 hover:dark:bg-gray-800"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="size-6"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-              />
-            </svg>
+        <div class="p-3 flex flex-row items-center">
+          <span class="font-bold">Query execution tree</span>
+          <div class="ms-2 ps-2">
+            <span class="text-xs text-gray-500"> query </span>
+            <span id="queryAnalysisName">Buildings by height in Freiburg</span>
           </div>
-          <div
-            id="autoZoomButton"
-            title="Auto-zoom to active node"
-            class="mr-3 border rounded p-1 ring-2 ring-green-400 cursor-pointer hover:bg-gray-200 hover:dark:bg-gray-800"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="size-6"
+          <div class="ms-auto flex flex-row items-center">
+            <div
+              id="rerunQueryButton"
+              title="Rerun query"
+              class="mr-3 border dark:border-neutral-800 rounded p-1 cursor-pointer hover:bg-gray-200 hover:dark:bg-gray-800"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M7.5 3.75H6A2.25 2.25 0 0 0 3.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0 1 20.25 6v1.5m0 9V18A2.25 2.25 0 0 1 18 20.25h-1.5m-9 0H6A2.25 2.25 0 0 1 3.75 18v-1.5M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
+                />
+              </svg>
+            </div>
+            <div
+              id="autoZoomButton"
+              title="Auto-zoom to active node"
+              class="mr-3 border dark:border-neutral-800 rounded p-1 ring-2 ring-green-400 cursor-pointer hover:bg-gray-200 hover:dark:bg-gray-800"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M7.5 3.75H6A2.25 2.25 0 0 0 3.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0 1 20.25 6v1.5m0 9V18A2.25 2.25 0 0 1 18 20.25h-1.5m-9 0H6A2.25 2.25 0 0 1 3.75 18v-1.5M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+            </div>
+            <div
+              id="queryAnalysisModalCloseButton"
+              class="hover:text-red-400 cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
+                />
+              </svg>
+            </div>
           </div>
+        </div>
+        <div class="flex flex-row p-3 dark:text-gray-500 gap-3">
+          <span>operations <span class="text-white">9</span></span>
+          <div class="flex flex-row gap-3">
+            <span>in progress <span class="text-yellow-500">5</span></span>
+            <span>completed <span class="text-green-500">4</span></span>
+          </div>
+          <span>measured time <span class="text-white">59,671 ms</span></span>
           <div
-            id="queryExecutionTreeModalCloseButton"
-            class="hover:text-red-400 cursor-pointer"
+            class="ms-auto bg-neutral-900 border border-neutral-800 rounded-md flex flex-row gap-3 p-1 group text-xs"
+            data-state="profile"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="size-7"
+            <div
+              class="group-data-[state=tree]:text-white group-data-[state=tree]:fold-bold group-data-[state=tree]:bg-neutral-700 rounded-md px-3 py-0.5 cursor-pointer"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18 18 6M6 6l12 12"
-              />
-            </svg>
+              Tree
+            </div>
+            <div
+              class="group-data-[state=profile]:text-white group-data-[state=profile]:fold-bold group-data-[state=profile]:bg-neutral-700 rounded-md px-3 py-0.5 cursor-pointer"
+            >
+              Profile
+            </div>
           </div>
         </div>
       </div>
@@ -1970,7 +1998,10 @@
                 </select>
               </div>
 
-              <div id="plainQueryOptions" class="col-start-1 row-start-1 invisible">
+              <div
+                id="plainQueryOptions"
+                class="col-start-1 row-start-1 invisible"
+              >
                 <span class="text-neutral-800 dark:text-neutral-400 text-xs">
                   The query itself, unescaped and collapsed into one line.
                 </span>
