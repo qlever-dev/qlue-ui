@@ -129,13 +129,13 @@ export function setupTreeView() {
 }
 
 /**
- * Initializes the query execution tree (QET) analysis modal.
+ * Initializes the query analysis modal.
  *
  * Connects to the QLever websocket during query execution to receive live
  * runtime information and renders it into the view. Only available for the
  * QLever engine.
  */
-export function setupQueryExecutionTree(editor: Editor) {
+export function setupQueryAnalysis(editor: Editor) {
   const rerunButton = document.getElementById('rerunQueryButton')!;
   const analysisButton = document.getElementById('analysisButton')!;
 
@@ -319,10 +319,10 @@ function renderStats(tree: QueryExecutionTree, elapsedMs: number) {
 }
 
 /**
- * Opens the query execution tree modal.
+ * Opens the query analysis modal.
  * Only available for the QLever engine.
  */
-export async function openQueryExecutionTree(_editor: Editor) {
+export async function openQueryAnalysis(_editor: Editor) {
   const analysisButton = document.getElementById('analysisButton')!;
   analysisButton.click();
 }

@@ -15,7 +15,7 @@ import { setupEditor } from './editor/init';
 import { setupExamples } from './examples/init';
 import { setupKeybindings } from './keybindings';
 import { setupParseTree } from './parse_tree/init';
-import { setupQueryExecutionTree } from './query_analysis/init';
+import { setupQueryAnalysis } from './query_analysis/init';
 import { handleRequestParameter, setupUrlSync } from './request_params';
 import { setupResults } from './results/init';
 import { setupSettings } from './settings/init';
@@ -35,7 +35,7 @@ setupEditor('editor').then(async (editor) => {
   window.__editor = editor;
   setupTabs(editor);
   setupSettings(editor);
-  setupQueryExecutionTree(editor);
+  setupQueryAnalysis(editor);
   setupExamples(editor);
   setupResults(editor);
   setupButtons(editor);

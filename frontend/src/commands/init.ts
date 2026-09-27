@@ -5,7 +5,7 @@ import { toggleWideMode } from '../buttons/wide_mode';
 import type { Editor } from '../editor/init';
 import { openExamples } from '../examples/utils';
 import { openParseTree } from '../parse_tree/init';
-import { openQueryExecutionTree } from '../query_analysis/init';
+import { openQueryAnalysis } from '../query_analysis/init';
 import { openTemplatesEditor } from '../templates/init';
 import { displayVersion } from '../utils';
 import {
@@ -33,7 +33,7 @@ export function setupCommands(editor: Editor) {
   registerCommand('createExample', createExample, 'Save current query as example');
   registerCommand('updateExample', updateExample, 'Update the loaded example');
   registerCommand('parseTree', openParseTree, 'Show the SPARQL parse tree');
-  registerCommand('analysis', openQueryExecutionTree, 'Show the query execution tree');
+  registerCommand('analysis', openQueryAnalysis, 'Show the query analysis');
   registerCommand('templates', openTemplatesEditor, 'Edit query templates');
   registerCommand('clearCache', clearCache, 'Clear the triplestore cache');
   registerCommand('toggleWideMode', toggleWideMode, 'Toggle wide editor layout');
