@@ -5,11 +5,16 @@
 // └─────────────────────────────────┘ \\
 
 import * as d3 from 'd3';
-import type { QueryExecutionTree } from '../types/query_execution_tree';
+import type { NodeStatus, QueryExecutionTree } from '../types/query_execution_tree';
 import { isDetailsVisible, setupNodeDetailsPanel } from './details';
 import { clearProfile, renderProfile, setupProfileView } from './profile';
 import { clearQueryExecutionTree, deselectNode, setupTreeView } from './tree';
-import { colorScaleDark, colorScaleLight } from './utils';
+import {
+  colorScaleDark,
+  colorScaleLight,
+  renderStatusIndicator,
+  statusIndicatorRadius,
+} from './utils';
 
 const VIEW_STORAGE_KEY = 'queryAnalysisView';
 let visible = false;
@@ -34,6 +39,7 @@ export function setupQueryAnalysisUi(onRerun: () => void) {
   });
   const { switchView } = setupViewSwitch(setProfileVisible);
   renderTimeLegend();
+  renderStatusLegend();
 
   window.addEventListener('keydown', (e) => {
     if (visible && e.key === 'Escape') {
@@ -136,6 +142,41 @@ function renderTimeLegend() {
       tick.style.translate = i === 0 ? '0' : i === tickValues.length - 1 ? '-100%' : '-50%';
       tick.textContent = value < 1_000 ? `${value} ms` : `${value / 1_000} s`;
       return tick;
+    })
+  );
+}
+
+// NOTE: one entry per distinct indicator; the lazily and fully materialized
+// variants of a state share one.
+const statusLegendEntries: [NodeStatus, string][] = [
+  ['not started', 'not started'],
+  ['fully materialized in progress', 'in progress'],
+  ['fully materialized completed', 'completed'],
+  ['optimized out', 'optimized out'],
+  ['cancelled', 'cancelled'],
+  ['failed', 'failed'],
+  ['failed because child failed', 'child failed'],
+];
+
+/**
+ * Renders the legend of the operation status indicators in the footer.
+ * The indicators are drawn by the same function as in the views.
+ */
+function renderStatusLegend() {
+  const legend = document.getElementById('queryAnalysisStatusLegend')!;
+  legend.replaceChildren(
+    ...statusLegendEntries.map(([status, label]) => {
+      const entry = document.createElement('div');
+      entry.className = 'flex flex-row items-center gap-1.5';
+      entry.innerHTML = `
+        <svg class="size-2 overflow-visible">
+          <circle cx="${statusIndicatorRadius}" cy="${statusIndicatorRadius}" r="${statusIndicatorRadius}"></circle>
+          <circle cx="${statusIndicatorRadius}" cy="${statusIndicatorRadius}" r="${statusIndicatorRadius}"></circle>
+        </svg>
+        <span></span>`;
+      renderStatusIndicator(entry.querySelector('svg')!, status);
+      entry.querySelector('span')!.textContent = label;
+      return entry;
     })
   );
 }
