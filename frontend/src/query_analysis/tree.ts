@@ -13,68 +13,36 @@ import {
   findActiveNode,
   fitText,
   line,
-  measureTextWidth,
   replaceIRIs,
   splitDescription,
 } from './utils';
 
-const statusBadgeHeight = 18;
-const statusBadgePaddingX = 8;
+const statusIndicatorRadius = 4;
 
-function statusBadgeLabel(status: NodeStatus): string {
-  if (status.includes('completed')) return 'DONE';
-  if (status === 'lazily materialized in progress') return 'LAZY';
-  if (status === 'fully materialized in progress') return 'RUNNING';
-  if (status === 'failed' || status === 'failed because child failed') return 'FAILED';
-  if (status === 'cancelled') return 'CANCELLED';
-  if (status === 'optimized out') return 'SKIPPED';
-  return 'PENDING';
+// NOTE: solid dot for a settled state, hollow ring for a state caused by another
+// node (a failed child) or one that hasn't happened yet
+function statusIndicatorColor(status: NodeStatus): string {
+  if (status.includes('completed')) return 'fill-green-500';
+  if (status.includes('in progress')) return 'fill-yellow-500';
+  if (status === 'failed') return 'fill-red-500';
+  if (status === 'failed because child failed') return 'fill-none stroke-red-500 stroke-2';
+  if (status === 'cancelled') return 'fill-neutral-500';
+  if (status === 'optimized out') return 'fill-neutral-300 dark:fill-neutral-600';
+  return 'fill-none stroke-neutral-400 dark:stroke-neutral-500 stroke-2';
 }
 
-function statusBadgeColor(status: NodeStatus): { bg: string; text: string } {
-  if (status.includes('completed')) {
-    return {
-      bg: 'fill-green-100 dark:fill-green-900/40',
-      text: 'fill-green-800 dark:fill-green-300',
-    };
-  }
-  if (status.includes('in progress')) {
-    return {
-      bg: 'fill-amber-100 dark:fill-amber-900/40',
-      text: 'fill-amber-800 dark:fill-amber-300',
-    };
-  }
-  if (status === 'failed' || status === 'failed because child failed') {
-    return { bg: 'fill-red-100 dark:fill-red-900/40', text: 'fill-red-800 dark:fill-red-300' };
-  }
-  if (status === 'cancelled' || status === 'optimized out') {
-    return { bg: 'fill-gray-200 dark:fill-gray-800', text: 'fill-gray-700 dark:fill-neutral-400' };
-  }
-  return { bg: 'fill-gray-100 dark:fill-gray-800', text: 'fill-gray-800 dark:fill-neutral-300' };
-}
+// NOTE: colors the status dot; running operations get a pinging halo behind it
+function renderStatusIndicator(group: SVGGElement, status: NodeStatus) {
+  const [ping, dot] = group.querySelectorAll('circle');
+  const color = statusIndicatorColor(status);
 
-// NOTE: sizes and positions a status pill (rect + text) to the top-right corner of the box,
-// with width fit to the label so it always reads as a pill rather than a fixed-width chip.
-function renderStatusBadge(group: SVGGElement, status: NodeStatus) {
-  const rect = group.querySelector('rect')!;
-  const text = group.querySelector('text')!;
-
-  const label = statusBadgeLabel(status);
-  const colors = statusBadgeColor(status);
-
-  text.textContent = label;
-  text.setAttribute(
+  dot.setAttribute('class', color);
+  ping.setAttribute(
     'class',
-    `status-badge-text text-[10px] font-semibold uppercase tracking-wide cursor-text select-text ${colors.text}`
+    status.includes('in progress')
+      ? `${color} animate-ping origin-center transform-fill pointer-events-none`
+      : 'hidden'
   );
-  const labelWidth = measureTextWidth(text, label);
-  const pillWidth = labelWidth + statusBadgePaddingX * 2;
-  const pillRight = boxWidth / 2 - 12;
-
-  text.setAttribute('x', String(pillRight - statusBadgePaddingX));
-  rect.setAttribute('x', String(pillRight - pillWidth));
-  rect.setAttribute('width', String(pillWidth));
-  rect.setAttribute('class', `status-badge-bg ${colors.bg}`);
 }
 
 const boxWidth = 300;
@@ -318,10 +286,10 @@ function updateTree(
     );
 
   updateNodeSelection
-    .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('g.status-badge')
+    .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('g.status-indicator')
     .data((d) => [d])
     .each(function(d) {
-      renderStatusBadge(this, d.data.status);
+      renderStatusIndicator(this, d.data.status);
     });
 
   const activeIds = new Set(activeNodes.map((n) => n.data.id));
@@ -555,8 +523,8 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
     .each(function(d) {
-      // NOTE: reserve room on the right so long titles don't run under the status badge
-      fitText(this, replaceIRIs(splitDescription(d.data.description).title), boxWidth - 20 - 90);
+      // NOTE: reserve room on the right so long titles don't run under the status indicator
+      fitText(this, replaceIRIs(splitDescription(d.data.description).title), boxWidth - 20 - 30);
     });
 
   // NOTE: subtitle (operation detail, e.g. a filter expression), muted, no background
@@ -658,32 +626,23 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('dominant-baseline', 'middle')
     .text((d) => `~ ${d.data.estimated_operation_cost.toLocaleString('en-US')}`);
 
-  // NOTE: status badge, top-right corner
-  const statusBadgeGroups = node_selection
-    .selectAll<SVGGElement, unknown>('g.status-badge')
+  // NOTE: status indicator, top-right corner, on the title's line
+  const statusIndicatorGroups = node_selection
+    .selectAll<SVGGElement, unknown>('g.status-indicator')
     .data((d) => [d])
     .join('g')
-    .attr('class', 'status-badge');
+    .attr('class', 'status-indicator');
 
-  statusBadgeGroups
-    .selectAll<SVGRectElement, unknown>('rect')
-    .data((d) => [d])
-    .join('rect')
-    .attr('y', -boxHeight / 2 + 10)
-    .attr('height', statusBadgeHeight)
-    .attr('rx', statusBadgeHeight / 2)
-    .attr('ry', statusBadgeHeight / 2);
+  statusIndicatorGroups
+    .selectAll<SVGCircleElement, unknown>('circle')
+    .data((d) => [d, d])
+    .join('circle')
+    .attr('cx', boxWidth / 2 - 12 - statusIndicatorRadius)
+    .attr('cy', -boxHeight / 2 + boxPadding)
+    .attr('r', statusIndicatorRadius);
 
-  statusBadgeGroups
-    .selectAll<SVGTextElement, unknown>('text')
-    .data((d) => [d])
-    .join('text')
-    .attr('y', -boxHeight / 2 + 10 + statusBadgeHeight / 2)
-    .attr('text-anchor', 'end')
-    .attr('dominant-baseline', 'middle');
-
-  statusBadgeGroups.each(function(d) {
-    renderStatusBadge(this, d.data.status);
+  statusIndicatorGroups.each(function(d) {
+    renderStatusIndicator(this, d.data.status);
   });
 }
 

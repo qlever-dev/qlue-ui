@@ -52,11 +52,6 @@ function setMeasurementFont(node: SVGTextElement) {
   measurementCtx.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
 }
 
-export function measureTextWidth(node: SVGTextElement, text: string): number {
-  setMeasurementFont(node);
-  return measurementCtx.measureText(text).width;
-}
-
 export function fitText(node: SVGTextElement, text: string, maxWidth: number) {
   setMeasurementFont(node);
 
