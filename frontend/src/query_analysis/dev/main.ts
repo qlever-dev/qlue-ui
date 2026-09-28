@@ -37,7 +37,7 @@ async function mountMarkup() {
 
 mountMarkup().then(() => {
   setupThemeSwitcher();
-  const { openModal, render, renderStats, clear } = setupQueryAnalysisUi(() => restart());
+  const { openModal, render, clear } = setupQueryAnalysisUi(() => restart());
   openModal();
 
   const simulation = new Simulation(DEFAULT_PLAN);
@@ -55,8 +55,7 @@ mountMarkup().then(() => {
 
   function draw() {
     const frame = simulation.frameAt(time);
-    render(frame);
-    renderStats(frame, time);
+    render(frame, time);
     slider.value = String(time);
     clock.textContent = `${(time / 1000).toFixed(2)}s / ${(simulation.duration / 1000).toFixed(2)}s`;
   }

@@ -59,9 +59,10 @@ export function setupQueryAnalysisUi(onRerun: () => void) {
   }
 
   // NOTE: the tree assigns the node ids the profile relies on, so it renders first.
-  function render(tree: QueryExecutionTree) {
+  function render(tree: QueryExecutionTree, elapsedMs: number) {
     renderTree(tree);
     renderProfile(tree);
+    renderStats(tree, elapsedMs);
   }
 
   // NOTE: the view keeps the rendered tree as state; dropping it makes the next

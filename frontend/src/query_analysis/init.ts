@@ -154,8 +154,7 @@ export function setupQueryAnalysis(editor: Editor) {
       renderedCount = messageCount;
       const queryExecutionTree = JSON.parse(latestMessage!) as QueryExecutionTree;
       latestTree = queryExecutionTree;
-      render(queryExecutionTree);
-      renderStats(queryExecutionTree, elapsed());
+      render(queryExecutionTree, elapsed());
 
       if (queryRunning) {
         window.dispatchEvent(
