@@ -8,7 +8,14 @@ import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
 import { showNodeDetails } from './details';
 import { selectNode } from './tree';
-import { colorScaleDark, colorScaleLight, replaceIRIs, splitDescription } from './utils';
+import {
+  colorScaleDark,
+  colorScaleLight,
+  renderStatusIndicator,
+  replaceIRIs,
+  splitDescription,
+  statusIndicatorRadius,
+} from './utils';
 
 // NOTE: rows have a fixed height so they can be positioned by their rank, which
 // lets them slide to their new position when the ranking changes.
@@ -68,9 +75,17 @@ export function renderProfile(tree: QueryExecutionTree) {
         )
         .style('transform', (_d, i) => `translateY(${i * rowHeight}px)`)
         .html(
-          `<div class="min-w-0">
-            <div class="profile-title text-[12.5px] font-semibold truncate text-gray-900 dark:text-gray-200"></div>
-            <div class="profile-subtitle mt-0.5 font-mono text-[10.5px] truncate text-gray-500 dark:text-gray-200/45"></div>
+          `<div class="min-w-0 flex gap-2.5">
+            <div class="flex h-lh items-center text-[12.5px]">
+              <svg class="profile-status size-2 overflow-visible">
+                <circle cx="${statusIndicatorRadius}" cy="${statusIndicatorRadius}" r="${statusIndicatorRadius}"></circle>
+                <circle cx="${statusIndicatorRadius}" cy="${statusIndicatorRadius}" r="${statusIndicatorRadius}"></circle>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <div class="profile-title text-[12.5px] font-semibold truncate text-gray-900 dark:text-gray-200"></div>
+              <div class="profile-subtitle mt-0.5 font-mono text-[10.5px] truncate text-gray-500 dark:text-gray-200/45"></div>
+            </div>
           </div>
           <div class="h-3 rounded-[3px] overflow-hidden bg-gray-200 dark:bg-white/5">
             <div class="profile-bar h-full rounded-[3px] bg-[var(--bar-fill-light)] dark:bg-(--bar-fill-dark)" style="width: 0%"></div>
@@ -92,6 +107,7 @@ export function renderProfile(tree: QueryExecutionTree) {
     .style('transform', (_d, i) => `translateY(${i * rowHeight}px)`);
 
   rows.each(function(d) {
+    renderStatusIndicator(this.querySelector('.profile-status')!, d.status);
     const { title, subtitle } = splitDescription(d.description);
     this.querySelector('.profile-title')!.textContent = replaceIRIs(title);
     this.querySelector('.profile-subtitle')!.textContent = subtitle ? replaceIRIs(subtitle) : '—';

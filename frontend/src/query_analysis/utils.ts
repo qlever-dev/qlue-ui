@@ -1,5 +1,9 @@
 import * as d3 from 'd3';
-import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
+import type {
+  NodeStatus,
+  QueryExecutionNode,
+  QueryExecutionTree,
+} from '../types/query_execution_tree';
 
 // NOTE: the colors that encode the operation time, shared by all views.
 export const colorScaleDark = d3
@@ -180,4 +184,33 @@ export function findActiveNode(root: d3.HierarchyNode<QueryExecutionTree>) {
     node = activeChild;
   }
   return node;
+}
+
+export const statusIndicatorRadius = 4;
+
+// NOTE: solid dot for a settled state, hollow ring for a state caused by another
+// node (a failed child) or one that hasn't happened yet
+function statusIndicatorColor(status: NodeStatus): string {
+  if (status.includes('completed')) return 'fill-green-500';
+  if (status.includes('in progress')) return 'fill-yellow-500';
+  if (status === 'failed') return 'fill-red-500';
+  if (status === 'failed because child failed') return 'fill-none stroke-red-500 stroke-2';
+  if (status === 'cancelled') return 'fill-neutral-500';
+  if (status === 'optimized out') return 'fill-neutral-300 dark:fill-neutral-600';
+  return 'fill-none stroke-neutral-400 dark:stroke-neutral-500 stroke-2';
+}
+
+// NOTE: colors the status dot (the second circle of `indicator`, shared by all
+// views); running operations get a pinging halo, the first circle, behind it
+export function renderStatusIndicator(indicator: SVGElement, status: NodeStatus) {
+  const [ping, dot] = indicator.querySelectorAll('circle');
+  const color = statusIndicatorColor(status);
+
+  dot.setAttribute('class', color);
+  ping.setAttribute(
+    'class',
+    status.includes('in progress')
+      ? `${color} animate-ping origin-center transform-fill pointer-events-none`
+      : 'hidden'
+  );
 }
