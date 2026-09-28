@@ -8,6 +8,7 @@ import * as d3 from 'd3';
 import type { NodeStatus, QueryExecutionTree } from '../types/query_execution_tree';
 import { isDetailsVisible, setupNodeDetailsPanel } from './details';
 import { clearProfile, renderProfile, setupProfileView } from './profile';
+import { renderStats, setupPlanningPopover } from './stats';
 import { clearQueryExecutionTree, deselectNode, setupTreeView } from './tree';
 import {
   colorScaleDark,
@@ -40,6 +41,7 @@ export function setupQueryAnalysisUi(onRerun: () => void) {
   const { switchView } = setupViewSwitch(setProfileVisible);
   renderTimeLegend();
   renderStatusLegend();
+  setupPlanningPopover();
 
   window.addEventListener('keydown', (e) => {
     if (visible && e.key === 'Escape') {
@@ -187,32 +189,4 @@ function closeModal() {
   visible = false;
   deselectNode();
   document.body.classList.remove('overflow-y-hidden');
-}
-
-/**
- * Fills the stats in the analysis header: number of operations, how many are
- * in progress / completed, and the measured time. The measured time is the
- * root's total time once the root is completed, `elapsedMs` before that.
- */
-function renderStats(tree: QueryExecutionTree, elapsedMs: number) {
-  let operations = 0;
-  let inProgress = 0;
-  let completed = 0;
-  const stack = [tree];
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    operations++;
-    if (node.status.endsWith('in progress')) inProgress++;
-    if (node.status.endsWith('completed')) completed++;
-    stack.push(...node.children);
-  }
-  document.getElementById('queryAnalysisStatsOperations')!.textContent =
-    operations.toLocaleString('en-US');
-  document.getElementById('queryAnalysisStatsInProgress')!.textContent =
-    inProgress.toLocaleString('en-US');
-  document.getElementById('queryAnalysisStatsCompleted')!.textContent =
-    completed.toLocaleString('en-US');
-  const time = tree.status.endsWith('completed') ? tree.total_time : Math.round(elapsedMs);
-  document.getElementById('queryAnalysisStatsTime')!.textContent =
-    `${time.toLocaleString('en-US')} ms`;
 }
