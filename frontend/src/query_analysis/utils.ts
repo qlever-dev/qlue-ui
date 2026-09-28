@@ -1,6 +1,23 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
 
+// NOTE: the colors that encode the operation time, shared by all views.
+export const colorScaleDark = d3
+  .scaleSymlog<string, string>()
+  .domain([1, 5000, 10000, 60000])
+  .range(['#404040', '#facc15', '#dc2626', '#701a75'])
+  .constant(1000)
+  .interpolate(d3.interpolateHsl)
+  .clamp(true);
+
+export const colorScaleLight = d3
+  .scaleSymlog<string, string>()
+  .domain([1, 5000, 10000, 60000])
+  .range(['white', '#facc15', '#dc2626', '#c026d3'])
+  .constant(1000)
+  .interpolate(d3.interpolateHsl)
+  .clamp(true);
+
 export function replaceIRIs(text: string): string {
   const iriPattern = /<([^>]+)>/g;
 

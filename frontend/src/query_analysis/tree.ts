@@ -7,6 +7,8 @@ import type {
 import { getSelectedId, hideNodeDetails, refreshSelectedNode, showNodeDetails } from './details';
 import {
   activeSubTree,
+  colorScaleDark,
+  colorScaleLight,
   findActiveNode,
   fitText,
   line,
@@ -73,20 +75,6 @@ function renderStatusBadge(group: SVGGElement, status: NodeStatus) {
   rect.setAttribute('width', String(pillWidth));
   rect.setAttribute('class', `status-badge-bg ${colors.bg}`);
 }
-
-export const colorScaleDark = d3
-  .scaleSymlog<string, string>()
-  .domain([1, 15000, 30000])
-  .range(['#404040', '#facc15', 'red'])
-  .constant(1000)
-  .interpolate(d3.interpolateHsl)
-  .clamp(true);
-
-export const colorScaleLight = d3
-  .scaleSymlog([1, 60_000], ['white', 'red'])
-  .constant(1000)
-  .interpolate(d3.interpolateHsl)
-  .clamp(true);
 
 const boxWidth = 300;
 const boxHeight = 130;

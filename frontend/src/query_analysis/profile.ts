@@ -7,8 +7,8 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
 import { showNodeDetails } from './details';
-import { colorScaleDark, colorScaleLight, selectNode } from './tree';
-import { replaceIRIs, splitDescription } from './utils';
+import { selectNode } from './tree';
+import { colorScaleDark, colorScaleLight, replaceIRIs, splitDescription } from './utils';
 
 // NOTE: rows have a fixed height so they can be positioned by their rank, which
 // lets them slide to their new position when the ranking changes.
