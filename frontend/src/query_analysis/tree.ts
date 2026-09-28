@@ -223,12 +223,17 @@ function updateTree(
     const zoomTarget = visibleStandIn(topNode);
     zoomTo(zoomTarget.x!, zoomTarget.y! + height / 4 - boxHeight - boxMargin, 500);
   }
-  const [activeNodes, inactiveNodes] = activeSubTree(topNode);
-  const changedInactiveNodes = inactiveNodes.filter((node) => {
+  const [activeNodes] = activeSubTree(topNode);
+  const activeIds = new Set(activeNodes.map((n) => n.data.id));
+  // NOTE: the changed nodes are searched in the whole tree, not only in the
+  // subtree of `topNode`: a node outside of it (e.g. a sibling of an ancestor)
+  // can change its status too, and would otherwise never be updated, since the
+  // next render compares against this render's status.
+  const changedNodes = newNodes.filter((node) => {
     const prevStatus = oldNodes[node.data.id!].data.status;
-    return node.data.status !== prevStatus;
+    return !activeIds.has(node.data.id) && node.data.status !== prevStatus;
   });
-  const nodesToUpdate = [...activeNodes, ...changedInactiveNodes];
+  const nodesToUpdate = [...activeNodes, ...changedNodes];
 
   const container = d3.select('#treeContainer');
 
@@ -262,7 +267,6 @@ function updateTree(
       renderStatusIndicator(this, d.data.status);
     });
 
-  const activeIds = new Set(activeNodes.map((n) => n.data.id));
   container
     .selectAll<SVGRectElement, d3.HierarchyNode<QueryExecutionNode>>('rect.glow-overlay')
     .attr('opacity', (d) => (activeIds.has(d.data.id) ? 1 : 0));
