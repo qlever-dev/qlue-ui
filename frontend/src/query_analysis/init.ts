@@ -4,181 +4,34 @@
 // │ Licensed under the MIT license. │ \\
 // └─────────────────────────────────┘ \\
 
-import * as d3 from 'd3';
 import { clearCache } from '../buttons/clear_cache';
 import type { Editor } from '../editor/init';
 import type { ExecuteQueryEventDetails } from '../results/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import { SparqlEngine } from '../types/lsp_messages';
 import type { QueryExecutionTree } from '../types/query_execution_tree';
-import { isDetailsVisible, setupNodeDetailsPanel } from './details';
-import { animateGradients } from './gradients';
-import { clearProfile, renderProfile, setupProfileView } from './profile';
-import {
-  clearQueryExecutionTree,
-  deselectNode,
-  nodePosition,
-  renderQueryExecutionTree,
-  setupAutozoom,
-} from './tree';
-import { colorScaleDark, colorScaleLight, setupWebSocket } from './utils';
+import { setupWebSocket } from './utils';
+import { setupQueryAnalysisUi } from './ui';
 
-const margin = { top: 20, right: 20, bottom: 20, left: 20 };
-const VIEW_STORAGE_KEY = 'queryAnalysisView';
-let visible = false;
 let queryRunning = false;
 let activeSocket: WebSocket | null = null;
 
 /**
- * Sets up the query analysis modal: the open/close handling, the node details
- * panel (shared by all views) and the switch between the views.
- *
- * This part is independent of the editor and the backend, so the dev rig
- * (`qet.html`) can drive the same modal with simulated data.
- */
-export function setupQueryAnalysisModal() {
-  const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
-  const closeButton = document.getElementById('queryAnalysisModalCloseButton')!;
-
-  const { renderTree, resetZoom, focusNode } = setupTreeView();
-  setupNodeDetailsPanel(() => deselectNode());
-  const { setProfileVisible } = setupProfileView((node) => {
-    switchView('tree');
-    focusNode(node.id!);
-  });
-  const { switchView } = setupViewSwitch(setProfileVisible);
-  renderTimeLegend();
-
-  window.addEventListener('keydown', (e) => {
-    if (visible && e.key === 'Escape') {
-      if (isDetailsVisible()) {
-        deselectNode();
-      } else {
-        closeModal();
-      }
-    }
-  });
-
-  closeButton.addEventListener('click', () => {
-    closeModal();
-  });
-
-  function openModal() {
-    queryAnalysisModal.classList.remove('hidden');
-    visible = true;
-    resetZoom();
-    document.body.classList.add('overflow-y-hidden');
-  }
-
-  // NOTE: the tree assigns the node ids the profile relies on, so it renders first.
-  function render(tree: QueryExecutionTree) {
-    renderTree(tree);
-    renderProfile(tree);
-  }
-
-  return { openModal, render, renderStats };
-}
-
-/**
- * Sets up the query execution tree (QET) view: the D3 SVG canvas with
- * zoom/pan, the animated gradients and the autozoom.
- */
-function setupTreeView() {
-  const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
-
-  setupAutozoom();
-
-  queryAnalysisModal.addEventListener('pointerdown', (e) => {
-    if (e.target instanceof SVGTextElement) return;
-    queryAnalysisModal.classList.remove('cursor-grab');
-    queryAnalysisModal.classList.add('cursor-grabbing');
-  });
-  queryAnalysisModal.addEventListener('pointerup', () => {
-    queryAnalysisModal.classList.remove('cursor-grabbing');
-    queryAnalysisModal.classList.add('cursor-grab');
-  });
-
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  const svg = d3
-    .select<SVGElement, unknown>('#queryExecutionTreeSvg')
-    .attr('width', width)
-    .attr('height', height);
-  const container = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
-
-  const zoom = d3
-    .zoom()
-    .scaleExtent([0.1, 5])
-    .filter((event) => {
-      if (event.type === 'wheel') return true;
-      if (event.target instanceof SVGTextElement) return false;
-      return !event.ctrlKey && !event.button;
-    })
-    .on('zoom', (event) => {
-      if (event.sourceEvent != null) {
-        window.dispatchEvent(new Event('zoom'));
-      }
-      container.attr('transform', event.transform);
-    });
-
-  // @ts-expect-error
-  svg.call(zoom);
-
-  animateGradients();
-
-  function zoom_to(x: number, y: number, duration = 750) {
-    const svgEl = svg.node();
-    if (!svgEl) return;
-
-    const scale = 1;
-
-    const targetTransform = d3.zoomIdentity.translate(
-      svgEl.clientWidth / 2 - x * scale,
-      svgEl.clientHeight / 2 - y * scale
-    );
-
-    svg
-      .transition()
-      .duration(duration)
-      .ease(d3.easeLinear)
-      // @ts-expect-error
-      .call(zoom.transform, targetTransform);
-  }
-
-  function resetZoom() {
-    // @ts-expect-error
-    svg.call(zoom.translateTo, 0, 0);
-  }
-
-  function focusNode(id: number) {
-    const position = nodePosition(id);
-    if (!position) return;
-    // NOTE: pauses the autozoom like a zoom by the user does, so it doesn't pull
-    // the view away from the node right away.
-    window.dispatchEvent(new Event('zoom'));
-    zoom_to(position.x, position.y);
-  }
-
-  function renderTree(tree: QueryExecutionTree) {
-    renderQueryExecutionTree(tree, zoom_to);
-  }
-
-  return { renderTree, resetZoom, focusNode };
-}
-
-/**
- * Initializes the query analysis modal.
+ * Feeds the query analysis view with live runtime information.
  *
  * Connects to the QLever websocket during query execution to receive live
  * runtime information and renders it into the view. Only available for the
  * QLever engine.
  */
 export function setupQueryAnalysis(editor: Editor) {
-  const rerunButton = document.getElementById('rerunQueryButton')!;
   const analysisButton = document.getElementById('analysisButton')!;
 
-  const { openModal, render, renderStats } = setupQueryAnalysisModal();
+  const { openModal, render, renderStats, clear } = setupQueryAnalysisUi(() => {
+    if (!queryRunning) {
+      clearCache(editor);
+      window.dispatchEvent(new Event('execute-start-request'));
+    }
+  });
 
   // NOTE: QLever reports the root's total time only once a fully
   // materialized root is computed, so the measured time is a client-side
@@ -193,13 +46,6 @@ export function setupQueryAnalysis(editor: Editor) {
     queryEnd = performance.now();
     clearInterval(clockTimer);
   }
-
-  rerunButton.addEventListener('click', () => {
-    if (!queryRunning) {
-      clearCache(editor);
-      window.dispatchEvent(new Event('execute-start-request'));
-    }
-  });
 
   analysisButton.addEventListener('click', async () => {
     const service = (await editor.languageClient.sendRequest(
@@ -228,8 +74,7 @@ export function setupQueryAnalysis(editor: Editor) {
     // NOTE: cleanup previous runs. Closing the previous query's socket is
     // essential: otherwise its late runtime messages keep rendering into the
     // shared tree state and corrupt the new query's tree.
-    clearQueryExecutionTree();
-    clearProfile();
+    clear();
     closeActiveSocket();
     clearInterval(clockTimer);
     queryStart = performance.now();
@@ -316,112 +161,11 @@ export function setupQueryAnalysis(editor: Editor) {
   });
 }
 
-/**
- * Switches between the "tree" and the "profile" view of the analysis modal.
- * The node details panel is shared and stays visible across both views.
- * The selected view persists across reloads.
- */
-function setupViewSwitch(setProfileVisible: (visible: boolean) => void) {
-  const viewSwitch = document.getElementById('queryAnalysisViewSwitch')!;
-  const treeView = document.getElementById('queryExecutionTreeSvg')!;
-
-  function showView(view: string) {
-    viewSwitch.dataset.state = view;
-    // NOTE: the tree is made invisible rather than `hidden`, so it keeps its
-    // size and the zoom/autozoom keep working while it is not shown.
-    treeView.classList.toggle('invisible', view !== 'tree');
-    setProfileVisible(view === 'profile');
-  }
-
-  function switchView(view: string) {
-    localStorage.setItem(VIEW_STORAGE_KEY, view);
-    showView(view);
-  }
-
-  showView(localStorage.getItem(VIEW_STORAGE_KEY) === 'profile' ? 'profile' : 'tree');
-
-  viewSwitch.querySelectorAll<HTMLElement>('[data-view]').forEach((button) => {
-    button.addEventListener('click', () => switchView(button.dataset.view!));
-  });
-
-  return { switchView };
-}
-
-/**
- * Renders the legend of the operation time colors in the footer.
- * The gradients are sampled from the color scales along a shared symlog axis
- * that spans the domains of both scales, so they show the scales exactly.
- */
-function renderTimeLegend() {
-  const legend = document.getElementById('queryAnalysisTimeLegend')!;
-  const ticks = document.getElementById('queryAnalysisTimeLegendTicks')!;
-  const [min, max] = d3.extent([...colorScaleDark.domain(), ...colorScaleLight.domain()]) as [
-    number,
-    number,
-  ];
-  const position = d3.scaleSymlog().domain([min, max]).constant(colorScaleDark.constant());
-
-  const stops = d3.range(0, 21).map((i) => i / 20);
-  const gradient = (scale: (value: number) => string) =>
-    `linear-gradient(to right, ${stops.map((t) => `${scale(position.invert(t))} ${t * 100}%`).join(', ')})`;
-  legend.style.setProperty('--legend-light', gradient(colorScaleLight));
-  legend.style.setProperty('--legend-dark', gradient(colorScaleDark));
-
-  const tickValues = [min, 1_000, 10_000, max];
-  ticks.replaceChildren(
-    ...tickValues.map((value, i) => {
-      const tick = document.createElement('span');
-      tick.className = 'absolute top-0 whitespace-nowrap';
-      tick.style.left = `${position(value) * 100}%`;
-      // NOTE: the outer labels are aligned to the ends of the gradient
-      tick.style.translate = i === 0 ? '0' : i === tickValues.length - 1 ? '-100%' : '-50%';
-      tick.textContent = value < 1_000 ? `${value} ms` : `${value / 1_000} s`;
-      return tick;
-    })
-  );
-}
-
 function closeActiveSocket() {
   if (activeSocket != null) {
     activeSocket.close();
     activeSocket = null;
   }
-}
-
-function closeModal() {
-  const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
-  queryAnalysisModal.classList.add('hidden');
-  visible = false;
-  deselectNode();
-  document.body.classList.remove('overflow-y-hidden');
-}
-
-/**
- * Fills the stats in the analysis header: number of operations, how many are
- * in progress / completed, and the measured time. The measured time is the
- * root's total time once the root is completed, `elapsedMs` before that.
- */
-function renderStats(tree: QueryExecutionTree, elapsedMs: number) {
-  let operations = 0;
-  let inProgress = 0;
-  let completed = 0;
-  const stack = [tree];
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    operations++;
-    if (node.status.endsWith('in progress')) inProgress++;
-    if (node.status.endsWith('completed')) completed++;
-    stack.push(...node.children);
-  }
-  document.getElementById('queryAnalysisStatsOperations')!.textContent =
-    operations.toLocaleString('en-US');
-  document.getElementById('queryAnalysisStatsInProgress')!.textContent =
-    inProgress.toLocaleString('en-US');
-  document.getElementById('queryAnalysisStatsCompleted')!.textContent =
-    completed.toLocaleString('en-US');
-  const time = tree.status.endsWith('completed') ? tree.total_time : Math.round(elapsedMs);
-  document.getElementById('queryAnalysisStatsTime')!.textContent =
-    `${time.toLocaleString('en-US')} ms`;
 }
 
 /**

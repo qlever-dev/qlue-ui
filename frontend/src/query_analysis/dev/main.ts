@@ -12,9 +12,7 @@
 
 import '../../style.css';
 import { setupThemeSwitcher } from '../../buttons/theme_switcher';
-import { setupQueryAnalysisModal } from '../init';
-import { clearProfile } from '../profile';
-import { clearQueryExecutionTree } from '../tree';
+import { setupQueryAnalysisUi } from '../ui';
 import { DEFAULT_PLAN } from './plan';
 import { Simulation } from './simulate';
 
@@ -39,7 +37,7 @@ async function mountMarkup() {
 
 mountMarkup().then(() => {
   setupThemeSwitcher();
-  const { openModal, render, renderStats } = setupQueryAnalysisModal();
+  const { openModal, render, renderStats, clear } = setupQueryAnalysisUi(() => restart());
   openModal();
 
   const simulation = new Simulation(DEFAULT_PLAN);
@@ -91,10 +89,9 @@ mountMarkup().then(() => {
 
   function restart() {
     pause();
-    // NOTE: the view keeps the rendered tree as state; drop it so the restart
-    // rebuilds the layout exactly like a fresh query does.
-    clearQueryExecutionTree();
-    clearProfile();
+    // NOTE: drop the rendered tree so the restart rebuilds the layout exactly
+    // like a fresh query does.
+    clear();
     time = 0;
     draw();
     play();
@@ -102,7 +99,6 @@ mountMarkup().then(() => {
 
   playButton.addEventListener('click', () => (playing ? pause() : play()));
   restartButton.addEventListener('click', restart);
-  document.getElementById('rerunQueryButton')!.addEventListener('click', restart);
   slider.addEventListener('input', () => {
     pause();
     time = Number(slider.value);

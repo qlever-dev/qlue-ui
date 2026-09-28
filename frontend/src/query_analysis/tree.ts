@@ -4,6 +4,7 @@ import type {
   QueryExecutionNode,
   QueryExecutionTree,
 } from '../types/query_execution_tree';
+import { animateGradients } from './gradients';
 import { getSelectedId, hideNodeDetails, refreshSelectedNode, showNodeDetails } from './details';
 import {
   activeSubTree,
@@ -81,6 +82,96 @@ const boxHeight = 130;
 const boxMargin = 30;
 const boxPadding = 20;
 const boxRadius = 8;
+
+const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+
+/**
+ * Sets up the query execution tree (QET) view: the D3 SVG canvas with
+ * zoom/pan, the animated gradients and the autozoom.
+ */
+export function setupTreeView() {
+  const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
+
+  setupAutozoom();
+
+  queryAnalysisModal.addEventListener('pointerdown', (e) => {
+    if (e.target instanceof SVGTextElement) return;
+    queryAnalysisModal.classList.remove('cursor-grab');
+    queryAnalysisModal.classList.add('cursor-grabbing');
+  });
+  queryAnalysisModal.addEventListener('pointerup', () => {
+    queryAnalysisModal.classList.remove('cursor-grabbing');
+    queryAnalysisModal.classList.add('cursor-grab');
+  });
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  const svg = d3
+    .select<SVGElement, unknown>('#queryExecutionTreeSvg')
+    .attr('width', width)
+    .attr('height', height);
+  const container = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+  const zoom = d3
+    .zoom()
+    .scaleExtent([0.1, 5])
+    .filter((event) => {
+      if (event.type === 'wheel') return true;
+      if (event.target instanceof SVGTextElement) return false;
+      return !event.ctrlKey && !event.button;
+    })
+    .on('zoom', (event) => {
+      if (event.sourceEvent != null) {
+        window.dispatchEvent(new Event('zoom'));
+      }
+      container.attr('transform', event.transform);
+    });
+
+  // @ts-expect-error
+  svg.call(zoom);
+
+  animateGradients();
+
+  function zoom_to(x: number, y: number, duration = 750) {
+    const svgEl = svg.node();
+    if (!svgEl) return;
+
+    const scale = 1;
+
+    const targetTransform = d3.zoomIdentity.translate(
+      svgEl.clientWidth / 2 - x * scale,
+      svgEl.clientHeight / 2 - y * scale
+    );
+
+    svg
+      .transition()
+      .duration(duration)
+      .ease(d3.easeLinear)
+      // @ts-expect-error
+      .call(zoom.transform, targetTransform);
+  }
+
+  function resetZoom() {
+    // @ts-expect-error
+    svg.call(zoom.translateTo, 0, 0);
+  }
+
+  function focusNode(id: number) {
+    const position = nodePosition(id);
+    if (!position) return;
+    // NOTE: pauses the autozoom like a zoom by the user does, so it doesn't pull
+    // the view away from the node right away.
+    window.dispatchEvent(new Event('zoom'));
+    zoom_to(position.x, position.y);
+  }
+
+  function renderTree(tree: QueryExecutionTree) {
+    renderQueryExecutionTree(tree, zoom_to);
+  }
+
+  return { renderTree, resetZoom, focusNode };
+}
 
 // NOTE: When the user zooms, auto zoom is disabled for 5 seconds
 let autoZoom = true;
