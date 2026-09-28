@@ -21,7 +21,7 @@ import {
   renderQueryExecutionTree,
   setupAutozoom,
 } from './tree';
-import { setupWebSocket } from './utils';
+import { colorScaleDark, colorScaleLight, setupWebSocket } from './utils';
 
 const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 const VIEW_STORAGE_KEY = 'queryAnalysisView';
@@ -47,6 +47,7 @@ export function setupQueryAnalysisModal() {
     focusNode(node.id!);
   });
   const { switchView } = setupViewSwitch(setProfileVisible);
+  renderTimeLegend();
 
   window.addEventListener('keydown', (e) => {
     if (visible && e.key === 'Escape') {
@@ -344,6 +345,40 @@ function setupViewSwitch(setProfileVisible: (visible: boolean) => void) {
   });
 
   return { switchView };
+}
+
+/**
+ * Renders the legend of the operation time colors in the footer.
+ * The gradients are sampled from the color scales along a shared symlog axis
+ * that spans the domains of both scales, so they show the scales exactly.
+ */
+function renderTimeLegend() {
+  const legend = document.getElementById('queryAnalysisTimeLegend')!;
+  const ticks = document.getElementById('queryAnalysisTimeLegendTicks')!;
+  const [min, max] = d3.extent([...colorScaleDark.domain(), ...colorScaleLight.domain()]) as [
+    number,
+    number,
+  ];
+  const position = d3.scaleSymlog().domain([min, max]).constant(colorScaleDark.constant());
+
+  const stops = d3.range(0, 21).map((i) => i / 20);
+  const gradient = (scale: (value: number) => string) =>
+    `linear-gradient(to right, ${stops.map((t) => `${scale(position.invert(t))} ${t * 100}%`).join(', ')})`;
+  legend.style.setProperty('--legend-light', gradient(colorScaleLight));
+  legend.style.setProperty('--legend-dark', gradient(colorScaleDark));
+
+  const tickValues = [min, 1_000, 10_000, max];
+  ticks.replaceChildren(
+    ...tickValues.map((value, i) => {
+      const tick = document.createElement('span');
+      tick.className = 'absolute top-0 whitespace-nowrap';
+      tick.style.left = `${position(value) * 100}%`;
+      // NOTE: the outer labels are aligned to the ends of the gradient
+      tick.style.translate = i === 0 ? '0' : i === tickValues.length - 1 ? '-100%' : '-50%';
+      tick.textContent = value < 1_000 ? `${value} ms` : `${value / 1_000} s`;
+      return tick;
+    })
+  );
 }
 
 function closeActiveSocket() {
