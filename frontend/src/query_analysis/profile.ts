@@ -90,9 +90,9 @@ export function renderProfile(tree: QueryExecutionTree) {
           <div class="h-3 rounded-[3px] overflow-hidden bg-gray-200 dark:bg-white/5">
             <div class="profile-bar h-full rounded-[3px] bg-(--bar-fill-light) dark:bg-(--bar-fill-dark)" style="width: 0%"></div>
           </div>
-          <div class="profile-time text-right font-mono text-xs tabular-nums text-gray-900 dark:text-gray-200"></div>
-          <div class="profile-share text-right font-mono text-[11px] tabular-nums text-gray-500 dark:text-gray-200/50"></div>
-          <div class="profile-cumulativeshare text-right font-mono text-[11px] tabular-nums text-gray-500 dark:text-gray-200/50"></div>`
+          <div class="profile-time text-right font-mono text-xs tabular-nums text-gray-900 dark:text-gray-200 font-bold"></div>
+          <div class="profile-share text-right font-mono text-[11px] tabular-nums text-gray-900 dark:text-gray-200"></div>
+          <div class="profile-cumulativeshare text-right font-mono text-[11px] tabular-nums text-gray-900 dark:text-gray-200"></div>`
         )
     )
     .on('click', (_event, d) => {
