@@ -13,7 +13,7 @@ export const colorScaleDark = d3
 export const colorScaleLight = d3
   .scaleSymlog<string, string>()
   .domain([1, 5000, 10000, 60000])
-  .range(['white', '#facc15', '#dc2626', '#c026d3'])
+  .range(['white', '#eab308', '#dc2626', '#c026d3'])
   .constant(1000)
   .interpolate(d3.interpolateHsl)
   .clamp(true);
