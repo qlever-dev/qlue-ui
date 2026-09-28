@@ -258,7 +258,7 @@ function updateTree(
   updateNodeSelection
     .selectAll<SVGGElement, d3.HierarchyNode<QueryExecutionTree>>('g.status-indicator')
     .data((d) => [d])
-    .each(function(d) {
+    .each(function (d) {
       renderStatusIndicator(this, d.data.status);
     });
 
@@ -492,7 +492,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('y', -boxHeight / 2 + boxPadding)
     .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
-    .each(function(d) {
+    .each(function (d) {
       // NOTE: reserve room on the right so long titles don't run under the status indicator
       fitText(this, replaceIRIs(splitDescription(d.data.description).title), boxWidth - 20 - 30);
     });
@@ -510,7 +510,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('y', -boxHeight / 2 + boxPadding + 16)
     .attr('text-anchor', 'left')
     .attr('dominant-baseline', 'middle')
-    .each(function(d) {
+    .each(function (d) {
       const { subtitle } = splitDescription(d.data.description);
       fitText(this, subtitle ? replaceIRIs(subtitle) : '', boxWidth - 20);
     });
@@ -536,7 +536,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('y', -boxHeight / 2 + boxHeight * 0.5)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .each(function(d) {
+    .each(function (d) {
       fitText(this, d.data.column_names.join(', '), boxWidth - 55);
     });
 
@@ -611,7 +611,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .attr('cy', -boxHeight / 2 + boxPadding)
     .attr('r', statusIndicatorRadius);
 
-  statusIndicatorGroups.each(function(d) {
+  statusIndicatorGroups.each(function (d) {
     renderStatusIndicator(this, d.data.status);
   });
 }

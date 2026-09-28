@@ -106,7 +106,7 @@ export function renderProfile(tree: QueryExecutionTree) {
     .ease(d3.easeCubicOut)
     .style('transform', (_d, i) => `translateY(${i * rowHeight}px)`);
 
-  rows.each(function(d) {
+  rows.each(function (d) {
     renderStatusIndicator(this.querySelector('.profile-status')!, d.status);
     const { title, subtitle } = splitDescription(d.description);
     this.querySelector('.profile-title')!.textContent = replaceIRIs(title);
