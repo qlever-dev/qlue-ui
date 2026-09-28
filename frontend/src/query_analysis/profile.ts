@@ -73,7 +73,7 @@ export function renderProfile(tree: QueryExecutionTree) {
             <div class="profile-subtitle mt-0.5 font-mono text-[10.5px] truncate text-gray-500 dark:text-gray-200/45"></div>
           </div>
           <div class="h-3 rounded-[3px] overflow-hidden bg-gray-200 dark:bg-white/5">
-            <div class="profile-bar h-full rounded-[3px] bg-[var(--bar-fill-light)] dark:bg-[var(--bar-fill-dark)]" style="width: 0%"></div>
+            <div class="profile-bar h-full rounded-[3px] bg-[var(--bar-fill-light)] dark:bg-(--bar-fill-dark)" style="width: 0%"></div>
           </div>
           <div class="profile-time text-right font-mono text-xs tabular-nums text-gray-900 dark:text-gray-200"></div>
           <div class="profile-share text-right font-mono text-[11px] tabular-nums text-gray-500 dark:text-gray-200/50"></div>`
