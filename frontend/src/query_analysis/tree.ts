@@ -32,14 +32,15 @@ export function setupTreeView() {
 
   setupAutozoom();
 
-  queryAnalysisModal.addEventListener('pointerdown', (e) => {
+  const treeSvg = document.getElementById('queryExecutionTreeSvg')!;
+  treeSvg.addEventListener('pointerdown', (e) => {
     if (e.target instanceof SVGTextElement) return;
-    queryAnalysisModal.classList.remove('cursor-grab');
-    queryAnalysisModal.classList.add('cursor-grabbing');
+    treeSvg.classList.remove('cursor-grab');
+    treeSvg.classList.add('cursor-grabbing');
   });
   queryAnalysisModal.addEventListener('pointerup', () => {
-    queryAnalysisModal.classList.remove('cursor-grabbing');
-    queryAnalysisModal.classList.add('cursor-grab');
+    treeSvg.classList.remove('cursor-grabbing');
+    treeSvg.classList.add('cursor-grab');
   });
 
   const width = window.innerWidth;
