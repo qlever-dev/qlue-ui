@@ -21,6 +21,10 @@ export interface PlanNode {
   cached?: boolean;
   /** Materializes lazily, i.e. produces rows while its parent already runs. */
   lazy?: boolean;
+  /** Skipped by the engine: does no work of its own, only its children run. */
+  optimizedOut?: boolean;
+  /** Fails when it would complete, which fails the whole query. */
+  fails?: boolean;
   details?: Record<string, unknown>;
   children?: PlanNode[];
 }
@@ -43,63 +47,92 @@ const scan = (
 /**
  * A plan roughly shaped like a QLever plan for
  *
- *   SELECT ?person ?name ?birthplace WHERE {
+ *   SELECT ?person ?name ?birthplace ?placeName WHERE {
  *     ?person wdt:P31 wd:Q5 ; rdfs:label ?name ; wdt:P19 ?birthplace .
- *     ?birthplace wdt:P17 wd:Q183 .
+ *     ?birthplace wdt:P17 wd:Q183 ; rdfs:label ?placeName .
  *   } ORDER BY ?name LIMIT 100
+ *
+ * It is timed so the run passes through every node status: the scan for
+ * ?birthplace wdt:P17 wd:Q183 fails while the lazy JOIN on ?person still runs
+ * (cancelled) and before the ?placeName scan starts (not started).
  */
 export const DEFAULT_PLAN: PlanNode = {
   description: 'SORT / ORDER BY on ?name',
-  column_names: ['?person', '?name', '?birthplace'],
+  column_names: ['?person', '?name', '?birthplace', '?placeName'],
   rows: 84_231,
-  duration: 900,
+  duration: 3500,
   children: [
     {
       description: 'JOIN on ?birthplace',
-      column_names: ['?person', '?name', '?birthplace'],
+      column_names: ['?person', '?name', '?birthplace', '?placeName'],
       rows: 84_231,
-      duration: 1400,
+      duration: 5000,
       lazy: true,
       children: [
         {
           description: 'JOIN on ?person',
           column_names: ['?person', '?name', '?birthplace'],
           rows: 412_884,
-          duration: 2100,
+          duration: 20_000,
           lazy: true,
           children: [
             {
               description: 'JOIN on ?person',
               column_names: ['?person', '?name'],
               rows: 9_312_004,
-              duration: 2600,
+              duration: 9000,
               children: [
-                scan('INDEX SCAN ?person wdt:P31 wd:Q5', ['?person'], 9_512_331, 1200),
-                scan(
-                  'INDEX SCAN ?person rdfs:label ?name',
-                  ['?person', '?name'],
-                  108_442_010,
-                  1800,
-                  {
-                    cached: true,
-                  }
-                ),
+                scan('INDEX SCAN ?person wdt:P31 wd:Q5', ['?person'], 9_512_331, 4500),
+                {
+                  description: 'SORT on ?person',
+                  column_names: ['?person', '?name'],
+                  rows: 108_442_010,
+                  duration: 0,
+                  optimizedOut: true,
+                  children: [
+                    scan(
+                      'INDEX SCAN ?person rdfs:label ?name',
+                      ['?person', '?name'],
+                      108_442_010,
+                      7000,
+                      {
+                        cached: true,
+                      }
+                    ),
+                  ],
+                },
               ],
             },
             scan(
               'INDEX SCAN ?person wdt:P19 ?birthplace',
               ['?person', '?birthplace'],
               6_204_112,
-              1500
+              6000,
+              { lazy: true }
             ),
           ],
         },
         {
-          description: 'INDEX SCAN ?birthplace wdt:P17 wd:Q183',
-          column_names: ['?birthplace'],
+          description: 'JOIN on ?birthplace',
+          column_names: ['?birthplace', '?placeName'],
           rows: 121_004,
-          duration: 700,
-          details: { 'triple-count': 121_004, 'permutation-used': 'POS' },
+          duration: 4000,
+          children: [
+            {
+              description: 'INDEX SCAN ?birthplace wdt:P17 wd:Q183',
+              column_names: ['?birthplace'],
+              rows: 121_004,
+              duration: 25_000,
+              fails: true,
+              details: { 'triple-count': 121_004, 'permutation-used': 'POS' },
+            },
+            scan(
+              'INDEX SCAN ?birthplace rdfs:label ?placeName',
+              ['?birthplace', '?placeName'],
+              48_918_220,
+              3000
+            ),
+          ],
         },
       ],
     },

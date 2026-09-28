@@ -44,20 +44,32 @@ function schedule(plan: PlanNode, t: number): Scheduled {
   return { plan, start, ownStart, end, children };
 }
 
+/** When the first failing operation fails, `Infinity` if none fails. */
+function failureTime(scheduled: Scheduled): number {
+  return Math.min(
+    scheduled.plan.fails ? scheduled.end : Number.POSITIVE_INFINITY,
+    ...scheduled.children.map(failureTime)
+  );
+}
+
 /** The simulated execution of a plan, sampled at an arbitrary point in time. */
 export class Simulation {
   private readonly root: Scheduled;
+  private readonly failAt: number;
   readonly duration: number;
 
   constructor(plan: PlanNode) {
     this.root = schedule(plan, 0);
-    this.duration = this.root.end;
+    this.failAt = failureTime(this.root);
+    // NOTE: a failure ends the execution
+    this.duration = Math.min(this.root.end, this.failAt);
   }
 
   /** The tree as it looks `t` simulated milliseconds into the execution. */
   frameAt(t: number): QueryExecutionNode {
     const tree = toQueryExecutionTree(this.root.plan);
-    apply(this.root, tree, t);
+    apply(this.root, tree, Math.min(t, this.failAt));
+    if (t >= this.failAt) fail(this.root, tree, this.failAt);
     return tree;
   }
 }
@@ -76,6 +88,12 @@ function apply(scheduled: Scheduled, node: QueryExecutionNode, t: number): void 
 
   if (t < start) {
     node.status = 'not started';
+    node.total_time = childrenTime;
+    return;
+  }
+
+  if (plan.optimizedOut) {
+    node.status = 'optimized out';
     node.total_time = childrenTime;
     return;
   }
@@ -110,4 +128,32 @@ function apply(scheduled: Scheduled, node: QueryExecutionNode, t: number): void 
   } else {
     node.status = running ? 'fully materialized in progress' : 'fully materialized completed';
   }
+}
+
+/**
+ * Applies a failure at `failAt` like QLever reports it: the failing operation
+ * is failed, everything above it failed because a child failed, what still ran
+ * is cancelled and what hadn't started yet never starts.
+ *
+ * Returns whether the failure happened in this subtree.
+ */
+function fail(scheduled: Scheduled, node: QueryExecutionNode, failAt: number): boolean {
+  const childFailed = scheduled.children
+    .map((child, i) => fail(child, node.children[i], failAt))
+    .some(Boolean);
+
+  if (scheduled.plan.fails && scheduled.end <= failAt) {
+    node.status = 'failed';
+    return true;
+  }
+  if (childFailed) {
+    node.status = 'failed because child failed';
+    return true;
+  }
+  if (scheduled.start >= failAt) {
+    node.status = 'not started';
+  } else if (node.status.endsWith('in progress')) {
+    node.status = 'cancelled';
+  }
+  return false;
 }
