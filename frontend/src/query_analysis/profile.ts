@@ -64,7 +64,7 @@ export function renderProfile(tree: QueryExecutionTree) {
         .append('div')
         .attr(
           'class',
-          'profile-row absolute inset-x-0 top-0 h-14 grid grid-cols-[300px_1fr_120px_74px] gap-x-[18px] items-center border-b border-gray-100 dark:border-white/5 cursor-pointer'
+          'profile-row absolute inset-x-0 top-0 h-14 grid grid-cols-[300px_1fr_120px_74px] gap-x-[18px] items-center border-b border-gray-100 dark:border-white/5 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 px-2'
         )
         .style('transform', (_d, i) => `translateY(${i * rowHeight}px)`)
         .html(
