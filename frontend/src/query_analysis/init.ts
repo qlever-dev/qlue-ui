@@ -6,15 +6,41 @@
 
 import { clearCache } from '../buttons/clear_cache';
 import type { Editor } from '../editor/init';
-import type { ExecuteQueryEventDetails } from '../results/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import { SparqlEngine } from '../types/lsp_messages';
 import type { QueryExecutionTree } from '../types/query_execution_tree';
-import { setupWebSocket } from './utils';
 import { setupQueryAnalysisUi } from './ui';
+import { setupWebSocket } from './utils';
 
 let queryRunning = false;
 let activeSocket: WebSocket | null = null;
+
+// How long to wait for the runtime-information websocket to connect before the
+// query is sent anyway (see `watchQueryExecution`). Connecting takes a few
+// milliseconds directly and a few dozen through a proxy; the timeout only
+// bounds the delay if the websocket cannot be established at all.
+const socketConnectTimeoutMs = 2000;
+
+// Set by `setupQueryAnalysis`, see `watchQueryExecution`.
+let watchQuery: ((queryId: string) => Promise<void>) | null = null;
+
+/**
+ * Connect the websocket over which QLever sends the runtime information of the
+ * query with the given id, and wait until it is connected.
+ *
+ * NOTE: This must happen BEFORE the query is sent. QLever keeps the runtime
+ * information of a query only while that query runs and forgets it as soon as
+ * it has finished. A websocket that connects afterwards is therefore never
+ * served, and the analysis tree stays empty; that used to happen for every
+ * query that finished faster than the websocket handshake. A watcher that is
+ * registered first, in contrast, is picked up by the query when it starts.
+ *
+ * Resolves when the websocket is connected, and also when it cannot be
+ * connected at all, so that a broken websocket never blocks the query.
+ */
+export function watchQueryExecution(queryId: string): Promise<void> {
+  return watchQuery ? watchQuery(queryId) : Promise.resolve();
+}
 
 /**
  * Feeds the query analysis view with live runtime information.
@@ -68,7 +94,9 @@ export function setupQueryAnalysis(editor: Editor) {
     openModal();
   });
 
-  window.addEventListener('execute-query', async (event) => {
+  // The implementation of `watchQueryExecution`, see there. It lives here
+  // because it needs `editor` and `zoom_to` from this scope.
+  watchQuery = async (queryId: string) => {
     queryRunning = true;
 
     // NOTE: cleanup previous runs. Closing the previous query's socket is
@@ -77,7 +105,6 @@ export function setupQueryAnalysis(editor: Editor) {
     clear();
     closeActiveSocket();
     clearInterval(clockTimer);
-    queryStart = performance.now();
     queryEnd = null;
     latestTree = null;
 
@@ -90,14 +117,26 @@ export function setupQueryAnalysis(editor: Editor) {
       return;
     }
 
-    const { queryId } = (event as CustomEvent<ExecuteQueryEventDetails>).detail;
-
     clockTimer = setInterval(() => {
       if (latestTree != null) renderStats(latestTree, elapsed());
     }, 100);
 
     const socket = setupWebSocket(service.url, queryId);
     activeSocket = socket;
+
+    // Resolve as soon as the websocket is connected, and also if it cannot be
+    // connected (`error`) or is closed right away, so that the query is never
+    // held up by more than the timeout.
+    const connected = new Promise<void>((resolve) => {
+      const done = () => {
+        clearTimeout(timeout);
+        resolve();
+      };
+      const timeout = setTimeout(done, socketConnectTimeoutMs);
+      socket.addEventListener('open', done, { once: true });
+      socket.addEventListener('error', done, { once: true });
+      socket.addEventListener('close', done, { once: true });
+    });
 
     socket.addEventListener('open', () => {
       socket.send('cancel_on_close');
@@ -144,7 +183,9 @@ export function setupQueryAnalysis(editor: Editor) {
         setTimeout(processMessage, throttleTimeMs);
       }
     });
-  });
+    await connected;
+    queryStart = performance.now();
+  };
 
   // NOTE: registered once (not per execute-query) to avoid accumulating
   // listeners. Canceling closes the socket, which signals QLever to cancel
