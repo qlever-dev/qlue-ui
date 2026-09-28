@@ -71,7 +71,7 @@ export function renderProfile(tree: QueryExecutionTree) {
         .append('div')
         .attr(
           'class',
-          'profile-row absolute inset-x-0 top-0 h-14 grid grid-cols-[300px_1fr_120px_74px] gap-x-[18px] items-center border-b border-gray-100 dark:border-white/5 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 px-2'
+          'profile-row absolute inset-x-0 top-0 h-14 grid grid-cols-[300px_1fr_120px_74px_74px] gap-x-[18px] items-center border-b border-gray-100 dark:border-white/5 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 px-2'
         )
         .style('transform', (_d, i) => `translateY(${i * rowHeight}px)`)
         .html(
@@ -88,10 +88,11 @@ export function renderProfile(tree: QueryExecutionTree) {
             </div>
           </div>
           <div class="h-3 rounded-[3px] overflow-hidden bg-gray-200 dark:bg-white/5">
-            <div class="profile-bar h-full rounded-[3px] bg-[var(--bar-fill-light)] dark:bg-(--bar-fill-dark)" style="width: 0%"></div>
+            <div class="profile-bar h-full rounded-[3px] bg-(--bar-fill-light) dark:bg-(--bar-fill-dark)" style="width: 0%"></div>
           </div>
           <div class="profile-time text-right font-mono text-xs tabular-nums text-gray-900 dark:text-gray-200"></div>
-          <div class="profile-share text-right font-mono text-[11px] tabular-nums text-gray-500 dark:text-gray-200/50"></div>`
+          <div class="profile-share text-right font-mono text-[11px] tabular-nums text-gray-500 dark:text-gray-200/50"></div>
+          <div class="profile-cumulativeshare text-right font-mono text-[11px] tabular-nums text-gray-500 dark:text-gray-200/50"></div>`
         )
     )
     .on('click', (_event, d) => {
@@ -106,6 +107,7 @@ export function renderProfile(tree: QueryExecutionTree) {
     .ease(d3.easeCubicOut)
     .style('transform', (_d, i) => `translateY(${i * rowHeight}px)`);
 
+  let cumulativeShare = 0;
   rows.each(function (d) {
     renderStatusIndicator(this.querySelector('.profile-status')!, d.status);
     const { title, subtitle } = splitDescription(d.description);
@@ -114,6 +116,9 @@ export function renderProfile(tree: QueryExecutionTree) {
     this.querySelector('.profile-time')!.textContent = `${selfTime(d).toLocaleString('en-US')} ms`;
     const share = totalTime > 0 ? (selfTime(d) / totalTime) * 100 : 0;
     this.querySelector('.profile-share')!.textContent = `${share.toFixed(share < 10 ? 1 : 0)}%`;
+    cumulativeShare += share;
+    this.querySelector('.profile-cumulativeshare')!.textContent =
+      `${cumulativeShare.toFixed(cumulativeShare < 10 ? 1 : 0)}%`;
   });
 
   rows
