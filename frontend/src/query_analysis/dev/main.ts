@@ -11,6 +11,7 @@
 // without waiting for the Monaco editor and the language server to load.
 
 import '../../style.css';
+import { setupThemeSwitcher } from '../../buttons/theme_switcher';
 import { setupQueryAnalysisModal } from '../init';
 import { clearProfile } from '../profile';
 import { clearQueryExecutionTree } from '../tree';
@@ -19,18 +20,25 @@ import { Simulation } from './simulate';
 
 const FRAME_INTERVAL_MS = 50;
 
-// NOTE: the modal markup is lifted out of index.html at runtime instead of
-// being duplicated here, so the rig can never drift from the real page.
-async function mountModalMarkup() {
+// NOTE: the modal and theme switch markup is lifted out of index.html at
+// runtime instead of being duplicated here, so the rig can never drift from the
+// real page.
+async function mountMarkup() {
   const html = await fetch('index.html').then((response) => response.text());
-  const modal = new DOMParser()
-    .parseFromString(html, 'text/html')
-    .getElementById('queryAnalysisModal');
+  const page = new DOMParser().parseFromString(html, 'text/html');
+  const modal = page.getElementById('queryAnalysisModal');
   if (!modal) throw new Error('index.html has no #queryAnalysisModal');
+  const themeSwitch = page.getElementById('theme-switch')?.closest('label');
+  if (!themeSwitch) throw new Error('index.html has no #theme-switch');
+  const controls = document.getElementById('devControls')!;
+  controls.appendChild(themeSwitch);
+  // NOTE: the modal ends above the rig controls, so they don't cover its footer.
+  modal.style.height = `calc(100% - ${controls.offsetHeight}px)`;
   document.body.appendChild(modal);
 }
 
-mountModalMarkup().then(() => {
+mountMarkup().then(() => {
+  setupThemeSwitcher();
   const { openModal, render, renderStats } = setupQueryAnalysisModal();
   openModal();
 
