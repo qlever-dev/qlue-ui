@@ -4,7 +4,11 @@
 // │ Licensed under the MIT license. │ \\
 // └─────────────────────────────────┘ \\
 
-import type { QueryExecutionNode } from '../../types/query_execution_tree';
+import type {
+  QueryExecutionNode,
+  QueryExecutionTree,
+  QueryMeta,
+} from '../../types/query_execution_tree';
 import type { PlanNode } from './plan';
 import { toQueryExecutionTree } from './plan';
 
@@ -58,7 +62,10 @@ export class Simulation {
   private readonly failAt: number;
   readonly duration: number;
 
-  constructor(plan: PlanNode) {
+  constructor(
+    plan: PlanNode,
+    private readonly meta?: QueryMeta
+  ) {
     this.root = schedule(plan, 0);
     this.failAt = failureTime(this.root);
     // NOTE: a failure ends the execution
@@ -66,10 +73,11 @@ export class Simulation {
   }
 
   /** The tree as it looks `t` simulated milliseconds into the execution. */
-  frameAt(t: number): QueryExecutionNode {
-    const tree = toQueryExecutionTree(this.root.plan);
+  frameAt(t: number): QueryExecutionTree {
+    const tree: QueryExecutionTree = toQueryExecutionTree(this.root.plan);
     apply(this.root, tree, Math.min(t, this.failAt));
     if (t >= this.failAt) fail(this.root, tree, this.failAt);
+    tree.meta = this.meta;
     return tree;
   }
 }

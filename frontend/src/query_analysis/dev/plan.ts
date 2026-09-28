@@ -4,7 +4,7 @@
 // │ Licensed under the MIT license. │ \\
 // └─────────────────────────────────┘ \\
 
-import type { QueryExecutionNode } from '../../types/query_execution_tree';
+import type { QueryExecutionNode, QueryMeta } from '../../types/query_execution_tree';
 
 /**
  * A node of the simulated query plan: the static shape of the tree plus how
@@ -135,6 +135,114 @@ export const DEFAULT_PLAN: PlanNode = {
           ],
         },
       ],
+    },
+  ],
+};
+
+/**
+ * Query planning info with one component per combination worth rendering:
+ * both planners, tiny to huge components, subgraph counts well below, right at
+ * and capped above the budget (`budget + 1`, which switches to greedy), and a
+ * few different budgets.
+ */
+export const DEFAULT_META: QueryMeta = {
+  time_query_planning: 37,
+  query_planning: [
+    // a single triple: nothing to join
+    {
+      algorithm: 'dynamic-programming',
+      num_nodes: 1,
+      num_connected_subgraphs: 1,
+      budget: 1500,
+      num_candidate_plans: 0,
+    },
+    // a simple join of two triples
+    {
+      algorithm: 'dynamic-programming',
+      num_nodes: 2,
+      num_connected_subgraphs: 3,
+      budget: 1500,
+      num_candidate_plans: 4,
+    },
+    // a small star
+    {
+      algorithm: 'dynamic-programming',
+      num_nodes: 5,
+      num_connected_subgraphs: 31,
+      budget: 1500,
+      num_candidate_plans: 212,
+    },
+    // a path of eight triples
+    {
+      algorithm: 'dynamic-programming',
+      num_nodes: 8,
+      num_connected_subgraphs: 36,
+      budget: 1500,
+      num_candidate_plans: 486,
+    },
+    // a larger star, still comfortably within the budget
+    {
+      algorithm: 'dynamic-programming',
+      num_nodes: 10,
+      num_connected_subgraphs: 1023,
+      budget: 1500,
+      num_candidate_plans: 18_944,
+    },
+    // exactly at the budget: still dynamic programming
+    {
+      algorithm: 'dynamic-programming',
+      num_nodes: 11,
+      num_connected_subgraphs: 1500,
+      budget: 1500,
+      num_candidate_plans: 31_207,
+    },
+    // one over the budget: greedy
+    {
+      algorithm: 'greedy',
+      num_nodes: 11,
+      num_connected_subgraphs: 1501,
+      budget: 1500,
+      num_candidate_plans: 1_342,
+    },
+    // a big star, way over the budget
+    {
+      algorithm: 'greedy',
+      num_nodes: 24,
+      num_connected_subgraphs: 1501,
+      budget: 1500,
+      num_candidate_plans: 5_816,
+    },
+    // a small budget forces greedy even for a small component
+    {
+      algorithm: 'greedy',
+      num_nodes: 6,
+      num_connected_subgraphs: 11,
+      budget: 10,
+      num_candidate_plans: 97,
+    },
+    // a budget of zero: always greedy
+    {
+      algorithm: 'greedy',
+      num_nodes: 3,
+      num_connected_subgraphs: 1,
+      budget: 0,
+      num_candidate_plans: 12,
+    },
+    // a large budget keeps a big component on dynamic programming
+    {
+      algorithm: 'dynamic-programming',
+      num_nodes: 16,
+      num_connected_subgraphs: 65_535,
+      budget: 100_000,
+      num_candidate_plans: 2_904_311,
+    },
+    // huge component with a large budget, still over it
+    {
+      algorithm: 'greedy',
+      num_nodes: 40,
+      num_connected_subgraphs: 100_001,
+      budget: 100_000,
+      num_candidate_plans: 48_220,
     },
   ],
 };

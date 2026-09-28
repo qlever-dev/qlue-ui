@@ -13,7 +13,7 @@
 import '../../style.css';
 import { setupThemeSwitcher } from '../../buttons/theme_switcher';
 import { setupQueryAnalysisUi } from '../ui';
-import { DEFAULT_PLAN } from './plan';
+import { DEFAULT_META, DEFAULT_PLAN } from './plan';
 import { Simulation } from './simulate';
 
 const FRAME_INTERVAL_MS = 50;
@@ -40,7 +40,7 @@ mountMarkup().then(() => {
   const { openModal, render, clear } = setupQueryAnalysisUi(() => restart());
   openModal();
 
-  const simulation = new Simulation(DEFAULT_PLAN);
+  const simulation = new Simulation(DEFAULT_PLAN, DEFAULT_META);
   const slider = document.getElementById('devTimeline') as HTMLInputElement;
   const playButton = document.getElementById('devPlayButton')!;
   const restartButton = document.getElementById('devRestartButton')!;
