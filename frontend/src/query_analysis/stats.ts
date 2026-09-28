@@ -8,8 +8,9 @@ import type { QueryExecutionTree, QueryMeta } from '../types/query_execution_tre
 
 /**
  * Fills the stats in the analysis header: number of operations, how many are
- * in progress / completed, and the measured time. The measured time is the
- * root's total time once the root is completed, `elapsedMs` before that.
+ * in progress / completed, and the planning, execution and total time. The
+ * execution time is the root's total time once the root is completed,
+ * `elapsedMs` before that; the total time is planning plus execution time.
  */
 export function renderStats(tree: QueryExecutionTree, elapsedMs: number) {
   let operations = 0;
@@ -36,8 +37,11 @@ export function renderStats(tree: QueryExecutionTree, elapsedMs: number) {
     const planningTime = tree.meta.time_query_planning;
     document.getElementById('queryAnalysisStatsPlanningTime')!.textContent =
       `${planningTime.toLocaleString('en-US')} ms`;
+    document.getElementById('queryAnalysisStatsTotalTime')!.textContent =
+      `${(planningTime + executionTime).toLocaleString('en-US')} ms`;
   } else {
     document.getElementById('queryAnalysisStatsPlanningTime')!.textContent = 'N/A';
+    document.getElementById('queryAnalysisStatsTotalTime')!.textContent = 'N/A';
   }
   if (tree.meta !== renderedMeta) {
     renderPlanning(tree.meta);
