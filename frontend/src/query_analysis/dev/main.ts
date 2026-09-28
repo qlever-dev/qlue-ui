@@ -37,7 +37,8 @@ async function mountMarkup() {
 
 mountMarkup().then(() => {
   setupThemeSwitcher();
-  const { openModal, render, clear } = setupQueryAnalysisUi(() => restart());
+  const { openModal, render, clear, setQueryName } = setupQueryAnalysisUi(() => restart());
+  setQueryName('People born in Germany');
   openModal();
 
   const simulation = new Simulation(DEFAULT_PLAN, DEFAULT_META);

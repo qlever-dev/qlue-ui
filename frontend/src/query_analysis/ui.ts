@@ -31,6 +31,8 @@ export function setupQueryAnalysisUi(onRerun: () => void) {
   const queryAnalysisModal = document.getElementById('queryAnalysisModal')!;
   const closeButton = document.getElementById('queryAnalysisModalCloseButton')!;
   const rerunButton = document.getElementById('rerunQueryButton')!;
+  const queryNameContainer = document.getElementById('queryAnalysisNameContainer')!;
+  const queryName = document.getElementById('queryAnalysisName')!;
 
   const { renderTree, resetZoom, focusNode } = setupTreeView();
   setupNodeDetailsPanel(() => deselectNode());
@@ -80,7 +82,13 @@ export function setupQueryAnalysisUi(onRerun: () => void) {
     clearProfile();
   }
 
-  return { openModal, render, renderStats, clear };
+  // NOTE: the name is optional; without one the whole "query" label is hidden.
+  function setQueryName(name: string | null) {
+    queryNameContainer.classList.toggle('hidden', !name);
+    queryName.textContent = name ?? '';
+  }
+
+  return { openModal, render, renderStats, clear, setQueryName };
 }
 
 /**

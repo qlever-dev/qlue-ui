@@ -6,6 +6,7 @@
 
 import { clearCache } from '../buttons/clear_cache';
 import type { Editor } from '../editor/init';
+import { getActiveTabName } from '../tabs/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import { SparqlEngine } from '../types/lsp_messages';
 import type { QueryExecutionTree } from '../types/query_execution_tree';
@@ -52,7 +53,7 @@ export function watchQueryExecution(queryId: string): Promise<void> {
 export function setupQueryAnalysis(editor: Editor) {
   const analysisButton = document.getElementById('analysisButton')!;
 
-  const { openModal, render, renderStats, clear } = setupQueryAnalysisUi(() => {
+  const { openModal, render, renderStats, clear, setQueryName } = setupQueryAnalysisUi(() => {
     if (!queryRunning) {
       clearCache(editor);
       window.dispatchEvent(new Event('execute-start-request'));
@@ -103,6 +104,8 @@ export function setupQueryAnalysis(editor: Editor) {
     // essential: otherwise its late runtime messages keep rendering into the
     // shared tree state and corrupt the new query's tree.
     clear();
+    // NOTE: the query runs in the active tab, so its name is the query's name.
+    setQueryName(getActiveTabName());
     closeActiveSocket();
     clearInterval(clockTimer);
     queryEnd = null;
