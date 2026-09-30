@@ -37,8 +37,12 @@ export async function handleRequestParameter(editor: Editor) {
     openParseTree(editor);
   }
 
-  // Clean URL after consuming inbound parameters, keeping only the backend slug
-  history.replaceState(null, '', slug ? `${BASE_PATH}${slug}` : BASE_PATH);
+  // Clean URL after consuming inbound parameters, keeping only the backend slug and persistent parameters
+  history.replaceState(
+    null,
+    '',
+    `${slug ? `${BASE_PATH}${slug}` : BASE_PATH}${persistentSearch()}`
+  );
 }
 
 /** Updates the URL with a share link after every successful query execution. */
@@ -57,6 +61,17 @@ export function setupUrlSync(editor: Editor) {
       )) as QlueLsServiceConfig;
       slug = backend.name;
     }
-    history.replaceState(null, '', `${BASE_PATH}${slug}/${shareId}`);
+    history.replaceState(null, '', `${BASE_PATH}${slug}/${shareId}${persistentSearch()}`);
   });
+}
+
+/** Returns the query string of the current URL, reduced to the parameters that should persist. */
+function persistentSearch(): string {
+  const current = new URLSearchParams(window.location.search);
+  const kept = new URLSearchParams();
+  for (const key of ['exec', 'parseTree']) {
+    const value = current.get(key);
+    if (value) kept.set(key, value);
+  }
+  return kept.size ? `?${kept}` : '';
 }
