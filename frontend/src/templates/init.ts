@@ -1,6 +1,7 @@
 // NOTE: Template editor panel lifecycle — open/close, tabs, and LS communication.
 
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
+import { EditorApp } from 'monaco-languageclient/editorApp';
 import { apiFetch, clearApiKey, getApiKey } from '../api';
 import { executeQuery } from '../buttons/execute';
 import { applyPanelWidth, toggleWideMode } from '../buttons/wide_mode';
@@ -49,6 +50,7 @@ const TAB_CLASS = 'flex items-center px-2 cursor-pointer border-b-2';
 const TAB_ACTIVE_CLASS = `${TAB_CLASS} font-semibold border-gray-500 dark:border-gray-300`;
 const TAB_INACTIVE_CLASS = `${TAB_CLASS} border-transparent text-gray-500 dark:text-gray-400`;
 
+let templateEditorApp: EditorApp | null = null;
 let templateEditor: monaco.editor.IStandaloneCodeEditor | null = null;
 let editorRef: Editor | null = null;
 let activeTab = TABS[0].label;
@@ -206,22 +208,28 @@ export async function openTemplatesEditor(editor: Editor) {
   // NOTE: Let the layout settle, then relayout Monaco.
   setTimeout(() => editor.editorApp.getEditor()?.layout(), 50);
 
-  // NOTE: Create standalone Monaco editor for template editing.
+  // NOTE: Create the template editor through an EditorApp, so its model is held by a
+  // model reference. A bare `monaco.editor.create` model gets destroyed by
+  // monaco-vscode-api as soon as one of its own references to it is released (on click).
   const editorContainer = document.getElementById('templateEditorContainer')!;
-  templateEditor = monaco.editor.create(editorContainer, {
-    language: 'sparql',
-    automaticLayout: true,
-    minimap: { enabled: false },
-    lineNumbers: 'on',
-    scrollBeyondLastLine: false,
-    links: false,
-    fontSize: 13,
-    theme: document.getElementById('theme-switch')
-      ? (document.getElementById('theme-switch') as HTMLInputElement).checked
-        ? 'QlueUiThemeDark'
-        : 'QlueUiThemeLight'
-      : undefined,
+  templateEditorApp = new EditorApp({
+    codeResources: { modified: { uri: 'template.rq', text: '' } },
+    editorOptions: {
+      automaticLayout: true,
+      minimap: { enabled: false },
+      lineNumbers: 'on',
+      scrollBeyondLastLine: false,
+      links: false,
+      fontSize: 13,
+      theme: document.getElementById('theme-switch')
+        ? (document.getElementById('theme-switch') as HTMLInputElement).checked
+          ? 'QlueUiThemeDark'
+          : 'QlueUiThemeLight'
+        : undefined,
+    },
   });
+  await templateEditorApp.start(editorContainer);
+  templateEditor = templateEditorApp.getEditor()!;
 
   buildTabs(editor);
   selectTemplate(activeTemplateKey(), editor);
@@ -665,7 +673,8 @@ function closeTemplatesEditor() {
   changeListener = null;
 
   // NOTE: Dispose the standalone editor.
-  templateEditor?.dispose();
+  templateEditorApp?.dispose();
+  templateEditorApp = null;
   templateEditor = null;
   activeKey = null;
   currentConfig = null;
