@@ -7,7 +7,7 @@
 import { Uri } from 'monaco-editor';
 import editorWorkerUrl from 'monaco-editor/esm/vs/editor/editor.worker?worker&url';
 import type { EditorAppConfig } from 'monaco-languageclient/editorApp';
-import type { LanguageClientConfig } from 'monaco-languageclient/lcwrapper';
+import { type LanguageClientConfig, LcWorker } from 'monaco-languageclient/lcwrapper';
 import type { MonacoVscodeApiConfig } from 'monaco-languageclient/vscodeApiWrapper';
 import {
   useWorkerFactory,
@@ -15,27 +15,12 @@ import {
   type WorkerLoader,
 } from 'monaco-languageclient/workerFactory';
 import { initStep } from '../../timing';
-import languageServerWorker from './languageServer.worker?worker';
+import languageServerWorkerUrl from './languageServer.worker?worker&url';
 import sparqlLanguageConfig from './sparql.configuration.json?raw';
 import sparqlThemeDark from './sparql.theme.dark.json?raw';
 import sparqlThemeLight from './sparql.theme.light.json?raw';
 
-export async function buildWrapperConfig(initial: string) {
-  const worker = await loadLanguageServerWorker();
-  worker.addEventListener('message', (e) => {
-    if (e.data.type === 'crash') {
-      document.dispatchEvent(
-        new CustomEvent('toast', {
-          detail: {
-            type: 'error',
-            message:
-              'Language Server Crashed!<br> Please restart the application.<br><br> If you can reproduce this,<br> please open a github issue :)',
-          },
-        })
-      );
-    }
-  });
-
+export function buildWrapperConfig(initial: string) {
   const workerLoaders: Partial<Record<string, WorkerLoader>> = {
     editorWorkerService: () => new WorkerDescriptor(editorWorkerUrl, { type: 'module' }),
   };
@@ -124,14 +109,17 @@ export async function buildWrapperConfig(initial: string) {
     },
     connection: {
       options: {
-        $type: 'WorkerDirect',
-        worker: worker,
+        $family: 'Worker',
+        realization: () => new LcWorker(),
+        workerUrl: new URL(languageServerWorkerUrl, import.meta.url),
+        type: 'module',
+        workerName: 'Language Server',
       },
-    },
-    restartOptions: {
-      retries: 5,
-      timeout: 1000,
-      keepWorker: false,
+      retryConfig: {
+        retries: 5,
+        timeout: 1000,
+        disposeOnRestart: true,
+      },
     },
   };
 
@@ -193,17 +181,34 @@ export async function buildWrapperConfig(initial: string) {
   };
 }
 
-function loadLanguageServerWorker(): Promise<Worker> {
+/**
+ * Resolves once the language server worker has instantiated the qlue-ls wasm,
+ * and shows a toast if the language server crashes later on.
+ */
+export function waitForLanguageServer(worker: Worker): Promise<void> {
+  worker.addEventListener('message', (e) => {
+    if (e.data.type === 'crash') {
+      document.dispatchEvent(
+        new CustomEvent('toast', {
+          detail: {
+            type: 'error',
+            message:
+              'Language Server Crashed!<br> Please restart the application.<br><br> If you can reproduce this,<br> please open a github issue :)',
+          },
+        })
+      );
+    }
+  });
   return new Promise((resolve) => {
-    const instance: Worker = new languageServerWorker({ name: 'Language Server' });
-    instance.onmessage = (event) => {
+    // NOTE: Use addEventListener, the language client's message reader owns worker.onmessage.
+    worker.addEventListener('message', (event) => {
       if (event.data.type === 'booting') {
         initStep('load language server worker script');
       }
       if (event.data.type === 'ready') {
         initStep('load + instantiate qlue-ls wasm');
-        resolve(instance);
+        resolve();
       }
-    };
+    });
   });
 }

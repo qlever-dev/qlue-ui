@@ -5,7 +5,7 @@ description = "Backend API for Qlue-UI"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi[standard]==0.141.1",
-    "uvicorn[standard]==0.52.4",
+    "uvicorn[standard]==0.54.0",
     "pydantic==2.13.5",
     "pyyaml==6.0.3",
     "watchdog==6.0.0",
