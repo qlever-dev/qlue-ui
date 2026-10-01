@@ -12,7 +12,7 @@ import { LanguageClientWrapper } from 'monaco-languageclient/lcwrapper';
 import { MonacoVscodeApiWrapper } from 'monaco-languageclient/vscodeApiWrapper';
 import { initStep } from '../timing';
 import { setup_commands } from './commands';
-import { buildWrapperConfig } from './config/config';
+import { buildWrapperConfig, waitForLanguageServer } from './config/config';
 import { setup_key_bindings } from './keys';
 
 /**
@@ -40,7 +40,7 @@ export interface Editor {
 export async function setupEditor(container_id: string): Promise<Editor> {
   const editorContainer = document.getElementById(container_id);
   if (editorContainer) {
-    const configs = await buildWrapperConfig(``);
+    const configs = buildWrapperConfig(``);
     initStep('build wrapper config');
     // NOTE: Create the monaco-vscode api Wrapper and start it before anything else.
     const apiWrapper = new MonacoVscodeApiWrapper(configs.vscodeApiConfig);
@@ -48,7 +48,10 @@ export async function setupEditor(container_id: string): Promise<Editor> {
     initStep('start monaco-vscode api');
 
     // NOTE: Create language client wrapper.
+    // NOTE: init() spawns the language server worker; start the client once the wasm is ready.
     const lcWrapper = new LanguageClientWrapper(configs.languageClientConfig);
+    await lcWrapper.init();
+    await waitForLanguageServer(lcWrapper.getWorker()!);
     await lcWrapper.start();
     const languageClient = lcWrapper.getLanguageClient()!;
     initStep('start language client (qlue-ls wasm)');
