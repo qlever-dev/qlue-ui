@@ -343,7 +343,7 @@ function initializeTree(queryExectionTree: QueryExecutionNode) {
     .selectAll<SVGPathElement, d3.HierarchyNode<QueryExecutionTree>>('path.link')
     .data(nodesWithParents, (d) => d.data.id!)
     .join('path')
-    .attr('class', 'link stroke-neutral-400 dark:stroke-neutral-600 stroke fill-none')
+    .attr('class', 'link stroke-neutral-400 dark:stroke-neutral-600 stroke-2 fill-none')
     .attr('d', (d) => {
       const [px, py] = [d.parent!.x!, d.parent!.y!];
       const [cx, cy] = [d.x!, d.y!];
