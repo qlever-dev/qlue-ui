@@ -43,6 +43,7 @@ import {
 } from './utils';
 import 'sparql-results';
 import type { PetrimapsRenderConfig, SparqlResults, TableRenderConfig } from 'sparql-results';
+import { watchQueryExecution } from '../query_analysis/init';
 import { render_query_error } from './error';
 
 const pageSize = 100;
@@ -196,7 +197,9 @@ async function executeQuery(
     })
   );
 
+  let canceled = false;
   window.addEventListener('execute-cancle-request', () => {
+    canceled = true;
     editor.languageClient
       .sendRequest('qlueLs/cancelQuery', {
         queryId,
@@ -210,6 +213,28 @@ async function executeQuery(
         );
       });
   });
+
+  // NOTE: The websocket that receives the runtime information has to be
+  // connected before the query is sent, otherwise a query that finishes
+  // quickly is already forgotten by QLever when the websocket arrives, and the
+  // analysis tree stays empty (see `watchQueryExecution`).
+  await watchQueryExecution(queryId).catch((err) => {
+    console.error(err);
+    document.dispatchEvent(
+      new CustomEvent('toast', {
+        detail: {
+          type: 'warning',
+          message: 'Could not connect to query-watch web-socket',
+          duration: 3000,
+        },
+      })
+    );
+  });
+
+  if (canceled) {
+    // NOTE: throws, like for a query that is canceled while it runs.
+    render_query_error({ data: { type: 'Canceled', query } });
+  }
 
   const response = (await editor.languageClient
     .sendRequest('qlueLs/executeOperation', {
@@ -301,5 +326,4 @@ function renderLazyResults(editor: Editor, renderConfig: PetrimapsRenderConfig |
     const { size } = (event as CustomEvent<QueryResultSizeDetails>).detail;
     document.getElementById('resultSize')!.innerText = size.toLocaleString('en-US');
   });
-  // Hallo, Ianni!
 }

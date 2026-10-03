@@ -3,7 +3,7 @@ import { settings } from '../settings/init';
 import type { ExecuteOperationResult } from '../types/lsp_messages';
 import type { ExecuteQueryEventDetails } from './init';
 import { renderTableRows } from './table';
-import { hideLoadingAnimation, showLoadingAnimation } from './utils';
+import { hideReloadingAnimation, showReloadingAnimation } from './utils';
 
 let windowSize = 0;
 let offset = windowSize;
@@ -43,7 +43,7 @@ export function setupInfiniteScroll(editor: Editor) {
   window.addEventListener('infinite-scroll-start', () => {
     offset = windowSize;
     pendingResults = true;
-    hideLoadingAnimation();
+    hideReloadingAnimation();
   });
 }
 
@@ -53,7 +53,7 @@ async function onScroll(editor: Editor) {
   const scrollPosition = window.innerHeight + window.scrollY;
   const pageHeight = document.body.offsetHeight;
   if (scrollPosition >= pageHeight - 1000) {
-    showLoadingAnimation();
+    showReloadingAnimation();
     mutex = true;
     const currentQueryId = originalQueryId;
     const queryId = getSubQueryId(originalQueryId);
@@ -69,7 +69,7 @@ async function onScroll(editor: Editor) {
       .then((result) => {
         if (originalQueryId !== currentQueryId) {
           mutex = false;
-          hideLoadingAnimation();
+          hideReloadingAnimation();
           return;
         }
         const exec_result = result as ExecuteOperationResult;
@@ -77,7 +77,7 @@ async function onScroll(editor: Editor) {
           if (exec_result.queryResult.result.results.bindings.length === 0) {
             pendingResults = false;
             mutex = false;
-            hideLoadingAnimation();
+            hideReloadingAnimation();
             return;
           }
           renderTableRows(
@@ -85,11 +85,11 @@ async function onScroll(editor: Editor) {
             exec_result.queryResult.result.results.bindings,
             offset
           );
-          hideLoadingAnimation();
+          hideReloadingAnimation();
         } else {
           pendingResults = false;
           mutex = false;
-          hideLoadingAnimation();
+          hideReloadingAnimation();
           return;
         }
 
@@ -100,7 +100,7 @@ async function onScroll(editor: Editor) {
         console.error('An error ocurred while loading more results', err);
         pendingResults = false;
         mutex = false;
-        hideLoadingAnimation();
+        hideReloadingAnimation();
       });
   }
 }
