@@ -56,5 +56,6 @@ prefix_map:
   ps: http://www.wikidata.org/prop/statement/
   pq: http://www.wikidata.org/prop/qualifier/
   p: http://www.wikidata.org/prop/
+  s: http://www.wikidata.org/entity/statement/
   wikibase: http://wikiba.se/ontology#
   xsd: http://www.w3.org/2001/XMLSchema#
