@@ -12,7 +12,7 @@ COPY frontend/ .
 RUN npm run build
 
 # ---- Stage 2: Install Python dependencies ----
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.22 /uv /uvx /bin/
 
@@ -30,7 +30,7 @@ COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --locked --no-install-project --no-dev
 
 # ---- Stage 3: Final image ----
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 RUN useradd -m -r -u 1000 appuser && \
     mkdir /app && \
