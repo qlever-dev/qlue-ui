@@ -28,13 +28,13 @@ export function showResultsSize(size: number) {
   sizeEl.innerText = size.toLocaleString('en-US');
 }
 
-export function hideLoadingAnimation() {
+export function hideReloadingAnimation() {
   const resultReloadingAnimation = document.getElementById('resultReloadingAnimation')!;
   resultReloadingAnimation.classList.add('hidden');
   resultReloadingAnimation.classList.remove('flex');
 }
 
-export function showLoadingAnimation() {
+export function showReloadingAnimation() {
   const resultReloadingAnimation = document.getElementById('resultReloadingAnimation')!;
   resultReloadingAnimation.classList.remove('hidden');
   resultReloadingAnimation.classList.add('flex');
@@ -55,15 +55,19 @@ export function showLoadingScreen() {
   resultsError.classList.add('hidden');
 }
 
+export function hideLoadingScreen() {
+  const resultsLoadingScreen = document.getElementById('resultsLoadingScreen') as HTMLSelectElement;
+
+  resultsLoadingScreen.classList.add('hidden');
+}
+
 // Hides the loading screen and shows the results container.
 // Also scrolles to the results container.
 export function showResults() {
   const resultsTableContainer = document.getElementById(
     'resultsTableContainer'
   ) as HTMLSelectElement;
-  const resultsLoadingScreen = document.getElementById('resultsLoadingScreen') as HTMLSelectElement;
-
-  resultsLoadingScreen.classList.add('hidden');
+  hideLoadingScreen();
   resultsTableContainer.classList.remove('hidden');
 }
 
