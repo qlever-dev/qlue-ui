@@ -10,7 +10,7 @@ query_templates:
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     SELECT ?qls_entity
            (SAMPLE(?name) AS ?qls_label)
-           (GROUP_CONCAT(DISTINCT ?alias; SEPARATOR=", ") AS ?qls_alias)
+           (SAMPLE(?alias) AS ?qls_alias)
            (COUNT(*) AS ?qls_count) WHERE {
       {
         SELECT ?qls_entity WHERE {
@@ -31,6 +31,7 @@ query_templates:
       OPTIONAL {
         ?qls_entity skos:altLabel ?alias
         FILTER (LANG(?alias) = "en")
+        FILTER (REGEX(STR(?alias),"^{{ search_term }}"))
       }
       FILTER (LANG(?name) = "en")
     }

@@ -73,6 +73,18 @@ export function setup_key_bindings(editor: Editor) {
     when: '!inSnippetMode && editorTextFocus',
   });
 
+  // NOTE: unbind every chord Monaco's suggest trigger holds; the custom
+  //       completion widget rebinds Ctrl + Space to its own trigger in
+  //       `completion/index.ts`. The `WinCtrl` variant is the one Monaco uses
+  //       on macOS, so leaving it bound surfaced the built-in widget there.
+  for (const keybinding of [
+    monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space,
+    monaco.KeyMod.WinCtrl | monaco.KeyCode.Space,
+    monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI,
+  ]) {
+    monaco.editor.addKeybindingRule({ command: null, keybinding });
+  }
+
   // NOTE:jump to next or prev position
   monaco.editor.addCommand({
     id: 'jumpToNextPosition',
