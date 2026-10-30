@@ -1,4 +1,4 @@
-import { clearCache } from '../buttons/clear_cache';
+import { clearCache, toggleClearCacheBeforeQuery } from '../buttons/clear_cache';
 import { executeQuery } from '../buttons/execute';
 import { formatDocument } from '../buttons/format';
 import { toggleWideMode } from '../buttons/wide_mode';
@@ -35,7 +35,12 @@ export function setupCommands(editor: Editor) {
   registerCommand('parseTree', openParseTree, 'Show the SPARQL parse tree');
   registerCommand('analysis', openQueryAnalysis, 'Show the query analysis');
   registerCommand('templates', openTemplatesEditor, 'Edit query templates');
-  registerCommand('clearCache', clearCache, 'Clear the triplestore cache');
+  registerCommand('clearCache', (editor) => clearCache(editor), 'Clear the triplestore cache');
+  registerCommand(
+    'toggleClearCacheBeforeQuery',
+    toggleClearCacheBeforeQuery,
+    'Toggle clearing the cache before every query'
+  );
   registerCommand('toggleWideMode', toggleWideMode, 'Toggle wide editor layout');
   registerCommand('version', displayVersion, 'Show the build version');
 
