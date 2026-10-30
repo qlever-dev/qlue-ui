@@ -53,9 +53,9 @@ export function watchQueryExecution(queryId: string): Promise<void> {
 export function setupQueryAnalysis(editor: Editor) {
   const analysisButton = document.getElementById('analysisButton')!;
 
-  const { openModal, render, renderStats, clear, setQueryName } = setupQueryAnalysisUi(() => {
+  const { openModal, render, renderStats, clear, setQueryName } = setupQueryAnalysisUi(async () => {
     if (!queryRunning) {
-      clearCache(editor);
+      await clearCache(editor);
       window.dispatchEvent(new Event('execute-start-request'));
     }
   });

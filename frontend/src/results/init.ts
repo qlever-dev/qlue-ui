@@ -16,6 +16,7 @@
 // current query and wait for it to end. Only then will a new query be executed.
 
 import { extractConfig, type RenderConfig } from 'sparql-results';
+import { clearCache, isClearCacheBeforeQuery } from '../buttons/clear_cache';
 import type { Editor } from '../editor/init';
 import { settings } from '../settings/init';
 import type { QlueLsServiceConfig } from '../types/backend';
@@ -79,10 +80,15 @@ export async function setupResults(editor: Editor) {
 }
 
 function handleSignals(editor: Editor) {
-  window.addEventListener('execute-start-request', () => {
+  window.addEventListener('execute-start-request', async () => {
     if (queryStatus === 'idle') {
       queryStatus = 'running';
       window.dispatchEvent(new CustomEvent('execute-started'));
+      // NOTE: With the `Clear Cache` lock set, wait for the clear before
+      // running, otherwise the query might still hit the cache.
+      if (isClearCacheBeforeQuery()) {
+        await clearCache(editor, true);
+      }
       executeQueryAndShowResults(editor);
     } else {
       document.dispatchEvent(
