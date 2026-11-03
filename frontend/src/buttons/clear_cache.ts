@@ -22,8 +22,8 @@ export async function setupClearCache(editor: Editor) {
  *
  * Also used as the `clearCache` command handler, so options come in as
  * command parameters:
- * - `quiet`: don't show the "Cache cleared." / "Could not clear cache." toasts.
- *   The "No SPARQL endpoint configured." warning is still shown.
+ * - `quiet`: don't show any toasts ("Cache cleared.", "Could not clear cache.",
+ *   "No SPARQL endpoint configured.").
  *
  * @example clearCache(editor, ['quiet']); // or `clearCache quiet` in the command prompt
  */
@@ -33,15 +33,17 @@ export async function clearCache(editor: Editor, params: string[] = []) {
     | QlueLsServiceConfig
     | { error: string };
   if ('error' in backend) {
-    document.dispatchEvent(
-      new CustomEvent('toast', {
-        detail: {
-          type: 'warning',
-          message: 'No SPARQL endpoint configured.',
-          duration: 2000,
-        },
-      })
-    );
+    if (!quiet) {
+      document.dispatchEvent(
+        new CustomEvent('toast', {
+          detail: {
+            type: 'warning',
+            message: 'No SPARQL endpoint configured.',
+            duration: 2000,
+          },
+        })
+      );
+    }
   } else {
     return fetch(backend.url, {
       method: 'POST',
