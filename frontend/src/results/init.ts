@@ -142,6 +142,17 @@ async function executeQueryAndShowResults(editor: Editor) {
   showLoadingScreen();
   clearQueryStats();
   const coldRun = takeCacheCleared(backend.url);
+  if (settings.general.clearCacheBeforeExecute && !coldRun) {
+    document.dispatchEvent(
+      new CustomEvent('toast', {
+        detail: {
+          type: 'warning',
+          message: 'Could not clear cache, this is not a cold run.',
+          duration: 3000,
+        },
+      })
+    );
+  }
   element.clear();
   clearTable();
 
