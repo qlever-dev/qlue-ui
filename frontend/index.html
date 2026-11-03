@@ -592,6 +592,21 @@
                       />
                     </svg>
                     Execute
+                    <!-- Shown while "clear cache before every query" is pinned -->
+                    <svg
+                      id="executeClearsCacheIndicator"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2.2"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="size-3 ml-0.5 opacity-85 hidden"
+                    >
+                      <path d="M20 11a8 8 0 0 0-14.9-3.5M4 4v4h4" />
+                      <path d="M4 13a8 8 0 0 0 14.9 3.5M20 20v-4h-4" />
+                    </svg>
                   </span>
                   <span class="hidden items-center gap-1 text-gray-100">
                     <svg
@@ -779,7 +794,7 @@
                 </div>
                 <div
                   id="clearCacheButton"
-                  class="border-button-border border-x bg-slate-100 dark:bg-slate-700 active:bg-slate-400 dark:active:bg-gray-950 hover:bg-button-hover flex cursor-pointer justify-center py-0.5 px-2"
+                  class="relative border-button-border border-x bg-slate-100 dark:bg-slate-700 active:bg-slate-400 dark:active:bg-gray-950 hover:bg-button-hover has-aria-pressed:bg-green-600/12 has-aria-pressed:text-green-700 dark:has-aria-pressed:text-green-400 has-aria-pressed:hover:bg-button-hover flex cursor-pointer justify-center py-0.5 pl-2 pr-7"
                 >
                   <span class="inline-flex items-center gap-1">
                     <svg
@@ -798,6 +813,29 @@
                     </svg>
                     Clear Cache
                   </span>
+                  <!-- Pin: clear the cache before every query. aria-pressed="true" also tints the whole Clear Cache cell. -->
+                  <button
+                    id="clearCachePinButton"
+                    type="button"
+                    aria-pressed="false"
+                    title="Pin: clear before every query"
+                    class="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center size-5 rounded text-gray-500 dark:text-gray-400 opacity-45 aria-pressed:text-green-600 aria-pressed:opacity-100 hover:opacity-100 hover:text-green-600 hover:bg-green-600/16 cursor-pointer"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.8"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="size-3.25 rotate-45 in-aria-pressed:fill-current"
+                    >
+                      <path d="M12 17v5" />
+                      <path d="M9 10.8V5h6v5.8l2.5 3.2v2h-11v-2Z" />
+                      <path d="M8 3h8" />
+                    </svg>
+                  </button>
                 </div>
                 <div
                   id="analysisButton"
@@ -1267,6 +1305,28 @@
                         </span>
                       </span>
                     </div>
+                  </span>
+                </div>
+                <div
+                  id="queryColdRun"
+                  class="border-l py-1 px-2 text-green-600 hidden"
+                  title="The cache was cleared before this query ran, so timings reflect a cold run."
+                >
+                  <span class="flex items-center gap-1.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="size-3.5"
+                    >
+                      <path d="M20 11a8 8 0 0 0-14.9-3.5M4 4v4h4" />
+                      <path d="M4 13a8 8 0 0 0 14.9 3.5M20 20v-4h-4" />
+                    </svg>
+                    Cold run
                   </span>
                 </div>
               </div>
@@ -3226,6 +3286,31 @@
               <div
                 class="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-800"
               >
+                <div class="flex flex-row py-4 items-center">
+                  <div class="flex flex-col grow">
+                    <span
+                      class="font-semibold text-neutral-800 dark:text-neutral-200 text-[16px]"
+                    >
+                      Clear cache before every query
+                    </span>
+                    <span
+                      class="font-normal text-neutral-400 dark:text-neutral-500"
+                    >
+                      Run each query cold for comparable timings. Also toggled
+                      with the pin on Clear Cache.
+                    </span>
+                  </div>
+                  <label class="cursor-pointer">
+                    <input
+                      id="settings-general-clearCacheBeforeExecute"
+                      type="checkbox"
+                      value=""
+                      class="sr-only peer"
+                    />
+                    <div class="toggle-switch"></div>
+                    <span class="sr-only">Clear cache before every query</span>
+                  </label>
+                </div>
                 <div class="flex flex-row py-4 items-center">
                   <div class="flex flex-col grow">
                     <span
