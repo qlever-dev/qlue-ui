@@ -57,7 +57,7 @@ export function setupQueryAnalysis(editor: Editor) {
   const { openModal, render, renderStats, clear, setQueryName } = setupQueryAnalysisUi(async () => {
     if (!queryRunning) {
       if (!settings.general.clearCacheBeforeExecute) {
-        await clearCache(editor);
+        await clearCache(editor).catch(() => {});
       }
       window.dispatchEvent(new Event('execute-start-request'));
     }
