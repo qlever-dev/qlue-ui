@@ -61,3 +61,8 @@ export function highlightMatches(text: string, keywords: RegExp[], classes: stri
 
   return result;
 }
+
+/** Escapes regex metacharacters so a literal string can be used as a keyword. */
+export function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
