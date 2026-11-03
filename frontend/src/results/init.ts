@@ -141,7 +141,7 @@ async function executeQueryAndShowResults(editor: Editor) {
 
   showLoadingScreen();
   clearQueryStats();
-  const coldRun = takeCacheCleared();
+  const coldRun = takeCacheCleared(backend.url);
   element.clear();
   clearTable();
 

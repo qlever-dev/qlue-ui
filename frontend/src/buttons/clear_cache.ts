@@ -2,7 +2,7 @@ import type { Editor } from '../editor/init';
 import { setClearCacheBeforeExecute } from '../settings/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 
-let cacheCleared = false;
+let cacheClearedUrl: string | null = null;
 
 export async function setupClearCache(editor: Editor) {
   const clearCacheButton = document.getElementById('clearCacheButton')!;
@@ -54,7 +54,7 @@ export async function clearCache(editor: Editor, params: string[] = []) {
     })
       .then((response) => {
         if (response.ok) {
-          cacheCleared = true;
+          cacheClearedUrl = backend.url;
           if (!quiet) {
             document.dispatchEvent(
               new CustomEvent('toast', {
@@ -86,9 +86,12 @@ export async function clearCache(editor: Editor, params: string[] = []) {
   }
 }
 
-/** True if the cache was cleared since the last query started. Resets the flag. */
-export function takeCacheCleared(): boolean {
-  const cleared = cacheCleared;
-  cacheCleared = false;
+/**
+ * True if the cache of the endpoint at `url` was cleared since the last query
+ * started. Resets the flag.
+ */
+export function takeCacheCleared(url: string): boolean {
+  const cleared = cacheClearedUrl === url;
+  cacheClearedUrl = null;
   return cleared;
 }
