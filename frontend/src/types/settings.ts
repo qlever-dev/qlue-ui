@@ -66,4 +66,5 @@ export interface ResultsSettings {
 export interface GeneralSettings {
   accessToken: string | null;
   uiToken: string | null;
+  clearCacheBeforeExecute: boolean;
 }

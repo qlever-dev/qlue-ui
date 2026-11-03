@@ -53,8 +53,30 @@ export interface QueryExecutionNode {
   total_time: number;
 }
 
-// Type alias for the root node (same structure)
-export type QueryExecutionTree = QueryExecutionNode;
+/** How the query planner planned one connected component of the query. */
+export interface QueryPlanningInfo {
+  /** The planner that was used. */
+  algorithm: 'dynamic-programming' | 'greedy';
+  /** Number of nodes (triples and similar) of the component. */
+  num_nodes: number;
+  /** Number of connected subgraphs, counted up to `budget + 1`. */
+  num_connected_subgraphs: number;
+  /** The `query-planning-budget`; above it, the greedy planner is used. */
+  budget: number;
+  /** Number of candidate plans created for the joins, before pruning. */
+  num_candidate_plans: number;
+}
+
+/** Information about the query as a whole, sent along with the root node. */
+export interface QueryMeta {
+  /** Time for the query planning in milliseconds. */
+  time_query_planning: number;
+  /** How each connected component of the query was planned. */
+  query_planning?: QueryPlanningInfo[];
+}
+
+/** The root node, which may also carry information about the whole query. */
+export type QueryExecutionTree = QueryExecutionNode & { meta?: QueryMeta };
 
 // Example usage:
 // const tree: QueryExecutionTree = { ... };

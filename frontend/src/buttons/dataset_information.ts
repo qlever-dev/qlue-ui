@@ -55,6 +55,20 @@ async function loadDatasetInformation(editor: Editor): Promise<void> {
   if (service.engine !== SparqlEngine.QLever) {
     throw new Error('Dataset information is only availiable for QLever-based Backends.');
   }
+  // Show the URL right away and clear stale stats, so an unreachable endpoint still shows its URL.
+  datasetUrl.innerText = service.url;
+  for (const element of [
+    datasetDescription,
+    datasetNumberOfTriples,
+    datasetNumberOfSubjects,
+    datasetNumberOfPredicates,
+    datasetNumberOfObjects,
+    datasetEndpointVersion,
+    datasetEndpointServerHash,
+    datasetEndpointIndexHash,
+  ]) {
+    element.innerText = '';
+  }
   fetch(`${service.url}?cmd=stats`)
     .then((response) => {
       if (!response.ok) {
@@ -63,7 +77,6 @@ async function loadDatasetInformation(editor: Editor): Promise<void> {
       return response.json();
     })
     .then((stats) => {
-      datasetUrl.innerText = service.url;
       datasetDescription.innerText = stats['name-index'];
       datasetNumberOfTriples.innerText = stats['num-triples-normal'].toLocaleString('en-US');
       datasetNumberOfSubjects.innerText = stats['num-subjects-normal'].toLocaleString('en-US');
@@ -72,5 +85,9 @@ async function loadDatasetInformation(editor: Editor): Promise<void> {
       datasetEndpointVersion.innerText = stats['version-server'];
       datasetEndpointServerHash.innerText = stats['git-hash-server'];
       datasetEndpointIndexHash.innerText = stats['git-hash-index'];
+    })
+    .catch(() => {
+      datasetDescription.innerText =
+        'Could not retrieve dataset information: endpoint is not reachable.';
     });
 }
