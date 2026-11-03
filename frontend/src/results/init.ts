@@ -84,7 +84,7 @@ function handleSignals(editor: Editor) {
     if (queryStatus === 'idle') {
       queryStatus = 'running';
       window.dispatchEvent(new CustomEvent('execute-started'));
-      // NOTE: With the `Clear Cache` lock set, wait for the clear before
+      // NOTE: With the `Clear Cache` pin set, wait for the clear before
       // running, otherwise the query might still hit the cache.
       if (settings.general.clearCacheBeforeExecute) {
         await clearCache(editor, ['quiet']).catch(() => {});
