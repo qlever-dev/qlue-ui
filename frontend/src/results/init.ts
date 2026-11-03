@@ -88,6 +88,16 @@ function handleSignals(editor: Editor) {
       // running, otherwise the query might still hit the cache.
       if (settings.general.clearCacheBeforeExecute) {
         await clearCache(editor, ['quiet']).catch(() => {});
+        // NOTE: A cancel during the clear arrives before executeQuery
+        // listens for it, so handle it here.
+        // The cast undoes TS narrowing to 'running', which doesn't see the
+        // cancel listener changing queryStatus during the await.
+        if ((queryStatus as QueryStatus) === 'canceling') {
+          window.dispatchEvent(
+            new CustomEvent('execute-ended', { detail: { result: 'canceled' } })
+          );
+          return;
+        }
       }
       executeQueryAndShowResults(editor);
     } else {
