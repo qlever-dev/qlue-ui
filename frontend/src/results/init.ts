@@ -43,6 +43,7 @@ import {
 } from './utils';
 import 'sparql-results';
 import type { PetrimapsRenderConfig, SparqlResults, TableRenderConfig } from 'sparql-results';
+import { clearCache, takeCacheCleared } from '../buttons/clear_cache';
 import { watchQueryExecution } from '../query_analysis/init';
 import { render_query_error } from './error';
 
@@ -79,10 +80,25 @@ export async function setupResults(editor: Editor) {
 }
 
 function handleSignals(editor: Editor) {
-  window.addEventListener('execute-start-request', () => {
+  window.addEventListener('execute-start-request', async () => {
     if (queryStatus === 'idle') {
       queryStatus = 'running';
       window.dispatchEvent(new CustomEvent('execute-started'));
+      // NOTE: With the `Clear Cache` pin set, wait for the clear before
+      // running, otherwise the query might still hit the cache.
+      if (settings.general.clearCacheBeforeExecute) {
+        await clearCache(editor, ['quiet']).catch(() => {});
+        // NOTE: A cancel during the clear arrives before executeQuery
+        // listens for it, so handle it here.
+        // The cast undoes TS narrowing to 'running', which doesn't see the
+        // cancel listener changing queryStatus during the await.
+        if ((queryStatus as QueryStatus) === 'canceling') {
+          window.dispatchEvent(
+            new CustomEvent('execute-ended', { detail: { result: 'canceled' } })
+          );
+          return;
+        }
+      }
       executeQueryAndShowResults(editor);
     } else {
       document.dispatchEvent(
@@ -125,6 +141,18 @@ async function executeQueryAndShowResults(editor: Editor) {
 
   showLoadingScreen();
   clearQueryStats();
+  const coldRun = takeCacheCleared(backend.url);
+  if (settings.general.clearCacheBeforeExecute && !coldRun) {
+    document.dispatchEvent(
+      new CustomEvent('toast', {
+        detail: {
+          type: 'warning',
+          message: 'Could not clear cache, this is not a cold run.',
+          duration: 3000,
+        },
+      })
+    );
+  }
   element.clear();
   clearTable();
 
@@ -143,6 +171,7 @@ async function executeQueryAndShowResults(editor: Editor) {
     0
   )
     .then((result) => {
+      document.getElementById('queryColdRun')!.classList.toggle('hidden', !coldRun);
       showResults();
       stopQueryTimer(timer);
       const operationTime = getOperationTimeMs(result);

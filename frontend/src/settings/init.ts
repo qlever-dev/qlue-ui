@@ -6,6 +6,7 @@ export const settings: UiSettings = {
   general: {
     accessToken: '',
     uiToken: '',
+    clearCacheBeforeExecute: false,
   },
   editor: {
     format: {
@@ -56,6 +57,7 @@ export function setupSettings(editor: Editor) {
   handleInput(editor);
   loadFromLocalStorage();
   updateDom();
+  updateGeneralDisplay();
   updateLanguageServer(editor);
 }
 
@@ -64,6 +66,14 @@ export function setUiToken(token: string) {
   settings.general.uiToken = token;
   saveToLocalStorage();
   getInputByPath(['general', 'uiToken']).value = token;
+}
+
+/** Single writer for "clear cache before every query" — keeps state, storage and DOM in sync. */
+export function setClearCacheBeforeExecute(value: boolean) {
+  settings.general.clearCacheBeforeExecute = value;
+  saveToLocalStorage();
+  getInputByPath(['general', 'clearCacheBeforeExecute']).checked = value;
+  updateGeneralDisplay();
 }
 
 function updateLanguageServer(editor: Editor) {
@@ -104,7 +114,8 @@ function handleInput(editor: Editor) {
             setByPath(settings, path, input.checked);
             saveToLocalStorage();
             if (path[0] === 'editor') updateLanguageServer(editor);
-            if (path[0] === 'results') updateResultsDisplay();
+            else if (path[0] === 'results') updateResultsDisplay();
+            else if (path[0] === 'general') updateGeneralDisplay();
           });
           break;
         default:
@@ -128,6 +139,16 @@ function handleInput(editor: Editor) {
     },
     []
   );
+}
+
+function updateGeneralDisplay() {
+  const clearCachePinButton = document.getElementById('clearCachePinButton')! as HTMLButtonElement;
+  const executeClearsCacheIndicator = document.getElementById('executeClearsCacheIndicator')!;
+  clearCachePinButton.ariaPressed = String(settings.general.clearCacheBeforeExecute);
+  clearCachePinButton.title = settings.general.clearCacheBeforeExecute
+    ? 'Unpin: stop clearing before every query'
+    : 'Pin: clear before every query';
+  executeClearsCacheIndicator.classList.toggle('hidden', !settings.general.clearCacheBeforeExecute);
 }
 
 function updateResultsDisplay() {

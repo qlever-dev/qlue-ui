@@ -6,6 +6,7 @@
 
 import { clearCache } from '../buttons/clear_cache';
 import type { Editor } from '../editor/init';
+import { settings } from '../settings/init';
 import { getActiveTabName } from '../tabs/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import { SparqlEngine } from '../types/lsp_messages';
@@ -53,9 +54,11 @@ export function watchQueryExecution(queryId: string): Promise<void> {
 export function setupQueryAnalysis(editor: Editor) {
   const analysisButton = document.getElementById('analysisButton')!;
 
-  const { openModal, render, renderStats, clear, setQueryName } = setupQueryAnalysisUi(() => {
+  const { openModal, render, renderStats, clear, setQueryName } = setupQueryAnalysisUi(async () => {
     if (!queryRunning) {
-      clearCache(editor);
+      if (!settings.general.clearCacheBeforeExecute) {
+        await clearCache(editor).catch(() => {});
+      }
       window.dispatchEvent(new Event('execute-start-request'));
     }
   });
