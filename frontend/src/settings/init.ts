@@ -143,12 +143,10 @@ function handleInput(editor: Editor) {
 
 function updateGeneralDisplay() {
   const clearCachePinButton = document.getElementById('clearCachePinButton')! as HTMLButtonElement;
-  const executeClearsCacheIndicator = document.getElementById('executeClearsCacheIndicator')!;
   clearCachePinButton.ariaPressed = String(settings.general.clearCacheBeforeExecute);
   clearCachePinButton.title = settings.general.clearCacheBeforeExecute
     ? 'Unpin: stop clearing before every query'
     : 'Pin: clear before every query';
-  executeClearsCacheIndicator.classList.toggle('hidden', !settings.general.clearCacheBeforeExecute);
 }
 
 function updateResultsDisplay() {
