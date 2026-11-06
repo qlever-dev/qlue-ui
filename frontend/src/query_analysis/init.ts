@@ -10,12 +10,13 @@ import { settings } from '../settings/init';
 import { getActiveTabName } from '../tabs/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import { SparqlEngine } from '../types/lsp_messages';
-import type { QueryExecutionTree } from '../types/query_execution_tree';
+import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
 import { setupQueryAnalysisUi } from './ui';
 import { setupWebSocket } from './utils';
 
 let queryRunning = false;
 let activeSocket: WebSocket | null = null;
+let latestTree: QueryExecutionTree | null = null;
 
 // How long to wait for the runtime-information websocket to connect before the
 // query is sent anyway (see `watchQueryExecution`). Connecting takes a few
@@ -45,6 +46,49 @@ export function watchQueryExecution(queryId: string): Promise<void> {
 }
 
 /**
+ * The most recent query execution tree QLever reported, or `null` if no
+ * query has run yet, the engine isn't QLever, or no runtime information has
+ * arrived yet for the current query. Partial while the query is running.
+ */
+export function getLatestQueryExecutionTree(): QueryExecutionTree | null {
+  return latestTree;
+}
+
+export interface CacheStats {
+  /** Number of operations that ran for the latest query. */
+  operations: number;
+  /** Operations whose result was read from a pinned cache entry. */
+  cachedPinned: number;
+  /** Operations whose result was read from a cache entry of a previous query. */
+  cachedNotPinned: number;
+}
+
+/**
+ * Counts how many operations of the latest query were read from the cache,
+ * or `null` if there is no query execution tree (see
+ * `getLatestQueryExecutionTree`).
+ */
+export function getLatestCacheStats(): CacheStats | null {
+  if (latestTree == null) return null;
+  const stats: CacheStats = { operations: 0, cachedPinned: 0, cachedNotPinned: 0 };
+  const visit = (node: QueryExecutionNode) => {
+    stats.operations++;
+    if (node.cache_status === 'cached_pinned') {
+      stats.cachedPinned++;
+    } else if (node.cache_status === 'cached_not_pinned') {
+      stats.cachedNotPinned++;
+    } else {
+      // NOTE: only descend into operations that were not cached. The children
+      // of a cached operation come from the cache entry and describe the
+      // query that originally computed the result, not this one.
+      node.children.forEach(visit);
+    }
+  };
+  visit(latestTree);
+  return stats;
+}
+
+/**
  * Feeds the query analysis view with live runtime information.
  *
  * Connects to the QLever websocket during query execution to receive live
@@ -69,7 +113,6 @@ export function setupQueryAnalysis(editor: Editor) {
   let queryStart = 0;
   let queryEnd: number | null = null;
   let clockTimer: ReturnType<typeof setInterval> | undefined;
-  let latestTree: QueryExecutionTree | null = null;
   const elapsed = () => (queryEnd ?? performance.now()) - queryStart;
 
   function stopClock() {

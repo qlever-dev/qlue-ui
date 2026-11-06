@@ -1,4 +1,8 @@
-export type CacheStatus = 'cached_not_pinned' | 'computed';
+export type CacheStatus =
+  | 'cached_not_pinned'
+  | 'cached_pinned'
+  | 'computed'
+  | 'not_in_cache_not_computed';
 
 export type NodeStatus =
   | 'not started'

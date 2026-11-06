@@ -205,7 +205,7 @@ function statusBadge(status: string): HTMLElement {
 function cacheBadge(cache: string): HTMLElement {
   const badge = document.createElement('span');
   const color =
-    cache === 'cached_not_pinned'
+    cache === 'cached_not_pinned' || cache === 'cached_pinned'
       ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
       : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-neutral-300';
   badge.className = `inline-block rounded px-2 py-0.5 text-xs font-medium ${color}`;
