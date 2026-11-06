@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import type { QueryExecutionNode, QueryExecutionTree } from '../types/query_execution_tree';
-import { animateGradients } from './gradients';
 import { getSelectedId, hideNodeDetails, refreshSelectedNode, showNodeDetails } from './details';
+import { animateGradients } from './gradients';
 import {
   activeSubTree,
   colorScaleDark,
