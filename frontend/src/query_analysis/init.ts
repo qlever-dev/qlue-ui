@@ -26,6 +26,8 @@ const socketConnectTimeoutMs = 2000;
 
 // Set by `setupQueryAnalysis`, see `watchQueryExecution`.
 let watchQuery: ((queryId: string) => Promise<void>) | null = null;
+// Replaced by `watchQuery` for every query, see `latestCacheStatsReady`.
+let cacheStatsReady: Promise<void> = Promise.resolve();
 
 /**
  * Connect the websocket over which QLever sends the runtime information of the
@@ -54,6 +56,20 @@ export function getLatestQueryExecutionTree(): QueryExecutionTree | null {
   return latestTree;
 }
 
+/**
+ * Resolves once `getLatestCacheStats` is final for the latest query: on the
+ * first runtime information QLever sends (QLever looks up every operation in
+ * the cache before it executes any), or as soon as it is clear that none will
+ * arrive (not QLever, websocket closed).
+ *
+ * NOTE: for a query whose result is read from the cache, the runtime
+ * information arrives a few milliseconds AFTER the query's response, so the
+ * stats must not be read right when the response arrives.
+ */
+export function latestCacheStatsReady(): Promise<void> {
+  return cacheStatsReady;
+}
+
 export interface CacheStats {
   /** Number of operations that ran for the latest query. */
   operations: number;
@@ -61,6 +77,8 @@ export interface CacheStats {
   cachedPinned: number;
   /** Operations whose result was read from a cache entry of a previous query. */
   cachedNotPinned: number;
+  /** Operations whose result was computed by this query. */
+  computed: number;
 }
 
 /**
@@ -70,7 +88,12 @@ export interface CacheStats {
  */
 export function getLatestCacheStats(): CacheStats | null {
   if (latestTree == null) return null;
-  const stats: CacheStats = { operations: 0, cachedPinned: 0, cachedNotPinned: 0 };
+  const stats: CacheStats = {
+    operations: 0,
+    cachedPinned: 0,
+    cachedNotPinned: 0,
+    computed: 0,
+  };
   const visit = (node: QueryExecutionNode) => {
     stats.operations++;
     if (node.cache_status === 'cached_pinned') {
@@ -78,6 +101,7 @@ export function getLatestCacheStats(): CacheStats | null {
     } else if (node.cache_status === 'cached_not_pinned') {
       stats.cachedNotPinned++;
     } else {
+      if (node.cache_status === 'computed') stats.computed++;
       // NOTE: only descend into operations that were not cached. The children
       // of a cached operation come from the cache entry and describe the
       // query that originally computed the result, not this one.
@@ -156,6 +180,10 @@ export function setupQueryAnalysis(editor: Editor) {
     clearInterval(clockTimer);
     queryEnd = null;
     latestTree = null;
+    let resolveCacheStatsReady!: () => void;
+    cacheStatsReady = new Promise((resolve) => {
+      resolveCacheStatsReady = resolve;
+    });
 
     const service = (await editor.languageClient.sendRequest(
       'qlueLs/getBackend',
@@ -163,6 +191,7 @@ export function setupQueryAnalysis(editor: Editor) {
     )) as QlueLsServiceConfig;
     // NOTE: Only connect to websocket if service-engine is QLever
     if (service.engine !== SparqlEngine.QLever) {
+      resolveCacheStatsReady();
       return;
     }
 
@@ -190,9 +219,9 @@ export function setupQueryAnalysis(editor: Editor) {
     socket.addEventListener('open', () => {
       socket.send('cancel_on_close');
     });
+    socket.addEventListener('close', () => resolveCacheStatsReady(), { once: true });
 
     const throttleTimeMs = 50;
-    let latestMessage: string | null = null;
     let running = false;
     let messageCount = 0;
     let renderedCount = 0;
@@ -201,8 +230,7 @@ export function setupQueryAnalysis(editor: Editor) {
       // NOTE: a superseded query's socket must not render anymore.
       if (socket !== activeSocket) return;
       renderedCount = messageCount;
-      const queryExecutionTree = JSON.parse(latestMessage!) as QueryExecutionTree;
-      latestTree = queryExecutionTree;
+      const queryExecutionTree = latestTree!;
       render(queryExecutionTree, elapsed());
 
       if (queryRunning) {
@@ -224,7 +252,11 @@ export function setupQueryAnalysis(editor: Editor) {
     socket.addEventListener('message', (event) => {
       // NOTE: ignore late messages from a superseded query's socket.
       if (socket !== activeSocket) return;
-      latestMessage = event.data;
+      // NOTE: parse right away, not throttled like the rendering, so that
+      // `getLatestQueryExecutionTree` is up to date when
+      // `latestCacheStatsReady` resolves.
+      latestTree = JSON.parse(event.data) as QueryExecutionTree;
+      resolveCacheStatsReady();
       messageCount++;
       if (!running) {
         running = true;

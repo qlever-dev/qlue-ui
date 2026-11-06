@@ -33,6 +33,7 @@ import {
   clearQueryStats,
   type QueryStatus,
   scrollToResults,
+  showCacheStats,
   showLoadingScreen,
   showMapViewButton,
   showQueryMetaData,
@@ -43,8 +44,8 @@ import {
 } from './utils';
 import 'sparql-results';
 import type { PetrimapsRenderConfig, SparqlResults, TableRenderConfig } from 'sparql-results';
-import { clearCache, takeCacheCleared } from '../buttons/clear_cache';
-import { watchQueryExecution } from '../query_analysis/init';
+import { clearCache } from '../buttons/clear_cache';
+import { latestCacheStatsReady, watchQueryExecution } from '../query_analysis/init';
 import { render_query_error } from './error';
 
 const pageSize = 100;
@@ -141,18 +142,6 @@ async function executeQueryAndShowResults(editor: Editor) {
 
   showLoadingScreen();
   clearQueryStats();
-  const coldRun = takeCacheCleared(backend.url);
-  if (settings.general.clearCacheBeforeExecute && !coldRun) {
-    document.dispatchEvent(
-      new CustomEvent('toast', {
-        detail: {
-          type: 'warning',
-          message: 'Could not clear cache, this is not a cold run.',
-          duration: 3000,
-        },
-      })
-    );
-  }
   element.clear();
   clearTable();
 
@@ -171,7 +160,7 @@ async function executeQueryAndShowResults(editor: Editor) {
     0
   )
     .then((result) => {
-      document.getElementById('cacheClearedIndicator')!.classList.toggle('hidden', !coldRun);
+      latestCacheStatsReady().then(showCacheStats);
       showResults();
       stopQueryTimer(timer);
       const operationTime = getOperationTimeMs(result);

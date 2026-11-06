@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import type { PetrimapsRenderConfig } from 'sparql-results';
 import type { Editor } from '../editor/init';
+import { getLatestCacheStats } from '../query_analysis/init';
 import type { QlueLsServiceConfig } from '../types/backend';
 import type { Head, Meta } from '../types/lsp_messages';
 import type { Binding } from '../types/rdf';
@@ -10,7 +11,27 @@ export function clearQueryStats() {
   document.getElementById('queryTimeTotal')!.innerText = '0';
   document.getElementById('queryTimeCompute')!.innerText = '0';
   document.getElementById('queryTimeComputeContainer')!.classList.add('hidden');
-  document.getElementById('cacheClearedIndicator')!.classList.add('hidden');
+  document.getElementById('cacheStatsContainer')!.classList.add('hidden');
+}
+
+/**
+ * Shows how many operations of the latest query were read from the cache.
+ * Stays hidden if there is no query execution tree (e.g. not a QLever engine).
+ */
+export function showCacheStats() {
+  const stats = getLatestCacheStats();
+  if (stats == null) return;
+  const cached = stats.cachedNotPinned > 0;
+  document.getElementById('cacheStatsLabel')!.innerText = cached
+    ? `${stats.cachedNotPinned} cached`
+    : 'Nothing was cached';
+  document.getElementById('cacheStatsIconCached')!.classList.toggle('hidden', !cached);
+  document.getElementById('cacheStatsIconNotCached')!.classList.toggle('hidden', cached);
+  const operations = (n: number) => `${n} ${n === 1 ? 'operation was' : 'operations were'}`;
+  document.getElementById('cacheStatsPinned')!.innerText = operations(stats.cachedPinned);
+  document.getElementById('cacheStatsNotPinned')!.innerText = operations(stats.cachedNotPinned);
+  document.getElementById('cacheStatsComputed')!.innerText = operations(stats.computed);
+  document.getElementById('cacheStatsContainer')!.classList.remove('hidden');
 }
 
 export function showQueryMetaData(meta: Meta) {
