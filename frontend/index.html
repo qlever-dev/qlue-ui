@@ -1293,8 +1293,8 @@
                   </span>
                 </div>
                 <div
-                  id="queryColdRun"
-                  class="border-l py-1 px-2 text-green-600 hidden"
+                  id="cacheClearedIndicator"
+                  class="border-l py-1 px-2 hidden"
                   title="The cache was cleared before this query ran, so timings reflect a cold run."
                 >
                   <span class="flex items-center gap-1.5">
@@ -1308,10 +1308,20 @@
                       stroke-linejoin="round"
                       class="size-3.5"
                     >
-                      <path d="M20 11a8 8 0 0 0-14.9-3.5M4 4v4h4" />
-                      <path d="M4 13a8 8 0 0 0 14.9 3.5M20 20v-4h-4" />
+                      <path d="m10 20-1.25-2.5L6 18" />
+                      <path d="M10 4 8.75 6.5 6 6" />
+                      <path d="m14 20 1.25-2.5L18 18" />
+                      <path d="m14 4 1.25 2.5L18 6" />
+                      <path d="m17 21-3-6h-4" />
+                      <path d="m17 3-3 6 1.5 3" />
+                      <path d="M2 12h6.5L10 9" />
+                      <path d="m20 10-1.5 2 1.5 2" />
+                      <path d="M22 12h-6.5L14 15" />
+                      <path d="m4 10 1.5 2L4 14" />
+                      <path d="m7 21 3-6-1.5-3" />
+                      <path d="m7 3 3 6h4" />
                     </svg>
-                    Cold run
+                    Cache was cleared
                   </span>
                 </div>
               </div>

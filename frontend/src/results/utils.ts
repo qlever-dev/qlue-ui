@@ -10,7 +10,7 @@ export function clearQueryStats() {
   document.getElementById('queryTimeTotal')!.innerText = '0';
   document.getElementById('queryTimeCompute')!.innerText = '0';
   document.getElementById('queryTimeComputeContainer')!.classList.add('hidden');
-  document.getElementById('queryColdRun')!.classList.add('hidden');
+  document.getElementById('cacheClearedIndicator')!.classList.add('hidden');
 }
 
 export function showQueryMetaData(meta: Meta) {

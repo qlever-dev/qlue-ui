@@ -171,7 +171,7 @@ async function executeQueryAndShowResults(editor: Editor) {
     0
   )
     .then((result) => {
-      document.getElementById('queryColdRun')!.classList.toggle('hidden', !coldRun);
+      document.getElementById('cacheClearedIndicator')!.classList.toggle('hidden', !coldRun);
       showResults();
       stopQueryTimer(timer);
       const operationTime = getOperationTimeMs(result);
