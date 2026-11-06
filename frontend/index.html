@@ -1171,9 +1171,9 @@
             >
               <div
                 id="resultsStats"
-                class="rounded border flex flex-row flex-wrap text-gray-500"
+                class="flex flex-row flex-wrap gap-1.5 text-sm sm:gap-0 sm:text-base sm:rounded sm:border text-gray-500"
               >
-                <div class="border-r py-1 px-2">
+                <div class="rounded border sm:rounded-none sm:border-0 sm:border-r py-1 px-2">
                   <span class="flex items-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -1195,7 +1195,7 @@
                 </div>
                 <div
                   id="queryTimeComputeContainer"
-                  class="border-r py-1 px-2 hidden"
+                  class="rounded border sm:rounded-none sm:border-0 sm:border-r py-1 px-2 hidden"
                 >
                   <span class="flex flex-row items-center">
                     <svg
@@ -1214,7 +1214,7 @@
                     </svg>
                     <span id="queryTimeCompute" class="mx-1"> 0 </span>
                     for computation
-                    <div class="relative group cursor-pointer ms-2">
+                    <div class="relative group cursor-pointer ms-2 hidden sm:block">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -1243,7 +1243,7 @@
                     </div>
                   </span>
                 </div>
-                <div class="py-1 px-2">
+                <div class="rounded border sm:rounded-none sm:border-0 py-1 px-2">
                   <span class="flex items-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -1263,7 +1263,7 @@
                       0
                     </span>
                     in total
-                    <div class="relative group cursor-pointer ms-2">
+                    <div class="relative group cursor-pointer ms-2 hidden sm:block">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -1294,7 +1294,7 @@
                 </div>
                 <div
                   id="cacheClearedIndicator"
-                  class="border-l py-1 px-2 hidden"
+                  class="rounded border sm:rounded-none sm:border-0 sm:border-l py-1 px-2 hidden"
                   title="The cache was cleared before this query ran, so timings reflect a cold run."
                 >
                   <span class="flex items-center gap-1.5">
