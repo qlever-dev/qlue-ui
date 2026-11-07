@@ -181,19 +181,33 @@ export async function showMapViewButton(
     mapViewButton?.classList.remove('hidden');
     mapViewButton?.classList.add('flex');
     const query: string = editor.getContent();
+    const URLSearchParams = buildURLSearchParams(backend.url, query, renderConfig);
 
-    const params = new URLSearchParams({
-      query,
-      backend: backend.url,
-      cfg: JSON.stringify({
-        layers: renderConfig?.layers,
-      }),
-    });
-    mapViewButton.href = `${mapViewBaseUrl}?${new URLSearchParams(params)}`;
+    mapViewButton.href = `${mapViewBaseUrl}?${URLSearchParams}`;
     return;
   }
   mapViewButton?.classList.add('hidden');
   mapViewButton?.classList.remove('flex');
+}
+
+function buildURLSearchParams(
+  backend: string,
+  query: string,
+  renderConfig: PetrimapsRenderConfig | null
+): URLSearchParams {
+  if (renderConfig) {
+    return new URLSearchParams({
+      backend,
+      cfg: JSON.stringify({
+        query,
+        layers: renderConfig?.layers,
+      }),
+    });
+  }
+  return new URLSearchParams({
+    backend,
+    query,
+  });
 }
 
 function lastBindingIsWKTliteral(head: Head, bindings: Binding[]): boolean {
