@@ -26,7 +26,7 @@
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@37.3.0",
     "monaco-languageclient": "11.0.2",
     "qlue-ls": "^3.13.1",
-    "sparql-results": "0.2.0",
+    "sparql-results": "^0.3.0",
     "tailwindcss": "4.3.3",
     "vscode": "npm:@codingame/monaco-vscode-extension-api@37.3.0"
   }
